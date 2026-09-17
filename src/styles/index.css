@@ -1,0 +1,618 @@
+@import "tailwindcss";
+
+/*
+ * Brand tokens — sampled from the locked brand guide and the logo mark.
+ * Green + blue are the two logo colours; everything else is support.
+ */
+@theme {
+  /* Colours taken from the live DocPharma website and the logo. */
+  --color-brand-green: #8fc124; /* logo wordmark green */
+  --color-brand-green-bright: #a1e666; /* logo mark green */
+  --color-brand-blue: #0296d9; /* logo blue, primary CTA */
+  --color-brand-blue-mark: #0291d7; /* logo mark blue */
+  --color-brand-blue-deep: #0062c3; /* deeper blue for bands */
+  --color-brand-navy: #00478d;
+
+  --color-peppermint: #f1f8e6; /* light tint of the logo green */
+  --color-viking: #e6f4fb; /* light tint of the logo blue */
+  --color-jet: #052439; /* dark navy used for text on the live site */
+  --color-floral: #f7f8fa; /* light grey surface from the live site */
+
+  --color-ink: #181c1e;
+  --color-ink-soft: #424752;
+  --color-ink-faint: #6b7280;
+  --color-hairline: #e4e4e7;
+
+  --font-sans: "Open Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: Georgia, "Georgia Pro", "Times New Roman", serif;
+
+  --ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--color-floral);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
+  }
+
+  /* Georgia carries the editorial voice: subheads and body copy. */
+  .font-editorial {
+    font-family: var(--font-serif);
+  }
+
+  ::selection {
+    background: var(--color-brand-green);
+    color: var(--color-jet);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-blue);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+}
+
+@layer components {
+  /* Open Sans uppercase — the headline treatment from the brand guide. */
+  .headline {
+    font-family: var(--font-sans);
+    text-transform: uppercase;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 0.95;
+  }
+
+  .eyebrow {
+    font-family: var(--font-sans);
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 0.6875rem;
+    letter-spacing: 0.18em;
+  }
+
+  /* Numbers/data are always Open Sans with tabular figures so they don't jitter
+     while counting up. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  .shell {
+    width: 100%;
+    max-width: 80rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .shell {
+      padding-inline: 2.5rem;
+    }
+  }
+
+  /* The thin rule that sits under black-panel headlines. */
+  .rule-thin {
+    height: 1px;
+    background: currentColor;
+    opacity: 0.28;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  .mask-fade-x {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 8%,
+      #000 92%,
+      transparent
+    );
+    mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  }
+}
+
+/*
+ * Entrance animations for above-the-fold content.
+ *
+ * These are CSS rather than JS on purpose: the hero must never depend on a
+ * animation library having booted to become readable. `fill-mode: both` means
+ * they always settle on the final state, and the reduced-motion block below
+ * collapses them to an instant cut.
+ */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes wipe-up {
+  from {
+    transform: translateY(110%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise-in 0.8s var(--ease-brand) both;
+}
+
+.wipe {
+  animation: wipe-up 0.9s var(--ease-brand) both;
+}
+
+.grow-x {
+  transform-origin: left;
+  animation: grow-x 0.9s var(--ease-brand) both;
+}
+
+/* Marquee — used by the client logo strip and the hero ticker. */
+@keyframes marquee-x {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-marquee {
+  animation: marquee-x var(--marquee-duration, 40s) linear infinite;
+}
+
+.marquee-host:hover .animate-marquee {
+  animation-play-state: paused;
+}
+
+/* Route/flow line drawing, used across the SVG diagrams. */
+@keyframes dash-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes dash-travel {
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
+
+.animate-dash-travel {
+  animation: dash-travel 18s linear infinite;
+}
+
+@keyframes soft-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.06);
+  }
+}
+
+.animate-soft-pulse {
+  animation: soft-pulse 3.2s var(--ease-brand) infinite;
+}
+
+/* Respect the OS setting — motion here is illustrative, never essential. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------------------------------------------------- India coverage map --- */
+/* Blue dots, green lines. Everything radiates from the centre of India. */
+.cov-outline {
+  fill: rgba(2, 150, 217, 0.035);
+  stroke: rgba(5, 36, 57, 0.22);
+  stroke-width: 1.1;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.cov-dot {
+  fill: #0296d9;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.cov-spoke,
+.cov-lastmile,
+.cov-spoke-glow {
+  fill: none;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.cov-spoke {
+  stroke: #8fc124;
+  stroke-width: 2;
+  opacity: 0.85;
+}
+.cov-spoke-glow {
+  stroke: #8fc124;
+  stroke-width: 4.5;
+  stroke-dasharray: 0.08 0.92;
+  opacity: 0;
+  filter: drop-shadow(0 0 4px rgba(143, 193, 36, 0.8));
+}
+.cov-lastmile {
+  stroke: #8fc124;
+  stroke-width: 1.7;
+  opacity: 0;
+}
+.cov-rider {
+  fill: #0296d9;
+  stroke: #fff;
+  stroke-width: 1.5;
+  opacity: 0;
+}
+.cov-drop {
+  fill: #8fc124;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.cov-hub,
+.cov-city {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.cov-hub-ring,
+.cov-city-pulse {
+  fill: none;
+  stroke-width: 1.6;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.cov-hub-ring {
+  stroke: #8fc124;
+}
+.cov-city-pulse {
+  stroke: #0296d9;
+}
+.cov-city-dot {
+  fill: #0296d9;
+  stroke: #fff;
+  stroke-width: 2;
+  transition: r 0.3s;
+}
+
+.cov-map.is-live .cov-outline {
+  animation: cov-draw 1.6s var(--ease-brand) forwards;
+}
+/* Reveal once, then ripple from the centre forever. */
+.cov-map.is-live .cov-dot {
+  animation:
+    cov-dot-in 0.6s var(--ease-brand) forwards,
+    cov-wave 5.2s ease-in-out infinite;
+}
+.cov-map.is-live .cov-dot.is-covered {
+  animation:
+    cov-dot-in-covered 0.6s var(--ease-brand) forwards,
+    cov-wave-covered 5.2s ease-in-out infinite;
+}
+.cov-map.is-live .cov-hub {
+  animation: cov-pop 0.6s var(--ease-brand) 0.3s forwards;
+}
+.cov-map.is-live .cov-hub-ring {
+  animation: cov-ring 2.4s ease-out 0.6s infinite;
+}
+.cov-map.is-live .cov-spoke {
+  animation-name: cov-draw;
+  animation-timing-function: var(--ease-brand);
+  animation-fill-mode: forwards;
+}
+.cov-map.is-live .cov-spoke-glow {
+  animation: cov-travel 3s linear infinite;
+}
+.cov-map.is-live .cov-rider {
+  animation: cov-show 0.3s ease-out forwards;
+}
+.cov-map.is-live .cov-city {
+  animation: cov-pop 0.5s var(--ease-brand) forwards;
+}
+.cov-map.is-live .cov-city-pulse {
+  animation: cov-ring 2.4s ease-out infinite;
+}
+.cov-map.is-live .cov-lastmile {
+  animation: cov-lastmile 2.6s ease-in-out infinite;
+}
+.cov-map.is-live .cov-drop {
+  animation: cov-drop 2.6s ease-in-out infinite;
+}
+
+@keyframes cov-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes cov-show {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes cov-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes cov-dot-in {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 0.16;
+    transform: none;
+  }
+}
+@keyframes cov-dot-in-covered {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 0.6;
+    transform: none;
+  }
+}
+@keyframes cov-wave {
+  0%,
+  100% {
+    opacity: 0.16;
+    transform: none;
+  }
+  8% {
+    opacity: 0.85;
+    transform: scale(1.45);
+  }
+  20% {
+    opacity: 0.16;
+    transform: none;
+  }
+}
+@keyframes cov-wave-covered {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: none;
+  }
+  8% {
+    opacity: 1;
+    transform: scale(1.4);
+  }
+  20% {
+    opacity: 0.6;
+    transform: none;
+  }
+}
+@keyframes cov-ring {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.5);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+@keyframes cov-travel {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+@keyframes cov-lastmile {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 0.95;
+  }
+  50% {
+    stroke-dashoffset: 0;
+    opacity: 0.95;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+@keyframes cov-drop {
+  0%,
+  45% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+  75% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cov-outline,
+  .cov-spoke {
+    stroke-dashoffset: 0;
+  }
+  .cov-dot {
+    opacity: 0.16;
+  }
+  .cov-dot.is-covered {
+    opacity: 0.6;
+  }
+  .cov-hub,
+  .cov-city {
+    opacity: 1;
+  }
+}
+
+/* Hero scroll cue */
+@keyframes scroll-cue {
+  0%,
+  100% {
+    transform: translateY(-2px);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+.scroll-cue {
+  animation: scroll-cue 1.6s ease-in-out infinite;
+}
+
+/* Delivery reach: green lines from each city to every corner of India. */
+.cov-reach {
+  fill: none;
+  stroke: #8fc124;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0.75;
+}
+.cov-dest {
+  fill: #0296d9;
+  stroke: #fff;
+  stroke-width: 1.2;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.cov-map.is-live .cov-reach {
+  animation-name: cov-draw;
+  animation-timing-function: var(--ease-brand);
+  animation-fill-mode: forwards;
+}
+.cov-map.is-live .cov-dest {
+  animation: cov-dest 2.8s ease-out infinite;
+}
+@keyframes cov-dest {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  15% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+  35%,
+  100% {
+    opacity: 0.9;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cov-reach {
+    stroke-dashoffset: 0;
+  }
+  .cov-dest {
+    opacity: 0.9;
+  }
+}
+
+/* News ticker (and the hero order card's stage label): enter from the right, leave to the left. */
+@keyframes news-in {
+  from {
+    transform: translateX(60%);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes news-out {
+  from {
+    transform: none;
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-60%);
+    opacity: 0;
+  }
+}
+@keyframes news-pop {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.news-in {
+  animation: news-in 0.55s var(--ease-brand) both;
+}
+.news-out {
+  animation: news-out 0.55s var(--ease-brand) both;
+}
+.news-pop {
+  animation: news-pop 0.35s var(--ease-brand) both;
+}
