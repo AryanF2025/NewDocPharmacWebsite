@@ -48,7 +48,7 @@ export function NewsTicker({ className = "" }) {
 
   return (
     <div
-      className={`inline-flex max-w-full items-center gap-2 overflow-hidden rounded-full border border-hairline bg-white py-1.5 pl-1.5 pr-1.5 shadow-[0_6px_20px_-12px_rgba(5,36,57,.25)] ${className}`}
+      className={`inline-flex max-w-full items-center gap-2 overflow-hidden rounded-[1.25rem] border border-hairline bg-white py-1.5 pl-1.5 pr-1.5 sm:rounded-full shadow-[0_6px_20px_-12px_rgba(5,36,57,.25)] ${className}`}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
@@ -59,23 +59,23 @@ export function NewsTicker({ className = "" }) {
     >
       <span
         key={`tag-${index}`}
-        className={`news-pop shrink-0 rounded-full px-2.5 py-1 text-[0.7rem] font-bold uppercase tracking-[0.08em] ${item.tone}`}
+        className={`news-pop hidden w-[5.4rem] shrink-0 rounded-full sm:inline-block py-1 text-center text-[0.68rem] font-bold uppercase tracking-[0.08em] ${item.tone}`}
       >
         {item.tag}
       </span>
 
       {/* Fixed-height window the headlines slide through, right to left. CSS, so it never stalls. */}
-      <span className="relative block h-6 w-[min(24rem,52vw)] overflow-hidden" aria-live="polite">
+      <span className="relative ml-2 block h-10 w-[calc(100vw-7.5rem)] max-w-[24rem] overflow-hidden sm:ml-0 sm:h-6" aria-live="polite">
         {previous !== null ? (
           <span
             key={`out-${previous}-${index}`}
-            className="news-out absolute inset-0 truncate text-[0.9rem] font-semibold leading-6 text-jet"
+            className="news-out absolute inset-0 flex items-center text-[0.84rem] font-semibold leading-5 text-jet sm:block sm:truncate sm:text-[0.9rem] sm:leading-6"
             aria-hidden
           >
             {NEWS[previous].text}
           </span>
         ) : null}
-        <span key={`in-${index}`} className="news-in absolute inset-0 truncate text-[0.9rem] font-semibold leading-6 text-jet">
+        <span key={`in-${index}`} className="news-in absolute inset-0 flex items-center text-[0.84rem] font-semibold leading-5 text-jet sm:block sm:truncate sm:text-[0.9rem] sm:leading-6">
           {item.text}
         </span>
       </span>

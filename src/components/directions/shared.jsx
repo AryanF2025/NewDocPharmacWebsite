@@ -86,16 +86,18 @@ export function ConsoleMock({ className, compact = false }) {
         className
       )}
     >
-      {/* Title bar */}
-      <div className="flex items-center justify-between border-b border-jet/8 bg-floral px-4 py-3">
-        <div className="flex items-center gap-2.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-jet/15" />
-          <span className="h-2.5 w-2.5 rounded-full bg-jet/15" />
-          <span className="h-2.5 w-2.5 rounded-full bg-jet/15" />
-          <span className="ml-3 text-[0.75rem] font-bold text-ink">DocPharma One</span>
-          <span className="text-[0.75rem] text-ink-faint">/ Bengaluru · Darkstore BLR-07</span>
+      {/* Title bar — the location and window dots drop away on phones. */}
+      <div className="flex items-center justify-between gap-3 border-b border-jet/8 bg-floral px-3.5 py-3 sm:px-4">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className="hidden gap-1.5 sm:flex">
+            <span className="h-2.5 w-2.5 rounded-full bg-jet/15" />
+            <span className="h-2.5 w-2.5 rounded-full bg-jet/15" />
+            <span className="h-2.5 w-2.5 rounded-full bg-jet/15" />
+          </span>
+          <span className="whitespace-nowrap text-[0.75rem] font-bold text-ink sm:ml-3">DocPharma One</span>
+          <span className="hidden truncate text-[0.75rem] text-ink-faint md:inline">/ Bengaluru · Darkstore BLR-07</span>
         </div>
-        <span className="flex items-center gap-1.5 rounded-full bg-brand-green/15 px-2.5 py-1 text-[0.68rem] font-bold text-[#5c7a15]">
+        <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-brand-green/15 px-2.5 py-1 text-[0.68rem] font-bold text-[#5c7a15]">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand-green" /> Live
         </span>
       </div>
@@ -103,39 +105,44 @@ export function ConsoleMock({ className, compact = false }) {
       {/* KPIs */}
       <div className="grid grid-cols-3 divide-x divide-jet/8 border-b border-jet/8">
         {[
-          ["Orders today", (1284 + Math.floor(tick / 7)).toLocaleString("en-IN")],
-          ["Avg. delivery", "24m 12s"],
-          ["SLA adherence", "93.4%"],
-        ].map(([k, v]) => (
-          <div key={k} className="px-4 py-3.5">
-            <p className="text-[0.66rem] font-semibold uppercase tracking-wider text-ink-faint">{k}</p>
-            <p className="tabular mt-1 text-[1.2rem] font-extrabold text-ink">{v}</p>
+          ["Orders", "Orders today", (1284 + Math.floor(tick / 7)).toLocaleString("en-IN")],
+          ["Avg. time", "Avg. delivery", "24m 12s"],
+          ["SLA", "SLA adherence", "93.4%"],
+        ].map(([short, long, v]) => (
+          <div key={long} className="min-w-0 px-3 py-3 sm:px-4 sm:py-3.5">
+            <p className="truncate text-[0.6rem] font-semibold uppercase tracking-wider text-ink-faint sm:text-[0.66rem]">
+              <span className="sm:hidden">{short}</span>
+              <span className="hidden sm:inline">{long}</span>
+            </p>
+            <p className="tabular mt-1 whitespace-nowrap text-[1rem] font-extrabold text-ink sm:text-[1.2rem]">{v}</p>
           </div>
         ))}
       </div>
 
-      {/* Table */}
-      <div className="px-2 py-2">
-        <div className="grid grid-cols-[1.1fr_1fr_1.2fr_0.7fr] px-3 py-2 text-[0.64rem] font-bold uppercase tracking-wider text-ink-faint">
+      {/* Table — three columns on phones, four from sm up. */}
+      <div className="px-1.5 py-2 sm:px-2">
+        <div className="grid grid-cols-[1fr_auto_3.2rem] gap-x-3 px-3 py-2 text-[0.6rem] font-bold uppercase tracking-wider text-ink-faint sm:grid-cols-[1.1fr_1fr_1.2fr_0.7fr] sm:gap-x-2 sm:text-[0.64rem]">
           <span>Order</span>
           <span className="hidden sm:block">Partner</span>
           <span>Stage</span>
-          <span className="text-right">Elapsed</span>
+          <span className="text-right">Time</span>
         </div>
         {(compact ? ORDERS.slice(0, 4) : ORDERS).map((o) => {
           const elapsed = o.stage === "Delivered" ? o.t : o.t + tick;
           return (
             <div
               key={o.id}
-              className="grid grid-cols-[1.1fr_1fr_1.2fr_0.7fr] items-center rounded-lg px-3 py-2.5 text-[0.78rem] odd:bg-floral"
+              className="grid grid-cols-[1fr_auto_3.2rem] items-center gap-x-3 rounded-lg px-3 py-2.5 text-[0.76rem] odd:bg-floral sm:grid-cols-[1.1fr_1fr_1.2fr_0.7fr] sm:gap-x-2 sm:text-[0.78rem]"
             >
-              <span>
+              <span className="min-w-0">
                 <span className="block font-bold text-ink">{o.id}</span>
-                <span className="block text-[0.68rem] text-ink-faint">{o.zone}</span>
+                <span className="block truncate text-[0.66rem] text-ink-faint">{o.zone}</span>
               </span>
-              <span className="hidden text-ink-soft sm:block">{o.partner}</span>
+              <span className="hidden truncate text-ink-soft sm:block">{o.partner}</span>
               <span>
-                <span className={clsx("rounded-full px-2 py-1 text-[0.66rem] font-bold", STAGE_STYLE[o.stage])}>{o.stage}</span>
+                <span className={clsx("whitespace-nowrap rounded-full px-2 py-1 text-[0.64rem] font-bold", STAGE_STYLE[o.stage])}>
+                  {o.stage}
+                </span>
               </span>
               <span className={clsx("tabular text-right font-bold", elapsed > 1800 ? "text-[#c2410c]" : "text-ink")}>
                 {fmt(Math.min(elapsed, 3599))}

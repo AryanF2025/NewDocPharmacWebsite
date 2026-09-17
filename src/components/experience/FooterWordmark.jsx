@@ -42,7 +42,7 @@ export function FooterWordmark() {
     <div
       ref={wrapRef}
       className="relative overflow-hidden"
-      style={{ height: Math.round(size * 0.62) }}
+      style={{ height: Math.round(size * (size < 120 ? 0.78 : 0.62)) }}
       aria-label="DocPharma"
       role="img"
     >
@@ -65,7 +65,7 @@ export function FooterWordmark() {
           </motion.span>
         ))}
       </p>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-jet to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/5 bg-gradient-to-t from-jet to-transparent" />
     </div>
   );
 }

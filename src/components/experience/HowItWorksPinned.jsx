@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useScroll, useSpring } from "motion/react";
+import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring, useTransform } from "motion/react";
 import clsx from "clsx";
 import { ConsoleMock } from "@/components/directions/shared";
 import stillVerify from "@/assets/images/still-verify.jpg";
@@ -58,7 +58,8 @@ export function HowItWorksPinned() {
 
   return (
     <section ref={sectionRef} id="how" className="bg-white">
-      <div className="mx-auto grid max-w-[84rem] gap-10 px-5 md:px-10 lg:grid-cols-2 lg:gap-20">
+      <HowItWorksMobile />
+      <div className="mx-auto hidden max-w-[84rem] gap-10 px-5 md:px-10 lg:grid lg:grid-cols-2 lg:gap-20">
         {/* ------------------------------------------ left: one screen --- */}
         <div className="pt-20 lg:sticky lg:top-0 lg:flex lg:h-[100svh] lg:flex-col lg:pb-8 lg:pt-24">
           <p className="text-[0.8rem] font-bold text-brand-blue">How it works</p>
@@ -187,5 +188,175 @@ export function HowItWorksPinned() {
         </ol>
       </div>
     </section>
+  );
+}
+
+/* ================================================================ mobile === */
+
+/** Step 1 on phones: a new-order notification sized for a narrow card. */
+function OrderReceivedMobile({ active }) {
+  return (
+    <div className="relative flex h-full w-full flex-col justify-center gap-3 overflow-hidden bg-gradient-to-br from-jet via-[#053a66] to-brand-blue-deep p-5">
+      <div key={active ? "on" : "off"} className={clsx("rounded-2xl bg-white p-4 shadow-xl", active && "how-pop")}>
+        <div className="flex items-center justify-between">
+          <span className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-ink-faint">New order</span>
+          <span className="flex items-center gap-1.5 rounded-full bg-peppermint px-2 py-0.5 text-[0.62rem] font-bold text-[#5f8a0f]">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand-green" /> Live
+          </span>
+        </div>
+        <p className="mt-1.5 text-[1.05rem] font-extrabold text-jet">DP-48216 · Rx, 3 items</p>
+        <p className="text-[0.78rem] text-ink-faint">Routed to nearest darkstore</p>
+      </div>
+      <div className="flex items-center gap-2 px-1 text-white">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-green text-[0.7rem] font-extrabold text-jet">✓</span>
+        <span className="h-[2px] flex-1 overflow-hidden rounded-full bg-white/20">
+          <span key={active ? "on" : "off"} className={clsx("block h-full origin-left bg-brand-green", active ? "how-draw" : "scale-x-0")} />
+        </span>
+        <span className="shrink-0 text-[0.78rem] font-bold">Darkstore</span>
+      </div>
+    </div>
+  );
+}
+
+const CARD_WIDTH = 0.84; // share of the viewport each card takes
+const CARD_GAP = 12; // px
+
+/**
+ * Phones: the section pins to the screen and scrolling down slides the
+ * checkpoint cards sideways, one at a time. The ‹ › buttons and progress
+ * segments move the page to that card, so the two stay in sync.
+ */
+function HowItWorksMobile() {
+  const hostRef = useRef(null);
+  const [viewport, setViewport] = useState(390);
+  const [active, setActive] = useState(0);
+  const count = STEPS.length;
+
+  useEffect(() => {
+    const update = () => setViewport(window.innerWidth);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  const { scrollYProgress } = useScroll({ target: hostRef, offset: ["start start", "end end"] });
+  const progress = useSpring(scrollYProgress, { stiffness: 160, damping: 32, mass: 0.3 });
+
+  const step = viewport * CARD_WIDTH + CARD_GAP;
+  const x = useTransform(progress, [0, 1], [0, -step * (count - 1)]);
+  const fill = useTransform(progress, [0, 1], ["0%", "100%"]);
+
+  useMotionValueEvent(scrollYProgress, "change", (p) => {
+    setActive(Math.min(count - 1, Math.max(0, Math.round(p * (count - 1)))));
+  });
+
+  // Move the page so card i sits in the middle of the strip.
+  const goTo = (i) => {
+    const host = hostRef.current;
+    if (!host) return;
+    const travel = host.offsetHeight - window.innerHeight;
+    const top = host.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: top + (travel * i) / (count - 1), behavior: "smooth" });
+  };
+
+  return (
+    // One extra screen of scroll per card after the first.
+    <div ref={hostRef} className="relative lg:hidden" style={{ height: `${100 + (count - 1) * 70}svh` }}>
+      <div className="sticky top-0 flex h-[100svh] flex-col overflow-hidden pb-5 pt-[4.5rem]">
+        <div className="px-5">
+          <p className="text-[0.78rem] font-bold text-brand-blue">How it works</p>
+          <h2 className="mt-1 text-[clamp(1.6rem,4.2svh,2.1rem)] font-extrabold leading-[1.04] tracking-[-0.04em] text-jet">
+            Every order, on the clock.
+          </h2>
+          <p className="mt-2 text-[clamp(0.88rem,2svh,1rem)] leading-snug text-ink-soft">
+            Six checkpoints, one continuous flow, tracked to the minute.
+          </p>
+        </div>
+
+        {/* Cards slide sideways with the page scroll */}
+        <div className="relative mt-[clamp(0.75rem,2.5svh,1.5rem)] min-h-0 flex-1">
+          <motion.div
+            className="absolute inset-y-0 left-0 flex items-center"
+            style={{ x, paddingLeft: `${((1 - CARD_WIDTH) / 2) * 100}vw`, gap: CARD_GAP }}
+          >
+            {STEPS.map((s, i) => {
+              const isActive = i === active;
+              return (
+                <article
+                  key={s.title}
+                  aria-label={`Checkpoint ${i + 1} of ${count}: ${s.title}`}
+                  className={clsx(
+                    "flex max-h-full shrink-0 flex-col overflow-hidden rounded-[1.75rem] border bg-white transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)]",
+                    isActive
+                      ? "scale-100 border-brand-blue/25 opacity-100 shadow-[0_24px_50px_-28px_rgba(5,36,57,.45)]"
+                      : "scale-[.93] border-hairline opacity-50"
+                  )}
+                  style={{ width: `${CARD_WIDTH * 100}vw` }}
+                >
+                  <div className="relative aspect-[4/3] max-h-[34svh] w-full overflow-hidden bg-jet">
+                    {s.media === "console" ? (
+                      <OrderReceivedMobile active={isActive} />
+                    ) : (
+                      <img
+                        src={s.media}
+                        alt=""
+                        className={clsx(
+                          "h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(.22,1,.36,1)]",
+                          isActive ? "scale-100" : "scale-[1.15]"
+                        )}
+                      />
+                    )}
+                    <span className="tabular absolute left-3 top-3 rounded-full bg-white/92 px-2.5 py-1 text-[0.72rem] font-extrabold text-jet backdrop-blur">
+                      {String(i + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
+                    </span>
+                  </div>
+                  <div key={isActive ? "on" : "off"} className={clsx("p-[clamp(0.9rem,2.4svh,1.25rem)]", isActive && "how-rise")}>
+                    <p className="tabular text-[0.76rem] font-extrabold text-brand-green">T+{s.at} min</p>
+                    <h3 className="mt-0.5 text-[clamp(1.15rem,3svh,1.35rem)] font-extrabold tracking-tight text-jet">{s.title}</h3>
+                    <p className="mt-1 text-[clamp(0.86rem,2svh,0.95rem)] leading-relaxed text-ink-soft">{s.body}</p>
+                  </div>
+                </article>
+              );
+            })}
+          </motion.div>
+        </div>
+
+        {/* Progress follows the scroll; buttons move the page */}
+        <div className="mt-3 flex items-center gap-4 px-5">
+          <div className="relative flex flex-1 gap-1.5">
+            {STEPS.map((s, i) => (
+              <button key={s.title} type="button" onClick={() => goTo(i)} aria-label={`Go to ${s.title}`} className="h-6 flex-1">
+                <span className="block h-1 rounded-full bg-jet/10" />
+              </button>
+            ))}
+            <motion.span
+              aria-hidden
+              className="pointer-events-none absolute left-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-gradient-to-r from-brand-blue to-brand-green"
+              style={{ width: fill }}
+            />
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => goTo(Math.max(0, active - 1))}
+              disabled={active === 0}
+              aria-label="Previous checkpoint"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-hairline text-[1.2rem] text-jet transition-opacity disabled:opacity-35"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              onClick={() => goTo(Math.min(count - 1, active + 1))}
+              disabled={active === count - 1}
+              aria-label="Next checkpoint"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-blue text-[1.2rem] text-white transition-opacity disabled:opacity-35"
+            >
+              ›
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

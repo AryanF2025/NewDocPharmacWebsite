@@ -58,20 +58,20 @@ export function SiteHeader() {
   return (
     <>
       <motion.header
-        className="fixed inset-x-0 top-3 z-50 px-3 md:top-4 md:px-6"
+        className="fixed inset-x-0 top-2.5 z-50 px-2.5 md:top-4 md:px-6"
         animate={{ y: hidden ? -110 : 0 }}
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
       >
         <div
           className={clsx(
-            "relative mx-auto flex h-16 max-w-[84rem] items-center justify-between rounded-full border pl-5 pr-2 transition-all duration-500",
+            "relative mx-auto flex h-14 max-w-[84rem] items-center justify-between rounded-full border pl-4 pr-1.5 transition-all duration-500 sm:h-16 sm:pl-5 sm:pr-2",
             raised || solutions
               ? "border-jet/8 bg-white/85 shadow-[0_12px_40px_-18px_rgba(5,36,57,.35)] backdrop-blur-xl"
               : "border-transparent bg-white/60 backdrop-blur-md"
           )}
         >
           <Link to="/" aria-label="DocPharma home">
-            <Logo markClass="h-7 w-7" />
+            <Logo markClass="h-6 w-6 sm:h-7 sm:w-7" className="[&>span:last-child]:text-[1.15rem] sm:[&>span:last-child]:text-[1.35rem]" />
           </Link>
 
           <nav className="hidden items-center gap-1 text-[0.9rem] font-semibold text-ink-soft lg:flex">
@@ -120,11 +120,11 @@ export function SiteHeader() {
               type="button"
               onClick={() => setMenu(true)}
               aria-label="Open menu"
-              className="flex h-12 w-12 items-center justify-center rounded-full bg-jet text-white lg:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-floral text-jet transition-colors hover:bg-viking lg:hidden"
             >
               <span className="space-y-1.5">
-                <span className="block h-0.5 w-5 rounded bg-current" />
-                <span className="block h-0.5 w-3.5 rounded bg-current" />
+                <span className="block h-[1.5px] w-[1.1rem] rounded bg-current" />
+                <span className="ml-auto block h-[1.5px] w-3 rounded bg-current" />
               </span>
             </button>
           </div>
