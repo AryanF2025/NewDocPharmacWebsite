@@ -19,8 +19,14 @@ export function CountUp({ value, suffix = "", duration = 1600, delay = 500 }) {
       };
       frame = requestAnimationFrame(tick);
     }, delay);
+
+    // Safety net: if frames never arrive (background tab, throttled renderer),
+    // the real figure still lands rather than the page showing a zero.
+    const settle = window.setTimeout(() => setShown(value), delay + duration + 400);
+
     return () => {
       window.clearTimeout(timer);
+      window.clearTimeout(settle);
       cancelAnimationFrame(frame);
     };
   }, [value, duration, delay]);

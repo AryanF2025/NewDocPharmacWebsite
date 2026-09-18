@@ -65,6 +65,7 @@ export default function App() {
             <Route path="/technology" element={<Technology />} />
             <Route path="/about" element={<About />} />
             <Route path="/partner" element={<Partner />} />
+            <Route path="/contact" element={<Partner />} />
             <Route path="/resources" element={<Resources />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
