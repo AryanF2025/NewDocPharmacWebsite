@@ -226,77 +226,108 @@ function ValuesScroll() {
 /* ------------------------------------------------------ mission & vision --- */
 
 /**
- * Mission and vision in a single screen, in our own language: real photographs
- * of the network, tinted in the brand colours, with the statement over the
- * image and the numbers we use elsewhere. Blue for where we are, green for
- * where we're going.
+ * Mission and vision, text only, in one screen.
+ *
+ * Each is an oversized outlined word — MISSION in brand blue, VISION in brand
+ * green — with the statement set solid across it. The outlines drift in
+ * opposite directions as the section passes, so the type itself carries the
+ * movement instead of an image.
  */
 function MissionVision() {
-  const panels = [
+  const ref = useRef(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const driftLeft = useTransform(scrollYProgress, [0, 1], ["-5%", "3%"]);
+  const driftRight = useTransform(scrollYProgress, [0, 1], ["5%", "-3%"]);
+
+  const rows = [
     {
       ...MISSION,
+      word: "MISSION",
       index: "01",
       stamp: "Today",
+      stroke: "#0296D9",
       dot: "bg-brand-blue",
-      tint: "from-brand-blue/85 via-brand-blue/35",
-      image: MISSION_IMAGE,
-      alt: "The DocPharma team planning city coverage on a map",
+      drift: driftLeft,
+      align: "",
     },
     {
       ...VISION,
+      word: "VISION",
       index: "02",
       stamp: "Where we're going",
+      stroke: "#8FC124",
       dot: "bg-brand-green",
-      tint: "from-brand-green/85 via-brand-green/35",
-      image: VISION_IMAGE,
-      alt: "The DocPharma founders inside a darkstore",
+      drift: driftRight,
+      align: "lg:ml-auto lg:text-right",
     },
   ];
 
   return (
     <section
       id="mission"
-      className="flex scroll-mt-24 flex-col justify-center bg-white py-20 md:py-24 lg:h-[100svh] lg:min-h-[44rem] lg:py-0"
+      ref={ref}
+      className="relative flex scroll-mt-24 flex-col justify-center overflow-hidden bg-white py-20 md:py-24 lg:h-[100svh] lg:min-h-[46rem] lg:pb-10 lg:pt-28"
     >
-      <div className="mx-auto w-full max-w-[84rem] px-5 md:px-10">
+      {/* The same faint grid the hero uses, so the section belongs to the page. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(5,36,57,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(5,36,57,.04) 1px, transparent 1px)",
+          backgroundSize: "64px 64px",
+          maskImage: "radial-gradient(ellipse 80% 70% at 50% 50%, #000 30%, transparent 78%)",
+          WebkitMaskImage: "radial-gradient(ellipse 80% 70% at 50% 50%, #000 30%, transparent 78%)",
+        }}
+      />
+
+      <div className="relative mx-auto w-full max-w-[84rem] px-5 md:px-10">
         <Reveal from="left">
           <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Mission &amp; Vision</p>
-          <h2 className="mt-2 max-w-2xl text-[clamp(1.7rem,3.2vw,2.6rem)] font-extrabold leading-[1.06] tracking-[-0.04em] text-jet">
-            Where we are, and where we&apos;re going.
-          </h2>
         </Reveal>
 
-        <div className="mt-8 grid gap-5 lg:mt-10 lg:grid-cols-2">
-          {panels.map((panel, i) => (
-            <Reveal key={panel.label} from={i === 0 ? "left" : "right"}>
-              <article className="group relative flex h-[22rem] flex-col justify-end overflow-hidden rounded-[2rem] bg-jet p-7 md:p-9 lg:h-[min(56svh,30rem)]">
-                <img
-                  src={panel.image}
-                  alt={panel.alt}
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1.6s] ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-105"
-                />
-                {/* Brand tint from the bottom, so the words always sit on colour. */}
-                <div className={clsx("absolute inset-0 bg-gradient-to-t to-transparent", panel.tint)} />
-                <div className="absolute inset-0 bg-gradient-to-t from-jet/70 via-transparent to-transparent" />
+        <div className="mt-6 space-y-12 lg:mt-6 lg:space-y-[clamp(1.25rem,4vh,3rem)]">
+          {rows.map((row) => (
+            <div key={row.word} className={clsx("relative max-w-3xl", row.align)}>
+              {/* The word, outlined and oversized. */}
+              <motion.p
+                aria-hidden
+                style={{
+                  x: reduce ? 0 : row.drift,
+                  WebkitTextStrokeWidth: "2px",
+                  WebkitTextStrokeColor: row.stroke,
+                  color: "transparent",
+                }}
+                className="select-none text-[clamp(3rem,min(8.5vw,13vh),7rem)] font-extrabold leading-[0.8] tracking-[-0.05em]"
+              >
+                {row.word}
+              </motion.p>
 
-                <span className="tabular absolute right-6 top-6 rounded-full bg-white/90 px-3 py-1.5 text-[0.75rem] font-extrabold text-jet backdrop-blur">
-                  {panel.index}
-                </span>
-
-                <div className="relative text-white">
-                  <span className="inline-flex items-center gap-2 rounded-full bg-white/92 px-3.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-jet">
-                    <span className={clsx("h-1.5 w-1.5 rounded-full", panel.dot)} />
-                    {panel.label}
+              {/* The statement, set solid across it. */}
+              <Reveal from="up" className="relative -mt-[0.38em]">
+                <div className={clsx("flex items-center gap-3", row.align && "lg:justify-end")}>
+                  <span className="inline-flex items-center gap-2 rounded-full border border-hairline bg-white px-3 py-1.5 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-ink-soft">
+                    <span className={clsx("h-1.5 w-1.5 rounded-full", row.dot)} />
+                    {row.label}
                   </span>
-
-                  <h3 className="mt-4 max-w-md text-[clamp(1.4rem,2.4vw,2.1rem)] font-extrabold leading-[1.1] tracking-[-0.03em]">
-                    {panel.title}
-                  </h3>
-                  <p className="mt-3 max-w-lg text-[clamp(0.92rem,1.9vh,1.02rem)] leading-relaxed text-white/85">{panel.body}</p>
-                  <p className="mt-4 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-white/70">{panel.stamp}</p>
+                  <span className="tabular text-[0.75rem] font-extrabold text-ink-faint">{row.index}</span>
                 </div>
-              </article>
-            </Reveal>
+
+                <h2 className="mt-3 text-[clamp(1.35rem,min(2.5vw,3.6vh),2.1rem)] font-extrabold leading-[1.1] tracking-[-0.035em] text-jet">
+                  {row.title}
+                </h2>
+                <p
+                  className={clsx(
+                    "mt-3 max-w-xl text-[clamp(0.95rem,1.9vh,1.05rem)] leading-relaxed text-ink-soft",
+                    row.align && "lg:ml-auto"
+                  )}
+                >
+                  {row.body}
+                </p>
+                <p className="mt-3 text-[0.7rem] font-bold uppercase tracking-[0.16em] text-ink-faint">{row.stamp}</p>
+              </Reveal>
+            </div>
           ))}
         </div>
       </div>
