@@ -4,7 +4,7 @@
  * that fits one screen, mission and vision, investors, and the careers CTA.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import clsx from "clsx";
 import { motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
@@ -226,30 +226,45 @@ function ValuesScroll() {
 /* ------------------------------------------------------ mission & vision --- */
 
 /**
- * Mission and vision set on a diagonal: mission sits top-left, vision drops to
- * bottom-right, and a line drawn as you scroll runs from one to the other —
- * today at one end, where we're going at the other.
+ * Mission and vision on a diagonal: mission top-left, vision bottom-right,
+ * joined by a route that draws itself as you scroll.
+ *
+ * The route is drawn into a viewBox measured from the section, so the stroke
+ * stays even — stretching a normalised viewBox distorts it into dashes.
  */
 function MissionVision() {
   const ref = useRef(null);
   const reduce = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 80%", "end 60%"] });
+  const [box, setBox] = useState({ w: 1440, h: 1200 });
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const measure = () => setBox({ w: el.offsetWidth, h: el.offsetHeight });
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 75%", "end 65%"] });
   const draw = useSpring(scrollYProgress, { stiffness: 120, damping: 28, mass: 0.4 });
 
+  // Anchors sit in the empty gap between the two blocks, never over the copy.
+  const from = { x: box.w * 0.3, y: box.h * 0.52 };
+  const to = { x: box.w * 0.62, y: box.h * 0.62 };
+  const route = `M${from.x} ${from.y} C ${from.x + (to.x - from.x) * 0.45} ${from.y + 26}, ${
+    to.x - (to.x - from.x) * 0.35
+  } ${to.y - 18}, ${to.x} ${to.y}`;
+
   const blocks = [
-    { ...MISSION, index: "01", stamp: "Today", tint: "text-brand-blue", dot: "bg-brand-blue", image: MISSION_IMAGE },
-    { ...VISION, index: "02", stamp: "Where we're going", tint: "text-brand-green", dot: "bg-brand-green", image: VISION_IMAGE },
+    { ...MISSION, index: "01", stamp: "Today", dot: "bg-brand-blue", tint: "text-brand-blue", image: MISSION_IMAGE, alt: "The DocPharma team planning city coverage" },
+    { ...VISION, index: "02", stamp: "Where we're going", dot: "bg-brand-green", tint: "text-brand-green", image: VISION_IMAGE, alt: "The DocPharma team inside a darkstore" },
   ];
 
   return (
     <section id="mission" ref={ref} className="relative scroll-mt-24 overflow-hidden bg-floral py-20 md:py-28">
-      {/* The diagonal itself: from the mission block down to the vision block. */}
-      <svg
-        aria-hidden
-        className="pointer-events-none absolute inset-0 hidden h-full w-full lg:block"
-        viewBox="0 0 100 100"
-        preserveAspectRatio="none"
-      >
+      <svg aria-hidden className="pointer-events-none absolute inset-0 hidden h-full w-full lg:block" viewBox={`0 0 ${box.w} ${box.h}`}>
         <defs>
           <linearGradient id="mv-line" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="#0296D9" />
@@ -257,58 +272,55 @@ function MissionVision() {
           </linearGradient>
         </defs>
         <motion.path
-          d="M26 53 C 36 58, 44 60, 52 61.5"
+          d={route}
           fill="none"
           stroke="url(#mv-line)"
-          strokeWidth="2"
+          strokeWidth="2.5"
           strokeLinecap="round"
-          vectorEffect="non-scaling-stroke"
           // Drawn by scroll, but already complete for anyone who asked for less motion.
           style={{ pathLength: reduce ? 1 : draw }}
         />
+        <circle cx={from.x} cy={from.y} r="7" fill="#0296D9" />
+        <circle cx={from.x} cy={from.y} r="13" fill="#0296D9" opacity="0.18" />
+        <circle cx={to.x} cy={to.y} r="7" fill="#8FC124" />
+        <circle cx={to.x} cy={to.y} r="13" fill="#8FC124" opacity="0.18" />
       </svg>
-
-      {/* Where the route starts and where it lands. */}
-      <span aria-hidden className="pointer-events-none absolute left-[26%] top-[54%] hidden h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-blue ring-4 ring-brand-blue/20 lg:block" />
-      <span aria-hidden className="pointer-events-none absolute left-[52%] top-[61.5%] hidden h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-green ring-4 ring-brand-green/20 lg:block" />
 
       <div className="relative mx-auto max-w-[84rem] px-5 md:px-10">
         <Reveal from="left">
           <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Mission &amp; Vision</p>
         </Reveal>
 
-        <div className="mt-10 space-y-20 lg:mt-14 lg:space-y-0">
+        <div className="mt-10 space-y-16 lg:mt-14 lg:space-y-0">
           {blocks.map((block, i) => (
-            <div
-              key={block.label}
-              className={clsx(
-                "relative lg:w-[48%]",
-                // Top-left, then dropped to the bottom-right.
-                i === 1 && "lg:ml-auto lg:mt-40"
-              )}
-            >
+            <div key={block.label} className={clsx("relative lg:w-[54%]", i === 1 && "lg:ml-auto lg:mt-32")}>
               <Reveal from={i === 0 ? "left" : "right"}>
-                <div className="flex items-start gap-5">
-                  <span className="tabular hidden text-[0.85rem] font-extrabold text-ink-faint sm:block">{block.index}</span>
-                  <div className="min-w-0">
-                    <span className="inline-flex items-center gap-2 rounded-full border border-hairline bg-white px-3.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.16em] text-ink-soft">
+                {/* The photo leads, at a size worth looking at. */}
+                <figure className="group relative aspect-[16/10] overflow-hidden rounded-[1.75rem] bg-jet">
+                  <img
+                    src={block.image}
+                    alt={block.alt}
+                    className="h-full w-full object-cover transition-transform duration-[1.6s] ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-jet/70 via-transparent to-transparent" />
+                  <figcaption className="absolute inset-x-5 bottom-5 flex items-center justify-between gap-3">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-white/92 px-3.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-jet backdrop-blur">
                       <span className={clsx("h-1.5 w-1.5 rounded-full", block.dot)} />
                       {block.label}
                     </span>
+                    <span className="rounded-full bg-jet/70 px-3 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-white backdrop-blur">
+                      {block.stamp}
+                    </span>
+                  </figcaption>
+                  <span className="tabular absolute right-5 top-5 rounded-full bg-white/92 px-3 py-1.5 text-[0.75rem] font-extrabold text-jet backdrop-blur">
+                    {block.index}
+                  </span>
+                </figure>
 
-                    <h2 className="mt-5 text-[clamp(1.9rem,3.6vw,3.1rem)] font-extrabold leading-[1.06] tracking-[-0.04em] text-jet">
-                      {block.title}
-                    </h2>
-                    <p className="mt-5 max-w-lg text-[1.05rem] leading-relaxed text-ink-soft">{block.body}</p>
-
-                    <div className="mt-7 flex items-center gap-4">
-                      <span className="relative h-20 w-28 shrink-0 overflow-hidden rounded-2xl bg-jet">
-                        <img src={block.image} alt="" className="h-full w-full object-cover" />
-                      </span>
-                      <span className={clsx("text-[0.8rem] font-bold uppercase tracking-[0.14em]", block.tint)}>{block.stamp}</span>
-                    </div>
-                  </div>
-                </div>
+                <h2 className="mt-7 text-[clamp(1.8rem,3.2vw,2.8rem)] font-extrabold leading-[1.08] tracking-[-0.04em] text-jet">
+                  {block.title}
+                </h2>
+                <p className="mt-4 max-w-xl text-[1.05rem] leading-relaxed text-ink-soft">{block.body}</p>
               </Reveal>
             </div>
           ))}
