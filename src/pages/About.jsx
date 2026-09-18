@@ -226,104 +226,101 @@ function ValuesScroll() {
 /* ------------------------------------------------------ mission & vision --- */
 
 /**
- * Mission and vision on a diagonal: mission top-left, vision bottom-right,
- * joined by a route that draws itself as you scroll.
+ * Mission and vision as a zig-zag: the mission's photo sits left with its copy
+ * right, the vision mirrors it, so the eye travels top-left to bottom-right.
  *
- * The route is drawn into a viewBox measured from the section, so the stroke
- * stays even — stretching a normalised viewBox distorts it into dashes.
+ * A single centre rail joins the two rows and fills as you scroll — a straight
+ * line between fixed nodes, rather than a curve floating over the layout.
  */
 function MissionVision() {
   const ref = useRef(null);
   const reduce = useReducedMotion();
-  const [box, setBox] = useState({ w: 1440, h: 1200 });
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 70%", "end 70%"] });
+  const railHeight = useTransform(useSpring(scrollYProgress, { stiffness: 120, damping: 28 }), [0, 1], ["0%", "100%"]);
 
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return undefined;
-    const measure = () => setBox({ w: el.offsetWidth, h: el.offsetHeight });
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 75%", "end 65%"] });
-  const draw = useSpring(scrollYProgress, { stiffness: 120, damping: 28, mass: 0.4 });
-
-  // Anchors sit in the empty gap between the two blocks, never over the copy.
-  const from = { x: box.w * 0.3, y: box.h * 0.52 };
-  const to = { x: box.w * 0.62, y: box.h * 0.62 };
-  const route = `M${from.x} ${from.y} C ${from.x + (to.x - from.x) * 0.45} ${from.y + 26}, ${
-    to.x - (to.x - from.x) * 0.35
-  } ${to.y - 18}, ${to.x} ${to.y}`;
-
-  const blocks = [
-    { ...MISSION, index: "01", stamp: "Today", dot: "bg-brand-blue", tint: "text-brand-blue", image: MISSION_IMAGE, alt: "The DocPharma team planning city coverage" },
-    { ...VISION, index: "02", stamp: "Where we're going", dot: "bg-brand-green", tint: "text-brand-green", image: VISION_IMAGE, alt: "The DocPharma team inside a darkstore" },
+  const rows = [
+    {
+      ...MISSION,
+      index: "01",
+      stamp: "Today",
+      dot: "bg-brand-blue",
+      image: MISSION_IMAGE,
+      alt: "The DocPharma team planning city coverage on a map",
+    },
+    {
+      ...VISION,
+      index: "02",
+      stamp: "Where we're going",
+      dot: "bg-brand-green",
+      image: VISION_IMAGE,
+      alt: "The DocPharma founders inside a darkstore",
+    },
   ];
 
   return (
     <section id="mission" ref={ref} className="relative scroll-mt-24 overflow-hidden bg-floral py-20 md:py-28">
-      <svg aria-hidden className="pointer-events-none absolute inset-0 hidden h-full w-full lg:block" viewBox={`0 0 ${box.w} ${box.h}`}>
-        <defs>
-          <linearGradient id="mv-line" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#0296D9" />
-            <stop offset="100%" stopColor="#8FC124" />
-          </linearGradient>
-        </defs>
-        <motion.path
-          d={route}
-          fill="none"
-          stroke="url(#mv-line)"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          // Drawn by scroll, but already complete for anyone who asked for less motion.
-          style={{ pathLength: reduce ? 1 : draw }}
-        />
-        <circle cx={from.x} cy={from.y} r="7" fill="#0296D9" />
-        <circle cx={from.x} cy={from.y} r="13" fill="#0296D9" opacity="0.18" />
-        <circle cx={to.x} cy={to.y} r="7" fill="#8FC124" />
-        <circle cx={to.x} cy={to.y} r="13" fill="#8FC124" opacity="0.18" />
-      </svg>
-
       <div className="relative mx-auto max-w-[84rem] px-5 md:px-10">
         <Reveal from="left">
           <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Mission &amp; Vision</p>
+          <h2 className="mt-3 max-w-2xl text-[clamp(1.8rem,3.4vw,2.8rem)] font-extrabold leading-[1.06] tracking-[-0.04em] text-jet">
+            Where we are, and where we&apos;re going.
+          </h2>
         </Reveal>
 
-        <div className="mt-10 space-y-16 lg:mt-14 lg:space-y-0">
-          {blocks.map((block, i) => (
-            <div key={block.label} className={clsx("relative lg:w-[54%]", i === 1 && "lg:ml-auto lg:mt-32")}>
-              <Reveal from={i === 0 ? "left" : "right"}>
-                {/* The photo leads, at a size worth looking at. */}
-                <figure className="group relative aspect-[16/10] overflow-hidden rounded-[1.75rem] bg-jet">
-                  <img
-                    src={block.image}
-                    alt={block.alt}
-                    className="h-full w-full object-cover transition-transform duration-[1.6s] ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-jet/70 via-transparent to-transparent" />
-                  <figcaption className="absolute inset-x-5 bottom-5 flex items-center justify-between gap-3">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-white/92 px-3.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-jet backdrop-blur">
-                      <span className={clsx("h-1.5 w-1.5 rounded-full", block.dot)} />
-                      {block.label}
-                    </span>
-                    <span className="rounded-full bg-jet/70 px-3 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-white backdrop-blur">
-                      {block.stamp}
-                    </span>
-                  </figcaption>
-                  <span className="tabular absolute right-5 top-5 rounded-full bg-white/92 px-3 py-1.5 text-[0.75rem] font-extrabold text-jet backdrop-blur">
-                    {block.index}
-                  </span>
-                </figure>
+        <div className="relative mt-14">
+          {/* The rail between the two rows, filling with the scroll. */}
+          <div aria-hidden className="pointer-events-none absolute inset-y-6 left-1/2 hidden w-0.5 -translate-x-1/2 bg-jet/8 lg:block">
+            <motion.div
+              className="w-full rounded-full bg-gradient-to-b from-brand-blue to-brand-green"
+              style={{ height: reduce ? "100%" : railHeight }}
+            />
+          </div>
 
-                <h2 className="mt-7 text-[clamp(1.8rem,3.2vw,2.8rem)] font-extrabold leading-[1.08] tracking-[-0.04em] text-jet">
-                  {block.title}
-                </h2>
-                <p className="mt-4 max-w-xl text-[1.05rem] leading-relaxed text-ink-soft">{block.body}</p>
-              </Reveal>
-            </div>
-          ))}
+          <div className="space-y-16 lg:space-y-24">
+            {rows.map((row, i) => {
+              const photoFirst = i === 0;
+              return (
+                <div key={row.label} className="relative grid items-center gap-8 lg:grid-cols-2 lg:gap-16">
+                  {/* Node where the row meets the rail. */}
+                  <span
+                    aria-hidden
+                    className={clsx(
+                      "absolute left-1/2 top-1/2 hidden h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full ring-4 ring-floral lg:block",
+                      row.dot
+                    )}
+                  />
+
+                  <Reveal from={photoFirst ? "left" : "right"} className={photoFirst ? "" : "lg:order-last"}>
+                    <figure className="group relative aspect-[16/11] overflow-hidden rounded-[1.75rem] bg-jet">
+                      <img
+                        src={row.image}
+                        alt={row.alt}
+                        className="h-full w-full object-cover transition-transform duration-[1.6s] ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-jet/65 via-transparent to-transparent" />
+                      <figcaption className="absolute inset-x-5 bottom-5 flex items-center justify-between gap-3">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-white/92 px-3.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-jet backdrop-blur">
+                          <span className={clsx("h-1.5 w-1.5 rounded-full", row.dot)} />
+                          {row.label}
+                        </span>
+                        <span className="rounded-full bg-jet/70 px-3 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-white backdrop-blur">
+                          {row.stamp}
+                        </span>
+                      </figcaption>
+                    </figure>
+                  </Reveal>
+
+                  <Reveal from={photoFirst ? "right" : "left"} className={photoFirst ? "lg:pl-6" : "lg:pr-6"}>
+                    <span className="tabular text-[0.85rem] font-extrabold text-ink-faint">{row.index}</span>
+                    <h3 className="mt-3 text-[clamp(1.7rem,3vw,2.5rem)] font-extrabold leading-[1.08] tracking-[-0.04em] text-jet">
+                      {row.title}
+                    </h3>
+                    <p className="mt-5 max-w-lg text-[1.05rem] leading-relaxed text-ink-soft">{row.body}</p>
+                  </Reveal>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>
