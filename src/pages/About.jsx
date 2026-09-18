@@ -226,119 +226,75 @@ function ValuesScroll() {
 /* ------------------------------------------------------ mission & vision --- */
 
 /**
- * A glossy faceted emblem, drawn rather than rendered: stacked cubes for the
- * mission (built, block by block) and a cut gem for the vision (what it
- * becomes). Layered gradients and a specular highlight do the 3D work.
- */
-function Emblem({ kind }) {
-  const light = kind === "mission" ? "#8ED8FF" : "#D6F5A3";
-  const mid = kind === "mission" ? "#0296D9" : "#8FC124";
-  const dark = kind === "mission" ? "#04527A" : "#4C6B12";
-
-  return (
-    <span
-      aria-hidden
-      className="pointer-events-none absolute -left-2 -top-10 h-28 w-28 transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:-translate-y-2 md:-left-3 md:-top-12 md:h-32 md:w-32"
-      style={{ filter: `drop-shadow(0 18px 30px ${mid}66)` }}
-    >
-      <svg viewBox="0 0 120 120" className="h-full w-full">
-        <defs>
-          <linearGradient id={`face-top-${kind}`} x1="0" y1="0" x2="0.6" y2="1">
-            <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="100%" stopColor={light} />
-          </linearGradient>
-          <linearGradient id={`face-left-${kind}`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor={light} />
-            <stop offset="100%" stopColor={mid} />
-          </linearGradient>
-          <linearGradient id={`face-right-${kind}`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor={mid} />
-            <stop offset="100%" stopColor={dark} />
-          </linearGradient>
-        </defs>
-
-        {kind === "mission" ? (
-          // Three cubes: the network, assembled piece by piece.
-          <g>
-            {[
-              { x: 30, y: 46 },
-              { x: 60, y: 62 },
-              { x: 60, y: 30 },
-            ].map((c, i) => (
-              <g key={i} transform={`translate(${c.x} ${c.y})`}>
-                <path d="M0 0 L26 -15 L52 0 L26 15 Z" fill={`url(#face-top-${kind})`} />
-                <path d="M0 0 L26 15 L26 45 L0 30 Z" fill={`url(#face-left-${kind})`} />
-                <path d="M52 0 L26 15 L26 45 L52 30 Z" fill={`url(#face-right-${kind})`} />
-              </g>
-            ))}
-            <path d="M30 46 L56 31 L60 33 L34 48 Z" fill="#ffffff" opacity="0.5" />
-          </g>
-        ) : (
-          // A cut gem: many facets, one clear shape.
-          <g transform="translate(60 60)">
-            <path d="M0 -46 L30 -6 L0 46 Z" fill={`url(#face-left-${kind})`} />
-            <path d="M0 -46 L-30 -6 L0 46 Z" fill={`url(#face-right-${kind})`} />
-            <path d="M0 -46 L30 -6 L0 4 Z" fill={`url(#face-top-${kind})`} opacity="0.95" />
-            <path d="M0 -46 L-30 -6 L0 4 Z" fill="#ffffff" opacity="0.45" />
-            <path d="M-30 -6 L0 4 L30 -6 L0 46 Z" fill={dark} opacity="0.25" />
-          </g>
-        )}
-      </svg>
-    </span>
-  );
-}
-
-/**
- * Mission and vision as two lit cards on a near-black ground: a centred
- * statement above, then a tall card each — mission in brand blue, vision in
- * brand green — with the emblem overhanging the top-left corner.
+ * Mission and vision in a single screen, in our own language: real photographs
+ * of the network, tinted in the brand colours, with the statement over the
+ * image and the numbers we use elsewhere. Blue for where we are, green for
+ * where we're going.
  */
 function MissionVision() {
-  const cards = [
-    { ...MISSION, kind: "mission" },
-    { ...VISION, kind: "vision" },
+  const panels = [
+    {
+      ...MISSION,
+      index: "01",
+      stamp: "Today",
+      dot: "bg-brand-blue",
+      tint: "from-brand-blue/85 via-brand-blue/35",
+      image: MISSION_IMAGE,
+      alt: "The DocPharma team planning city coverage on a map",
+    },
+    {
+      ...VISION,
+      index: "02",
+      stamp: "Where we're going",
+      dot: "bg-brand-green",
+      tint: "from-brand-green/85 via-brand-green/35",
+      image: VISION_IMAGE,
+      alt: "The DocPharma founders inside a darkstore",
+    },
   ];
 
   return (
-    <section id="mission" className="relative scroll-mt-24 overflow-hidden bg-[#050d16] py-24 text-white md:py-32">
-      {/* Ambient wash, the way light pools in the reference. */}
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-40 -top-20 h-[38rem] w-[38rem] rounded-full bg-brand-green/15 blur-[150px]" />
-        <div className="absolute -right-40 bottom-0 h-[36rem] w-[36rem] rounded-full bg-brand-blue/20 blur-[150px]" />
-      </div>
-
-      <div className="relative mx-auto max-w-[80rem] px-5 md:px-10">
-        <Reveal from="up" className="text-center">
-          <h2 className="mx-auto max-w-3xl text-[clamp(2.1rem,4.6vw,3.6rem)] font-extrabold leading-[1.08] tracking-[-0.035em]">
-            We&apos;re building <span className="text-brand-green">access.</span>
-            <br />
-            That&apos;s the whole job.
+    <section
+      id="mission"
+      className="flex scroll-mt-24 flex-col justify-center bg-white py-20 md:py-24 lg:h-[100svh] lg:min-h-[44rem] lg:py-0"
+    >
+      <div className="mx-auto w-full max-w-[84rem] px-5 md:px-10">
+        <Reveal from="left">
+          <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Mission &amp; Vision</p>
+          <h2 className="mt-2 max-w-2xl text-[clamp(1.7rem,3.2vw,2.6rem)] font-extrabold leading-[1.06] tracking-[-0.04em] text-jet">
+            Where we are, and where we&apos;re going.
           </h2>
-          <p className="mx-auto mt-6 max-w-2xl text-[1.02rem] leading-relaxed text-white/60">
-            A connected network that brings health, wellness and healthcare products closer to the people who need them —
-            with inventory near demand, technology across every step, and our own fleet on the last mile.
-          </p>
         </Reveal>
 
-        <div className="mt-28 grid gap-8 md:grid-cols-2 md:gap-10">
-          {cards.map((card, i) => (
-            <Reveal key={card.label} from={i === 0 ? "left" : "right"}>
-              <article
-                className={clsx(
-                  "group relative flex min-h-[26rem] flex-col rounded-[2rem] border border-white/12 p-8 pt-24 transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1.5 md:min-h-[30rem] md:p-10 md:pt-28",
-                  card.kind === "mission"
-                    ? "bg-[linear-gradient(145deg,rgba(255,255,255,0.05)_0%,rgba(2,150,217,0.10)_40%,rgba(2,150,217,0.55)_100%)]"
-                    : "bg-[linear-gradient(145deg,rgba(255,255,255,0.05)_0%,rgba(143,193,36,0.10)_40%,rgba(143,193,36,0.50)_100%)]"
-                )}
-                style={{ boxShadow: "0 40px 80px -50px rgba(0,0,0,.9)" }}
-              >
-                <Emblem kind={card.kind} />
+        <div className="mt-8 grid gap-5 lg:mt-10 lg:grid-cols-2">
+          {panels.map((panel, i) => (
+            <Reveal key={panel.label} from={i === 0 ? "left" : "right"}>
+              <article className="group relative flex h-[22rem] flex-col justify-end overflow-hidden rounded-[2rem] bg-jet p-7 md:p-9 lg:h-[min(56svh,30rem)]">
+                <img
+                  src={panel.image}
+                  alt={panel.alt}
+                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1.6s] ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-105"
+                />
+                {/* Brand tint from the bottom, so the words always sit on colour. */}
+                <div className={clsx("absolute inset-0 bg-gradient-to-t to-transparent", panel.tint)} />
+                <div className="absolute inset-0 bg-gradient-to-t from-jet/70 via-transparent to-transparent" />
 
-                <p className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-white/55">{card.label}</p>
-                <h3 className="mt-4 max-w-sm text-[clamp(1.35rem,2.2vw,1.9rem)] font-extrabold leading-[1.15] tracking-[-0.02em]">
-                  {card.title}
-                </h3>
-                <p className="mt-5 max-w-md text-[0.98rem] leading-relaxed text-white/70">{card.body}</p>
+                <span className="tabular absolute right-6 top-6 rounded-full bg-white/90 px-3 py-1.5 text-[0.75rem] font-extrabold text-jet backdrop-blur">
+                  {panel.index}
+                </span>
+
+                <div className="relative text-white">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-white/92 px-3.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-jet">
+                    <span className={clsx("h-1.5 w-1.5 rounded-full", panel.dot)} />
+                    {panel.label}
+                  </span>
+
+                  <h3 className="mt-4 max-w-md text-[clamp(1.4rem,2.4vw,2.1rem)] font-extrabold leading-[1.1] tracking-[-0.03em]">
+                    {panel.title}
+                  </h3>
+                  <p className="mt-3 max-w-lg text-[clamp(0.92rem,1.9vh,1.02rem)] leading-relaxed text-white/85">{panel.body}</p>
+                  <p className="mt-4 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-white/70">{panel.stamp}</p>
+                </div>
               </article>
             </Reveal>
           ))}
