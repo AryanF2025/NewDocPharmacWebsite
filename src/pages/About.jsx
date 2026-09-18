@@ -267,7 +267,7 @@ function MissionVision() {
     <section
       id="mission"
       ref={ref}
-      className="relative flex scroll-mt-24 flex-col justify-center overflow-hidden bg-white py-20 md:py-24 lg:h-[100svh] lg:min-h-[46rem] lg:pb-10 lg:pt-28"
+      className="relative flex scroll-mt-24 flex-col justify-center overflow-hidden bg-jet py-20 text-white md:py-24 lg:h-[100svh] lg:min-h-[46rem] lg:pb-10 lg:pt-28"
     >
       {/* The same faint grid the hero uses, so the section belongs to the page. */}
       <div
@@ -275,7 +275,7 @@ function MissionVision() {
         className="pointer-events-none absolute inset-0"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(5,36,57,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(5,36,57,.04) 1px, transparent 1px)",
+            "linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px)",
           backgroundSize: "64px 64px",
           maskImage: "radial-gradient(ellipse 80% 70% at 50% 50%, #000 30%, transparent 78%)",
           WebkitMaskImage: "radial-gradient(ellipse 80% 70% at 50% 50%, #000 30%, transparent 78%)",
@@ -284,48 +284,62 @@ function MissionVision() {
 
       <div className="relative mx-auto w-full max-w-[84rem] px-5 md:px-10">
         <Reveal from="left">
-          <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Mission &amp; Vision</p>
+          <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-green">Mission &amp; Vision</p>
         </Reveal>
 
         <div className="mt-6 space-y-12 lg:mt-6 lg:space-y-[clamp(1.25rem,4vh,3rem)]">
           {rows.map((row) => (
-            <div key={row.word} className={clsx("relative max-w-3xl", row.align)}>
-              {/* The word, outlined and oversized. */}
+            <div key={row.word} className={clsx("group relative max-w-3xl", row.align)}>
+              {/* Outlined by default; a solid copy sweeps across it on hover. */}
               <motion.p
                 aria-hidden
-                style={{
-                  x: reduce ? 0 : row.drift,
-                  WebkitTextStrokeWidth: "2px",
-                  WebkitTextStrokeColor: row.stroke,
-                  color: "transparent",
-                }}
-                className="select-none text-[clamp(3rem,min(8.5vw,13vh),7rem)] font-extrabold leading-[0.8] tracking-[-0.05em]"
+                style={{ x: reduce ? 0 : row.drift }}
+                className="relative select-none text-[clamp(3rem,min(8.5vw,13vh),7rem)] font-extrabold leading-[0.8] tracking-[-0.05em]"
               >
-                {row.word}
+                <span
+                  className="block"
+                  style={{ WebkitTextStrokeWidth: "2px", WebkitTextStrokeColor: row.stroke, color: "transparent" }}
+                >
+                  {row.word}
+                </span>
+                <span
+                  className={clsx(
+                    "absolute inset-0 block overflow-hidden whitespace-nowrap transition-[width] duration-700 ease-[cubic-bezier(.22,1,.36,1)]",
+                    // Touch devices have no hover, so the fill simply stays on.
+                    "w-0 group-hover:w-full [@media(hover:none)]:w-full",
+                    row.align && "ml-auto"
+                  )}
+                  style={{ color: row.stroke }}
+                >
+                  {row.word}
+                </span>
               </motion.p>
 
               {/* The statement, set solid across it. */}
               <Reveal from="up" className="relative -mt-[0.38em]">
                 <div className={clsx("flex items-center gap-3", row.align && "lg:justify-end")}>
-                  <span className="inline-flex items-center gap-2 rounded-full border border-hairline bg-white px-3 py-1.5 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-ink-soft">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-white/80 backdrop-blur">
                     <span className={clsx("h-1.5 w-1.5 rounded-full", row.dot)} />
                     {row.label}
                   </span>
-                  <span className="tabular text-[0.75rem] font-extrabold text-ink-faint">{row.index}</span>
+                  <span className="tabular text-[0.75rem] font-extrabold text-white/45">{row.index}</span>
                 </div>
 
-                <h2 className="mt-3 text-[clamp(1.35rem,min(2.5vw,3.6vh),2.1rem)] font-extrabold leading-[1.1] tracking-[-0.035em] text-jet">
+                <h2
+                  className="mt-3 text-[clamp(1.35rem,min(2.5vw,3.6vh),2.1rem)] font-extrabold leading-[1.1] tracking-[-0.035em] text-white transition-colors duration-500 group-hover:text-[var(--row-tint)]"
+                  style={{ "--row-tint": row.stroke }}
+                >
                   {row.title}
                 </h2>
                 <p
                   className={clsx(
-                    "mt-3 max-w-xl text-[clamp(0.95rem,1.9vh,1.05rem)] leading-relaxed text-ink-soft",
+                    "mt-3 max-w-xl text-[clamp(0.95rem,1.9vh,1.05rem)] leading-relaxed text-white/65",
                     row.align && "lg:ml-auto"
                   )}
                 >
                   {row.body}
                 </p>
-                <p className="mt-3 text-[0.7rem] font-bold uppercase tracking-[0.16em] text-ink-faint">{row.stamp}</p>
+                <p className="mt-3 text-[0.7rem] font-bold uppercase tracking-[0.16em] text-white/45">{row.stamp}</p>
               </Reveal>
             </div>
           ))}
@@ -358,7 +372,7 @@ function Leadership() {
   const member = open === null ? null : LEADERSHIP.members[open];
 
   return (
-    <section id="leadership" className="flex scroll-mt-4 flex-col justify-center bg-white py-20 md:py-24 lg:h-[100svh] lg:min-h-[46rem] lg:py-0">
+    <section id="leadership" className="flex scroll-mt-4 flex-col justify-center bg-floral py-20 md:py-24 lg:h-[100svh] lg:min-h-[46rem] lg:py-0">
       <div className="mx-auto w-full max-w-[84rem] px-5 md:px-10">
         <Reveal from="left">
           <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">{LEADERSHIP.title}</p>
@@ -509,7 +523,7 @@ export default function About() {
       <Leadership />
 
       {/* --------------------------------------------------- investors --- */}
-      <section id="investors" className="scroll-mt-24 bg-floral py-20 md:py-24">
+      <section id="investors" className="scroll-mt-24 bg-white py-20 md:py-24">
         <div className="mx-auto max-w-[84rem] px-5 text-center md:px-10">
           <Reveal from="up">
             <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">{INVESTORS.title}</p>
@@ -521,7 +535,7 @@ export default function About() {
           <div className="mt-12 grid grid-cols-2 gap-5 md:grid-cols-4">
             {INVESTORS.logos.map((logo, i) => (
               <Reveal key={logo.name} from="up" delay={i * 0.08}>
-                <div className="flex h-36 items-center justify-center rounded-3xl border border-hairline bg-white px-8 transition-all duration-500 hover:-translate-y-1 hover:border-brand-blue/30 hover:shadow-[0_24px_50px_-30px_rgba(5,36,57,.4)]">
+                <div className="flex h-36 items-center justify-center rounded-3xl border border-hairline bg-floral px-8 transition-all duration-500 hover:-translate-y-1 hover:border-brand-blue/30 hover:shadow-[0_24px_50px_-30px_rgba(5,36,57,.4)]">
                   <LogoImg src={logo.src} alt={logo.name} area={9000} maxWidth={220} maxHeight={84} />
                 </div>
               </Reveal>
