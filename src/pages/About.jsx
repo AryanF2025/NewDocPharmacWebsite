@@ -226,101 +226,122 @@ function ValuesScroll() {
 /* ------------------------------------------------------ mission & vision --- */
 
 /**
- * Mission and vision as a zig-zag: the mission's photo sits left with its copy
- * right, the vision mirrors it, so the eye travels top-left to bottom-right.
- *
- * A single centre rail joins the two rows and fills as you scroll — a straight
- * line between fixed nodes, rather than a curve floating over the layout.
+ * A glossy faceted emblem, drawn rather than rendered: stacked cubes for the
+ * mission (built, block by block) and a cut gem for the vision (what it
+ * becomes). Layered gradients and a specular highlight do the 3D work.
+ */
+function Emblem({ kind }) {
+  const light = kind === "mission" ? "#8ED8FF" : "#D6F5A3";
+  const mid = kind === "mission" ? "#0296D9" : "#8FC124";
+  const dark = kind === "mission" ? "#04527A" : "#4C6B12";
+
+  return (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute -left-2 -top-10 h-28 w-28 transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:-translate-y-2 md:-left-3 md:-top-12 md:h-32 md:w-32"
+      style={{ filter: `drop-shadow(0 18px 30px ${mid}66)` }}
+    >
+      <svg viewBox="0 0 120 120" className="h-full w-full">
+        <defs>
+          <linearGradient id={`face-top-${kind}`} x1="0" y1="0" x2="0.6" y2="1">
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="100%" stopColor={light} />
+          </linearGradient>
+          <linearGradient id={`face-left-${kind}`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor={light} />
+            <stop offset="100%" stopColor={mid} />
+          </linearGradient>
+          <linearGradient id={`face-right-${kind}`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor={mid} />
+            <stop offset="100%" stopColor={dark} />
+          </linearGradient>
+        </defs>
+
+        {kind === "mission" ? (
+          // Three cubes: the network, assembled piece by piece.
+          <g>
+            {[
+              { x: 30, y: 46 },
+              { x: 60, y: 62 },
+              { x: 60, y: 30 },
+            ].map((c, i) => (
+              <g key={i} transform={`translate(${c.x} ${c.y})`}>
+                <path d="M0 0 L26 -15 L52 0 L26 15 Z" fill={`url(#face-top-${kind})`} />
+                <path d="M0 0 L26 15 L26 45 L0 30 Z" fill={`url(#face-left-${kind})`} />
+                <path d="M52 0 L26 15 L26 45 L52 30 Z" fill={`url(#face-right-${kind})`} />
+              </g>
+            ))}
+            <path d="M30 46 L56 31 L60 33 L34 48 Z" fill="#ffffff" opacity="0.5" />
+          </g>
+        ) : (
+          // A cut gem: many facets, one clear shape.
+          <g transform="translate(60 60)">
+            <path d="M0 -46 L30 -6 L0 46 Z" fill={`url(#face-left-${kind})`} />
+            <path d="M0 -46 L-30 -6 L0 46 Z" fill={`url(#face-right-${kind})`} />
+            <path d="M0 -46 L30 -6 L0 4 Z" fill={`url(#face-top-${kind})`} opacity="0.95" />
+            <path d="M0 -46 L-30 -6 L0 4 Z" fill="#ffffff" opacity="0.45" />
+            <path d="M-30 -6 L0 4 L30 -6 L0 46 Z" fill={dark} opacity="0.25" />
+          </g>
+        )}
+      </svg>
+    </span>
+  );
+}
+
+/**
+ * Mission and vision as two lit cards on a near-black ground: a centred
+ * statement above, then a tall card each — mission in brand blue, vision in
+ * brand green — with the emblem overhanging the top-left corner.
  */
 function MissionVision() {
-  const ref = useRef(null);
-  const reduce = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 70%", "end 70%"] });
-  const railHeight = useTransform(useSpring(scrollYProgress, { stiffness: 120, damping: 28 }), [0, 1], ["0%", "100%"]);
-
-  const rows = [
-    {
-      ...MISSION,
-      index: "01",
-      stamp: "Today",
-      dot: "bg-brand-blue",
-      image: MISSION_IMAGE,
-      alt: "The DocPharma team planning city coverage on a map",
-    },
-    {
-      ...VISION,
-      index: "02",
-      stamp: "Where we're going",
-      dot: "bg-brand-green",
-      image: VISION_IMAGE,
-      alt: "The DocPharma founders inside a darkstore",
-    },
+  const cards = [
+    { ...MISSION, kind: "mission" },
+    { ...VISION, kind: "vision" },
   ];
 
   return (
-    <section id="mission" ref={ref} className="relative scroll-mt-24 overflow-hidden bg-floral py-20 md:py-28">
-      <div className="relative mx-auto max-w-[84rem] px-5 md:px-10">
-        <Reveal from="left">
-          <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Mission &amp; Vision</p>
-          <h2 className="mt-3 max-w-2xl text-[clamp(1.8rem,3.4vw,2.8rem)] font-extrabold leading-[1.06] tracking-[-0.04em] text-jet">
-            Where we are, and where we&apos;re going.
+    <section id="mission" className="relative scroll-mt-24 overflow-hidden bg-[#050d16] py-24 text-white md:py-32">
+      {/* Ambient wash, the way light pools in the reference. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="absolute -left-40 -top-20 h-[38rem] w-[38rem] rounded-full bg-brand-green/15 blur-[150px]" />
+        <div className="absolute -right-40 bottom-0 h-[36rem] w-[36rem] rounded-full bg-brand-blue/20 blur-[150px]" />
+      </div>
+
+      <div className="relative mx-auto max-w-[80rem] px-5 md:px-10">
+        <Reveal from="up" className="text-center">
+          <h2 className="mx-auto max-w-3xl text-[clamp(2.1rem,4.6vw,3.6rem)] font-extrabold leading-[1.08] tracking-[-0.035em]">
+            We&apos;re building <span className="text-brand-green">access.</span>
+            <br />
+            That&apos;s the whole job.
           </h2>
+          <p className="mx-auto mt-6 max-w-2xl text-[1.02rem] leading-relaxed text-white/60">
+            A connected network that brings health, wellness and healthcare products closer to the people who need them —
+            with inventory near demand, technology across every step, and our own fleet on the last mile.
+          </p>
         </Reveal>
 
-        <div className="relative mt-14">
-          {/* The rail between the two rows, filling with the scroll. */}
-          <div aria-hidden className="pointer-events-none absolute inset-y-6 left-1/2 hidden w-0.5 -translate-x-1/2 bg-jet/8 lg:block">
-            <motion.div
-              className="w-full rounded-full bg-gradient-to-b from-brand-blue to-brand-green"
-              style={{ height: reduce ? "100%" : railHeight }}
-            />
-          </div>
+        <div className="mt-28 grid gap-8 md:grid-cols-2 md:gap-10">
+          {cards.map((card, i) => (
+            <Reveal key={card.label} from={i === 0 ? "left" : "right"}>
+              <article
+                className={clsx(
+                  "group relative flex min-h-[26rem] flex-col rounded-[2rem] border border-white/12 p-8 pt-24 transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1.5 md:min-h-[30rem] md:p-10 md:pt-28",
+                  card.kind === "mission"
+                    ? "bg-[linear-gradient(145deg,rgba(255,255,255,0.05)_0%,rgba(2,150,217,0.10)_40%,rgba(2,150,217,0.55)_100%)]"
+                    : "bg-[linear-gradient(145deg,rgba(255,255,255,0.05)_0%,rgba(143,193,36,0.10)_40%,rgba(143,193,36,0.50)_100%)]"
+                )}
+                style={{ boxShadow: "0 40px 80px -50px rgba(0,0,0,.9)" }}
+              >
+                <Emblem kind={card.kind} />
 
-          <div className="space-y-16 lg:space-y-24">
-            {rows.map((row, i) => {
-              const photoFirst = i === 0;
-              return (
-                <div key={row.label} className="relative grid items-center gap-8 lg:grid-cols-2 lg:gap-16">
-                  {/* Node where the row meets the rail. */}
-                  <span
-                    aria-hidden
-                    className={clsx(
-                      "absolute left-1/2 top-1/2 hidden h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full ring-4 ring-floral lg:block",
-                      row.dot
-                    )}
-                  />
-
-                  <Reveal from={photoFirst ? "left" : "right"} className={photoFirst ? "" : "lg:order-last"}>
-                    <figure className="group relative aspect-[16/11] overflow-hidden rounded-[1.75rem] bg-jet">
-                      <img
-                        src={row.image}
-                        alt={row.alt}
-                        className="h-full w-full object-cover transition-transform duration-[1.6s] ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-jet/65 via-transparent to-transparent" />
-                      <figcaption className="absolute inset-x-5 bottom-5 flex items-center justify-between gap-3">
-                        <span className="inline-flex items-center gap-2 rounded-full bg-white/92 px-3.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-jet backdrop-blur">
-                          <span className={clsx("h-1.5 w-1.5 rounded-full", row.dot)} />
-                          {row.label}
-                        </span>
-                        <span className="rounded-full bg-jet/70 px-3 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-white backdrop-blur">
-                          {row.stamp}
-                        </span>
-                      </figcaption>
-                    </figure>
-                  </Reveal>
-
-                  <Reveal from={photoFirst ? "right" : "left"} className={photoFirst ? "lg:pl-6" : "lg:pr-6"}>
-                    <span className="tabular text-[0.85rem] font-extrabold text-ink-faint">{row.index}</span>
-                    <h3 className="mt-3 text-[clamp(1.7rem,3vw,2.5rem)] font-extrabold leading-[1.08] tracking-[-0.04em] text-jet">
-                      {row.title}
-                    </h3>
-                    <p className="mt-5 max-w-lg text-[1.05rem] leading-relaxed text-ink-soft">{row.body}</p>
-                  </Reveal>
-                </div>
-              );
-            })}
-          </div>
+                <p className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-white/55">{card.label}</p>
+                <h3 className="mt-4 max-w-sm text-[clamp(1.35rem,2.2vw,1.9rem)] font-extrabold leading-[1.15] tracking-[-0.02em]">
+                  {card.title}
+                </h3>
+                <p className="mt-5 max-w-md text-[0.98rem] leading-relaxed text-white/70">{card.body}</p>
+              </article>
+            </Reveal>
+          ))}
         </div>
       </div>
     </section>
