@@ -15,6 +15,9 @@ import { COMPLIANCE, ComplianceIcon } from "@/components/experience/compliance";
 import { LogoImg } from "@/components/ui/LogoImg";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { ABOUT_HERO, VALUES, MISSION, VISION, LEADERSHIP, INVESTORS, JOIN_TEAM } from "@/data/about";
+import valueConnected from "@/assets/images/value-connected.webp";
+
+const MISSION_IMAGE = valueConnected;
 
 const HERO_STATS = [
   [50, "+", "Licensed darkstores"],
@@ -220,94 +223,75 @@ function ValuesScroll() {
 
 /* ------------------------------------------------------ mission & vision --- */
 
-/** The floating emblem that overhangs each card, lit in the card's colour. */
-function CardEmblem({ kind }) {
-  const tint = kind === "mission" ? "#0296D9" : "#8FC124";
-  return (
-    <span
-      aria-hidden
-      className="pointer-events-none absolute -top-9 left-7 grid h-20 w-20 place-items-center rounded-[1.4rem] border border-white/20 bg-white/10 backdrop-blur-md transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:-translate-y-1.5"
-      style={{ boxShadow: `0 18px 45px -12px ${tint}` }}
-    >
-      <svg width="38" height="38" viewBox="0 0 48 48" fill="none" aria-hidden>
-        <defs>
-          <linearGradient id={`emblem-${kind}`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="100%" stopColor={tint} />
-          </linearGradient>
-        </defs>
-        {kind === "mission" ? (
-          <>
-            {/* A target: everything aimed at one thing — access. */}
-            <circle cx="24" cy="24" r="16" stroke={`url(#emblem-${kind})`} strokeWidth="2.5" />
-            <circle cx="24" cy="24" r="9" stroke={`url(#emblem-${kind})`} strokeWidth="2.5" opacity="0.75" />
-            <circle cx="24" cy="24" r="3.4" fill={`url(#emblem-${kind})`} />
-          </>
-        ) : (
-          <>
-            {/* A horizon with a rising route — where we're headed. */}
-            <path d="M6 32c6-12 12-18 18-18s12 6 18 18" stroke={`url(#emblem-${kind})`} strokeWidth="2.5" strokeLinecap="round" />
-            <path d="M6 38h36" stroke={`url(#emblem-${kind})`} strokeWidth="2.5" strokeLinecap="round" opacity="0.5" />
-            <circle cx="24" cy="14" r="4" fill={`url(#emblem-${kind})`} />
-          </>
-        )}
-      </svg>
-    </span>
-  );
-}
-
 /**
- * Mission and vision as two lit cards on a dark field: a centred statement,
- * then a card each, with the emblem overhanging the top edge.
+ * Mission and vision as one full-bleed split screen: the real darkstore on the
+ * left carrying the mission, a deep navy field on the right carrying the
+ * vision. No cards — the photograph and the type do the work. The photo drifts
+ * slowly as the section passes, so the two halves feel alive without motion
+ * competing with the copy.
  */
 function MissionVision() {
-  const cards = [
-    { ...MISSION, kind: "mission" },
-    { ...VISION, kind: "vision" },
-  ];
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const photoY = useTransform(scrollYProgress, [0, 1], ["-6%", "6%"]);
 
   return (
-    <section id="mission" className="relative scroll-mt-24 overflow-hidden bg-jet py-20 text-white md:py-28">
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-40 top-0 h-[34rem] w-[34rem] rounded-full bg-brand-blue/25 blur-[140px]" />
-        <div className="absolute -right-40 bottom-0 h-[30rem] w-[30rem] rounded-full bg-brand-green/20 blur-[140px]" />
-      </div>
+    <section id="mission" ref={ref} className="relative scroll-mt-24 bg-jet text-white">
+      <div className="grid lg:grid-cols-2">
+        {/* ------------------------------------------------ mission --- */}
+        <div className="relative flex min-h-[32rem] flex-col justify-end overflow-hidden p-8 md:p-14 lg:min-h-[44rem]">
+          <motion.img
+            src={MISSION_IMAGE}
+            alt="Inside a DocPharma darkstore"
+            style={{ y: photoY }}
+            className="absolute inset-x-0 -top-[6%] h-[112%] w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-jet via-jet/75 to-jet/25" />
 
-      <div className="relative mx-auto max-w-[84rem] px-5 md:px-10">
-        <Reveal from="up" className="text-center">
-          <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-green">Mission &amp; Vision</p>
-          {/* Our own line, from the values: the one thing both mission and vision are about. */}
-          <h2 className="mx-auto mt-4 max-w-3xl text-[clamp(2rem,4.4vw,3.4rem)] font-extrabold leading-[1.06] tracking-[-0.04em]">
-            We&apos;re building{" "}
-            <span className="bg-gradient-to-r from-brand-blue to-brand-green bg-clip-text text-transparent">access.</span>
-          </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-[1.02rem] leading-relaxed text-white/65">
-            A connected network that brings health, wellness and healthcare products closer to the people who need them.
-          </p>
-        </Reveal>
+          <Reveal from="up" className="relative">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.16em] backdrop-blur">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand-blue" />
+              {MISSION.label}
+            </span>
+            <h2 className="mt-6 max-w-lg text-[clamp(1.9rem,3.4vw,3rem)] font-extrabold leading-[1.08] tracking-[-0.04em]">
+              {MISSION.title}
+            </h2>
+            <p className="mt-5 max-w-md text-[1.02rem] leading-relaxed text-white/70">{MISSION.body}</p>
+          </Reveal>
+        </div>
 
-        <div className="mt-24 grid gap-6 md:grid-cols-2 md:gap-8">
-          {cards.map((card, i) => (
-            <Reveal key={card.label} from={i === 0 ? "left" : "right"}>
-              <article
-                className={clsx(
-                  "group relative h-full rounded-[1.75rem] border border-white/15 p-8 pt-16 transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 md:p-10 md:pt-20",
-                  card.kind === "mission"
-                    ? "bg-gradient-to-br from-brand-blue/35 via-brand-blue/10 to-white/[0.04]"
-                    : "bg-gradient-to-br from-brand-green/30 via-brand-green/10 to-white/[0.04]"
-                )}
-              >
-                <CardEmblem kind={card.kind} />
-                <p className="text-[0.78rem] font-bold uppercase tracking-[0.16em] text-white/60">{card.label}</p>
-                <h3 className="mt-4 text-[clamp(1.4rem,2.6vw,2.1rem)] font-extrabold leading-[1.12] tracking-[-0.03em]">
-                  {card.title}
-                </h3>
-                <p className="mt-5 text-[1rem] leading-relaxed text-white/70">{card.body}</p>
-              </article>
-            </Reveal>
-          ))}
+        {/* ------------------------------------------------- vision --- */}
+        <div className="relative flex min-h-[32rem] flex-col justify-end overflow-hidden bg-gradient-to-br from-[#06304f] via-jet to-jet p-8 md:p-14 lg:min-h-[44rem]">
+          <div aria-hidden className="pointer-events-none absolute inset-0">
+            <div className="absolute -right-24 top-0 h-[26rem] w-[26rem] rounded-full bg-brand-green/20 blur-[120px]" />
+            {/* A faint horizon of rings — the network reaching outward. */}
+            <svg className="absolute -bottom-40 left-1/2 h-[42rem] w-[42rem] -translate-x-1/2 opacity-[0.16]" viewBox="0 0 400 400" fill="none" aria-hidden>
+              {[60, 110, 160, 210].map((r) => (
+                <circle key={r} cx="200" cy="330" r={r} stroke="#8FC124" strokeWidth="1.2" />
+              ))}
+            </svg>
+          </div>
+
+          <Reveal from="up" className="relative">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.16em] backdrop-blur">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand-green" />
+              {VISION.label}
+            </span>
+            <h2 className="mt-6 max-w-lg text-[clamp(1.9rem,3.4vw,3rem)] font-extrabold leading-[1.08] tracking-[-0.04em]">
+              {VISION.title}
+            </h2>
+            <p className="mt-5 max-w-md text-[1.02rem] leading-relaxed text-white/70">{VISION.body}</p>
+          </Reveal>
         </div>
       </div>
+
+      {/* The seam between the two halves, marked once. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-1/2 hidden h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-jet/80 text-[0.7rem] font-extrabold uppercase tracking-[0.1em] backdrop-blur lg:flex"
+      >
+        <span className="bg-gradient-to-r from-brand-blue to-brand-green bg-clip-text text-transparent">&amp;</span>
+      </span>
     </section>
   );
 }
