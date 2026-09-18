@@ -12,6 +12,8 @@ const About = lazy(() => import("@/pages/About"));
 const Partner = lazy(() => import("@/pages/Partner"));
 const Resources = lazy(() => import("@/pages/Resources"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
+const PrivacyPolicy = lazy(() => import("@/pages/Legal").then((m) => ({ default: m.PrivacyPolicy })));
+const TermsOfUse = lazy(() => import("@/pages/Legal").then((m) => ({ default: m.TermsOfUse })));
 
 /**
  * Restores the top of the page between routes, but honours in-page anchors so
@@ -79,6 +81,8 @@ export default function App() {
             <Route path="/partner" element={<Partner />} />
             <Route path="/contact" element={<Partner />} />
             <Route path="/resources" element={<Resources />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfUse />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
