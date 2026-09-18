@@ -42,7 +42,7 @@ export function FooterWordmark() {
     <div
       ref={wrapRef}
       className="relative overflow-hidden"
-      style={{ height: Math.round(size * (size < 120 ? 0.78 : 0.62)) }}
+      style={{ height: Math.round(size * (size < 140 ? 1 : 0.62)) }}
       aria-label="DocPharma"
       role="img"
     >
@@ -55,7 +55,7 @@ export function FooterWordmark() {
         {LETTERS.map((char, i) => (
           <motion.span
             key={i}
-            className="inline-block text-white/90"
+            className="inline-block text-white"
             initial={{ y: "60%" }}
             animate={inView ? { y: "0%" } : { y: "60%" }}
             whileHover={{ y: "-6%" }}
@@ -65,7 +65,8 @@ export function FooterWordmark() {
           </motion.span>
         ))}
       </p>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/5 bg-gradient-to-t from-jet to-transparent" />
+      {/* The crop only needs softening where the letters are actually cut. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-1/5 bg-gradient-to-t from-jet to-transparent sm:block" />
     </div>
   );
 }

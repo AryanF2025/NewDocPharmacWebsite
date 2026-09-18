@@ -321,9 +321,9 @@ function HowItWorksMobile() {
           </motion.div>
         </div>
 
-        {/* Progress follows the scroll; buttons move the page */}
-        <div className="mt-3 flex items-center gap-4 px-5">
-          <div className="relative flex flex-1 gap-1.5">
+        {/* Progress follows the scroll; tapping a segment jumps to that card. */}
+        <div className="mt-3 px-5">
+          <div className="relative flex gap-1.5">
             {STEPS.map((s, i) => (
               <button key={s.title} type="button" onClick={() => goTo(i)} aria-label={`Go to ${s.title}`} className="h-6 flex-1">
                 <span className="block h-1 rounded-full bg-jet/10" />
@@ -334,26 +334,6 @@ function HowItWorksMobile() {
               className="pointer-events-none absolute left-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-gradient-to-r from-brand-blue to-brand-green"
               style={{ width: fill }}
             />
-          </div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => goTo(Math.max(0, active - 1))}
-              disabled={active === 0}
-              aria-label="Previous checkpoint"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-hairline text-[1.2rem] text-jet transition-opacity disabled:opacity-35"
-            >
-              ‹
-            </button>
-            <button
-              type="button"
-              onClick={() => goTo(Math.min(count - 1, active + 1))}
-              disabled={active === count - 1}
-              aria-label="Next checkpoint"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-blue text-[1.2rem] text-white transition-opacity disabled:opacity-35"
-            >
-              ›
-            </button>
           </div>
         </div>
       </div>
