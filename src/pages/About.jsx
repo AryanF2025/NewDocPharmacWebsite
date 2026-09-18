@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import clsx from "clsx";
-import { motion, useMotionValueEvent, useScroll, useSpring, useTransform } from "motion/react";
+import { motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
 import { Reveal } from "@/components/ui/Reveal";
 import { Magnetic } from "@/components/experience/Magnetic";
 import { CountUp } from "@/components/experience/HeroParts";
@@ -16,8 +16,10 @@ import { LogoImg } from "@/components/ui/LogoImg";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { ABOUT_HERO, VALUES, MISSION, VISION, LEADERSHIP, INVESTORS, JOIN_TEAM } from "@/data/about";
 import valueConnected from "@/assets/images/value-connected.webp";
+import valueCustomer from "@/assets/images/value-customer.webp";
 
 const MISSION_IMAGE = valueConnected;
+const VISION_IMAGE = valueCustomer;
 
 const HERO_STATS = [
   [50, "+", "Licensed darkstores"],
@@ -224,74 +226,94 @@ function ValuesScroll() {
 /* ------------------------------------------------------ mission & vision --- */
 
 /**
- * Mission and vision as one full-bleed split screen: the real darkstore on the
- * left carrying the mission, a deep navy field on the right carrying the
- * vision. No cards — the photograph and the type do the work. The photo drifts
- * slowly as the section passes, so the two halves feel alive without motion
- * competing with the copy.
+ * Mission and vision set on a diagonal: mission sits top-left, vision drops to
+ * bottom-right, and a line drawn as you scroll runs from one to the other —
+ * today at one end, where we're going at the other.
  */
 function MissionVision() {
   const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const photoY = useTransform(scrollYProgress, [0, 1], ["-6%", "6%"]);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 80%", "end 60%"] });
+  const draw = useSpring(scrollYProgress, { stiffness: 120, damping: 28, mass: 0.4 });
+
+  const blocks = [
+    { ...MISSION, index: "01", stamp: "Today", tint: "text-brand-blue", dot: "bg-brand-blue", image: MISSION_IMAGE },
+    { ...VISION, index: "02", stamp: "Where we're going", tint: "text-brand-green", dot: "bg-brand-green", image: VISION_IMAGE },
+  ];
 
   return (
-    <section id="mission" ref={ref} className="relative scroll-mt-24 bg-jet text-white">
-      <div className="grid lg:grid-cols-2">
-        {/* ------------------------------------------------ mission --- */}
-        <div className="relative flex min-h-[32rem] flex-col justify-end overflow-hidden p-8 md:p-14 lg:min-h-[44rem]">
-          <motion.img
-            src={MISSION_IMAGE}
-            alt="Inside a DocPharma darkstore"
-            style={{ y: photoY }}
-            className="absolute inset-x-0 -top-[6%] h-[112%] w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-jet via-jet/75 to-jet/25" />
+    <section id="mission" ref={ref} className="relative scroll-mt-24 overflow-hidden bg-floral py-20 md:py-28">
+      {/* The diagonal itself: from the mission block down to the vision block. */}
+      <svg
+        aria-hidden
+        className="pointer-events-none absolute inset-0 hidden h-full w-full lg:block"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+      >
+        <defs>
+          <linearGradient id="mv-line" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#0296D9" />
+            <stop offset="100%" stopColor="#8FC124" />
+          </linearGradient>
+        </defs>
+        <motion.path
+          d="M26 53 C 36 58, 44 60, 52 61.5"
+          fill="none"
+          stroke="url(#mv-line)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
+          // Drawn by scroll, but already complete for anyone who asked for less motion.
+          style={{ pathLength: reduce ? 1 : draw }}
+        />
+      </svg>
 
-          <Reveal from="up" className="relative">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.16em] backdrop-blur">
-              <span className="h-1.5 w-1.5 rounded-full bg-brand-blue" />
-              {MISSION.label}
-            </span>
-            <h2 className="mt-6 max-w-lg text-[clamp(1.9rem,3.4vw,3rem)] font-extrabold leading-[1.08] tracking-[-0.04em]">
-              {MISSION.title}
-            </h2>
-            <p className="mt-5 max-w-md text-[1.02rem] leading-relaxed text-white/70">{MISSION.body}</p>
-          </Reveal>
-        </div>
+      {/* Where the route starts and where it lands. */}
+      <span aria-hidden className="pointer-events-none absolute left-[26%] top-[54%] hidden h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-blue ring-4 ring-brand-blue/20 lg:block" />
+      <span aria-hidden className="pointer-events-none absolute left-[52%] top-[61.5%] hidden h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-green ring-4 ring-brand-green/20 lg:block" />
 
-        {/* ------------------------------------------------- vision --- */}
-        <div className="relative flex min-h-[32rem] flex-col justify-end overflow-hidden bg-gradient-to-br from-[#06304f] via-jet to-jet p-8 md:p-14 lg:min-h-[44rem]">
-          <div aria-hidden className="pointer-events-none absolute inset-0">
-            <div className="absolute -right-24 top-0 h-[26rem] w-[26rem] rounded-full bg-brand-green/20 blur-[120px]" />
-            {/* A faint horizon of rings — the network reaching outward. */}
-            <svg className="absolute -bottom-40 left-1/2 h-[42rem] w-[42rem] -translate-x-1/2 opacity-[0.16]" viewBox="0 0 400 400" fill="none" aria-hidden>
-              {[60, 110, 160, 210].map((r) => (
-                <circle key={r} cx="200" cy="330" r={r} stroke="#8FC124" strokeWidth="1.2" />
-              ))}
-            </svg>
-          </div>
+      <div className="relative mx-auto max-w-[84rem] px-5 md:px-10">
+        <Reveal from="left">
+          <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Mission &amp; Vision</p>
+        </Reveal>
 
-          <Reveal from="up" className="relative">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.16em] backdrop-blur">
-              <span className="h-1.5 w-1.5 rounded-full bg-brand-green" />
-              {VISION.label}
-            </span>
-            <h2 className="mt-6 max-w-lg text-[clamp(1.9rem,3.4vw,3rem)] font-extrabold leading-[1.08] tracking-[-0.04em]">
-              {VISION.title}
-            </h2>
-            <p className="mt-5 max-w-md text-[1.02rem] leading-relaxed text-white/70">{VISION.body}</p>
-          </Reveal>
+        <div className="mt-10 space-y-20 lg:mt-14 lg:space-y-0">
+          {blocks.map((block, i) => (
+            <div
+              key={block.label}
+              className={clsx(
+                "relative lg:w-[48%]",
+                // Top-left, then dropped to the bottom-right.
+                i === 1 && "lg:ml-auto lg:mt-40"
+              )}
+            >
+              <Reveal from={i === 0 ? "left" : "right"}>
+                <div className="flex items-start gap-5">
+                  <span className="tabular hidden text-[0.85rem] font-extrabold text-ink-faint sm:block">{block.index}</span>
+                  <div className="min-w-0">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-hairline bg-white px-3.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.16em] text-ink-soft">
+                      <span className={clsx("h-1.5 w-1.5 rounded-full", block.dot)} />
+                      {block.label}
+                    </span>
+
+                    <h2 className="mt-5 text-[clamp(1.9rem,3.6vw,3.1rem)] font-extrabold leading-[1.06] tracking-[-0.04em] text-jet">
+                      {block.title}
+                    </h2>
+                    <p className="mt-5 max-w-lg text-[1.05rem] leading-relaxed text-ink-soft">{block.body}</p>
+
+                    <div className="mt-7 flex items-center gap-4">
+                      <span className="relative h-20 w-28 shrink-0 overflow-hidden rounded-2xl bg-jet">
+                        <img src={block.image} alt="" className="h-full w-full object-cover" />
+                      </span>
+                      <span className={clsx("text-[0.8rem] font-bold uppercase tracking-[0.14em]", block.tint)}>{block.stamp}</span>
+                    </div>
+                  </div>
+                </div>
+              </Reveal>
+            </div>
+          ))}
         </div>
       </div>
-
-      {/* The seam between the two halves, marked once. */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-1/2 hidden h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-jet/80 text-[0.7rem] font-extrabold uppercase tracking-[0.1em] backdrop-blur lg:flex"
-      >
-        <span className="bg-gradient-to-r from-brand-blue to-brand-green bg-clip-text text-transparent">&amp;</span>
-      </span>
     </section>
   );
 }
