@@ -218,6 +218,101 @@ function ValuesScroll() {
   );
 }
 
+/* ------------------------------------------------------ mission & vision --- */
+
+/** The floating emblem that overhangs each card, lit in the card's colour. */
+function CardEmblem({ kind }) {
+  const tint = kind === "mission" ? "#0296D9" : "#8FC124";
+  return (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute -top-9 left-7 grid h-20 w-20 place-items-center rounded-[1.4rem] border border-white/20 bg-white/10 backdrop-blur-md transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:-translate-y-1.5"
+      style={{ boxShadow: `0 18px 45px -12px ${tint}` }}
+    >
+      <svg width="38" height="38" viewBox="0 0 48 48" fill="none" aria-hidden>
+        <defs>
+          <linearGradient id={`emblem-${kind}`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="100%" stopColor={tint} />
+          </linearGradient>
+        </defs>
+        {kind === "mission" ? (
+          <>
+            {/* A target: everything aimed at one thing — access. */}
+            <circle cx="24" cy="24" r="16" stroke={`url(#emblem-${kind})`} strokeWidth="2.5" />
+            <circle cx="24" cy="24" r="9" stroke={`url(#emblem-${kind})`} strokeWidth="2.5" opacity="0.75" />
+            <circle cx="24" cy="24" r="3.4" fill={`url(#emblem-${kind})`} />
+          </>
+        ) : (
+          <>
+            {/* A horizon with a rising route — where we're headed. */}
+            <path d="M6 32c6-12 12-18 18-18s12 6 18 18" stroke={`url(#emblem-${kind})`} strokeWidth="2.5" strokeLinecap="round" />
+            <path d="M6 38h36" stroke={`url(#emblem-${kind})`} strokeWidth="2.5" strokeLinecap="round" opacity="0.5" />
+            <circle cx="24" cy="14" r="4" fill={`url(#emblem-${kind})`} />
+          </>
+        )}
+      </svg>
+    </span>
+  );
+}
+
+/**
+ * Mission and vision as two lit cards on a dark field: a centred statement,
+ * then a card each, with the emblem overhanging the top edge.
+ */
+function MissionVision() {
+  const cards = [
+    { ...MISSION, kind: "mission" },
+    { ...VISION, kind: "vision" },
+  ];
+
+  return (
+    <section id="mission" className="relative scroll-mt-24 overflow-hidden bg-jet py-20 text-white md:py-28">
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="absolute -left-40 top-0 h-[34rem] w-[34rem] rounded-full bg-brand-blue/25 blur-[140px]" />
+        <div className="absolute -right-40 bottom-0 h-[30rem] w-[30rem] rounded-full bg-brand-green/20 blur-[140px]" />
+      </div>
+
+      <div className="relative mx-auto max-w-[84rem] px-5 md:px-10">
+        <Reveal from="up" className="text-center">
+          <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-green">Mission &amp; Vision</p>
+          <h2 className="mx-auto mt-4 max-w-3xl text-[clamp(2rem,4.4vw,3.4rem)] font-extrabold leading-[1.06] tracking-[-0.04em]">
+            We focus on{" "}
+            <span className="bg-gradient-to-r from-brand-blue to-brand-green bg-clip-text text-transparent">access.</span>
+            <br />
+            That&apos;s it.
+          </h2>
+          <p className="mx-auto mt-5 max-w-2xl text-[1.02rem] leading-relaxed text-white/65">
+            A connected network that brings health, wellness and healthcare products closer to the people who need them.
+          </p>
+        </Reveal>
+
+        <div className="mt-24 grid gap-6 md:grid-cols-2 md:gap-8">
+          {cards.map((card, i) => (
+            <Reveal key={card.label} from={i === 0 ? "left" : "right"}>
+              <article
+                className={clsx(
+                  "group relative h-full rounded-[1.75rem] border border-white/15 p-8 pt-16 transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 md:p-10 md:pt-20",
+                  card.kind === "mission"
+                    ? "bg-gradient-to-br from-brand-blue/35 via-brand-blue/10 to-white/[0.04]"
+                    : "bg-gradient-to-br from-brand-green/30 via-brand-green/10 to-white/[0.04]"
+                )}
+              >
+                <CardEmblem kind={card.kind} />
+                <p className="text-[0.78rem] font-bold uppercase tracking-[0.16em] text-white/60">{card.label}</p>
+                <h3 className="mt-4 text-[clamp(1.4rem,2.6vw,2.1rem)] font-extrabold leading-[1.12] tracking-[-0.03em]">
+                  {card.title}
+                </h3>
+                <p className="mt-5 text-[1rem] leading-relaxed text-white/70">{card.body}</p>
+              </article>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ----------------------------------------------------------- leadership --- */
 
 /**
@@ -387,44 +482,7 @@ export default function About() {
         </div>
       </section>
 
-      {/* -------------------------------------------- mission & vision --- */}
-      <section id="mission" className="relative scroll-mt-24 overflow-hidden bg-jet py-20 text-white md:py-28">
-        <div aria-hidden className="pointer-events-none absolute inset-0">
-          <div className="absolute -left-32 top-0 h-[32rem] w-[32rem] rounded-full bg-brand-blue/20 blur-[130px]" />
-          <div className="absolute -right-32 bottom-0 h-[28rem] w-[28rem] rounded-full bg-brand-green/15 blur-[130px]" />
-        </div>
-
-        <div className="relative mx-auto max-w-[84rem] px-5 md:px-10">
-          <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
-            {[MISSION, VISION].map((block, i) => (
-              <Reveal key={block.label} from={i === 0 ? "left" : "right"}>
-                <div className={clsx("relative h-full", i === 1 && "lg:border-l lg:border-white/12 lg:pl-20")}>
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-brand-green">
-                    {i === 0 ? (
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-                        <circle cx="12" cy="12" r="9" />
-                        <circle cx="12" cy="12" r="4.5" />
-                        <circle cx="12" cy="12" r="1" fill="currentColor" />
-                      </svg>
-                    ) : (
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-                        <path d="M2 12s3.8-6.5 10-6.5S22 12 22 12s-3.8 6.5-10 6.5S2 12 2 12z" />
-                        <circle cx="12" cy="12" r="2.8" />
-                      </svg>
-                    )}
-                  </span>
-
-                  <p className="mt-6 text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-green">{block.label}</p>
-                  <h2 className="mt-4 max-w-md text-[clamp(1.6rem,3vw,2.5rem)] font-extrabold leading-[1.1] tracking-[-0.035em]">
-                    {block.title}
-                  </h2>
-                  <span className="mt-7 block h-0.5 w-16 bg-gradient-to-r from-brand-blue to-brand-green" />
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
+      <MissionVision />
 
       <Leadership />
 

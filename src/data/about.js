@@ -61,11 +61,13 @@ export const VALUES = {
 export const MISSION = {
   label: "Our Mission",
   title: "Make healthcare more accessible, one order at a time.",
+  body: "We exist to remove the distance between people and the products they need. By bringing together network, technology, people and delivery, we make it easier for brands to reach consumers — faster, more reliably and closer to home.",
 };
 
 export const VISION = {
   label: "Our Vision",
   title: "A more connected, accessible healthcare ecosystem for India.",
+  body: "A future where the products people need are available closer to them, where brands are not limited by fragmented infrastructure, where technology makes every movement visible — and where access to healthcare isn't defined by distance.",
 };
 
 export const LEADERSHIP = {
