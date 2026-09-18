@@ -276,11 +276,10 @@ function MissionVision() {
       <div className="relative mx-auto max-w-[84rem] px-5 md:px-10">
         <Reveal from="up" className="text-center">
           <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-green">Mission &amp; Vision</p>
+          {/* Our own line, from the values: the one thing both mission and vision are about. */}
           <h2 className="mx-auto mt-4 max-w-3xl text-[clamp(2rem,4.4vw,3.4rem)] font-extrabold leading-[1.06] tracking-[-0.04em]">
-            We focus on{" "}
+            We&apos;re building{" "}
             <span className="bg-gradient-to-r from-brand-blue to-brand-green bg-clip-text text-transparent">access.</span>
-            <br />
-            That&apos;s it.
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-[1.02rem] leading-relaxed text-white/65">
             A connected network that brings health, wellness and healthcare products closer to the people who need them.
