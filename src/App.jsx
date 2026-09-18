@@ -22,11 +22,23 @@ function ScrollManager() {
 
   useEffect(() => {
     if (hash) {
-      // Let the incoming route paint before looking for the target.
-      const id = window.setTimeout(() => {
-        document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: "smooth" });
-      }, 80);
-      return () => window.clearTimeout(id);
+      // Pages are code-split, so the target may not exist on the first frame —
+      // keep looking briefly rather than silently doing nothing.
+      let frame;
+      const deadline = performance.now() + 2500;
+      const find = () => {
+        const target = document.getElementById(hash.slice(1));
+        if (target) {
+          // Gliding to an anchor is motion too — jump straight there if the
+          // visitor has asked for less of it.
+          const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          target.scrollIntoView({ behavior: reduce ? "auto" : "smooth" });
+          return;
+        }
+        if (performance.now() < deadline) frame = requestAnimationFrame(find);
+      };
+      frame = requestAnimationFrame(find);
+      return () => cancelAnimationFrame(frame);
     }
     window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
   }, [pathname, hash]);
