@@ -1,12 +1,13 @@
 /**
  * About us — the live site's copy, rebuilt in the new brand language:
- * a full-screen opening, an auto-advancing values slider, leadership that fits
- * one screen, mission and vision, investors, and the careers call to action.
+ * a full-screen opening, values revealed one at a time as you scroll, leadership
+ * that fits one screen, mission and vision, investors, and the careers CTA.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import clsx from "clsx";
+import { motion, useMotionValueEvent, useScroll, useSpring, useTransform } from "motion/react";
 import { Reveal } from "@/components/ui/Reveal";
 import { Magnetic } from "@/components/experience/Magnetic";
 import { CountUp } from "@/components/experience/HeroParts";
@@ -22,7 +23,6 @@ const HERO_STATS = [
   [500, "+", "In-house fleet"],
 ];
 
-const SLIDE_MS = 6000;
 
 /* ------------------------------------------------------------------ hero --- */
 
@@ -113,88 +113,108 @@ function AboutHero() {
   );
 }
 
-/* ------------------------------------------------------- values slider --- */
+/* ------------------------------------------------------- values, scrolled --- */
 
-function ValuesSlider() {
+/**
+ * The three values, one at a time, driven by scroll.
+ *
+ * The section is three screens tall and pins its content for that whole
+ * distance: scrolling moves the photo filmstrip sideways and swaps the copy,
+ * so a visitor sees every value before the page moves on. The progress bar
+ * tracks the scroll, and each segment is also a shortcut to that value.
+ */
+function ValuesScroll() {
+  const hostRef = useRef(null);
   const [active, setActive] = useState(0);
-  const [paused, setPaused] = useState(false);
   const count = VALUES.slides.length;
 
-  useEffect(() => {
-    if (paused) return undefined;
-    const id = window.setTimeout(() => setActive((i) => (i + 1) % count), SLIDE_MS);
-    return () => window.clearTimeout(id);
-  }, [active, paused, count]);
+  const { scrollYProgress } = useScroll({ target: hostRef, offset: ["start start", "end end"] });
+  const progress = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.35 });
+  const fill = useTransform(progress, [0, 1], ["0%", "100%"]);
+
+  useMotionValueEvent(scrollYProgress, "change", (p) => {
+    setActive(Math.min(count - 1, Math.max(0, Math.floor(p * count * 0.999))));
+  });
+
+  /** Move the page so value `i` is the one on screen. */
+  const goTo = (i) => {
+    const host = hostRef.current;
+    if (!host) return;
+    const travel = host.offsetHeight - window.innerHeight;
+    const top = host.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: top + (travel * i) / (count - 1), behavior: "smooth" });
+  };
 
   const slide = VALUES.slides[active];
 
   return (
-    <div
-      className="mt-12 overflow-hidden rounded-[2rem] border border-hairline bg-white"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-    >
-      <div className="grid lg:grid-cols-[1.05fr_1fr]">
-        <div className="relative aspect-[4/3] overflow-hidden bg-jet lg:aspect-auto lg:min-h-[30rem]">
-          <div
-            className="absolute inset-0 flex transition-transform duration-[900ms] ease-[cubic-bezier(.76,0,.24,1)]"
-            style={{ transform: `translateX(-${active * 100}%)` }}
-          >
-            {VALUES.slides.map((s, i) => (
-              <div key={s.title} className="h-full w-full shrink-0 overflow-hidden">
-                <img
-                  src={s.image}
-                  alt=""
-                  className={clsx(
-                    "h-full w-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(.22,1,.36,1)]",
-                    i === active ? "scale-100" : "scale-110"
-                  )}
+    <section ref={hostRef} className="relative bg-white" style={{ height: `${count * 100}svh` }}>
+      <div className="sticky top-0 flex h-[100svh] flex-col justify-center overflow-hidden py-20 pt-24">
+        <div className="mx-auto w-full max-w-[84rem] px-5 md:px-10">
+          <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">{VALUES.title}</p>
+          <h2 className="mt-2 max-w-2xl text-[clamp(1.6rem,3vw,2.6rem)] font-extrabold leading-[1.04] tracking-[-0.04em] text-jet">
+            {VALUES.subtitle}
+          </h2>
+
+          <div className="mt-6 grid overflow-hidden rounded-[2rem] border border-hairline bg-white lg:grid-cols-[1.05fr_1fr]">
+            {/* Photo filmstrip, moved by the scroll */}
+            <div className="relative aspect-[16/10] overflow-hidden bg-jet sm:aspect-[16/9] lg:aspect-auto lg:h-[min(56svh,32rem)]">
+              <div
+                className="absolute inset-0 flex transition-transform duration-[900ms] ease-[cubic-bezier(.76,0,.24,1)]"
+                style={{ transform: `translateX(-${active * 100}%)` }}
+              >
+                {VALUES.slides.map((s, i) => (
+                  <div key={s.title} className="h-full w-full shrink-0 overflow-hidden">
+                    <img
+                      src={s.image}
+                      alt=""
+                      className={clsx(
+                        "h-full w-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(.22,1,.36,1)]",
+                        i === active ? "scale-100" : "scale-110"
+                      )}
+                    />
+                  </div>
+                ))}
+              </div>
+              <span className="tabular absolute left-5 top-5 rounded-full bg-white/92 px-3 py-1.5 text-[0.75rem] font-extrabold text-jet backdrop-blur">
+                {String(active + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
+              </span>
+            </div>
+
+            <div className="flex flex-col justify-center p-6 md:p-9">
+              <div key={active} className="reveal-up">
+                <h3 className="text-[clamp(1.3rem,2.4vw,2rem)] font-extrabold leading-[1.1] tracking-[-0.03em] text-jet">
+                  {slide.title}
+                </h3>
+                <p className="mt-4 text-[clamp(0.92rem,1.9vh,1rem)] leading-relaxed text-ink-soft">{slide.description}</p>
+                <p className="mt-3 text-[1.02rem] font-extrabold text-brand-blue">{slide.bold}</p>
+              </div>
+
+              {/* Progress follows the scroll; segments are shortcuts. */}
+              <div className="relative mt-7 flex gap-2">
+                {VALUES.slides.map((s, i) => (
+                  <button
+                    key={s.title}
+                    type="button"
+                    onClick={() => goTo(i)}
+                    aria-label={`Go to value ${i + 1}: ${s.title}`}
+                    aria-current={i === active}
+                    className="h-6 flex-1"
+                  >
+                    <span className="block h-1 rounded-full bg-jet/10" />
+                  </button>
+                ))}
+                <motion.span
+                  aria-hidden
+                  className="pointer-events-none absolute left-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-gradient-to-r from-brand-blue to-brand-green"
+                  style={{ width: fill }}
                 />
               </div>
-            ))}
-          </div>
-          <span className="tabular absolute left-5 top-5 rounded-full bg-white/92 px-3 py-1.5 text-[0.75rem] font-extrabold text-jet backdrop-blur">
-            {String(active + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
-          </span>
-        </div>
-
-        <div className="flex flex-col justify-center p-7 md:p-10">
-          <div key={active} className="reveal-up">
-            <h3 className="text-[clamp(1.4rem,2.6vw,2.1rem)] font-extrabold leading-[1.1] tracking-[-0.03em] text-jet">
-              {slide.title}
-            </h3>
-            <p className="mt-5 text-[1rem] leading-relaxed text-ink-soft">{slide.description}</p>
-            <p className="mt-3 text-[1.05rem] font-extrabold text-brand-blue">{slide.bold}</p>
-          </div>
-
-          <div className="mt-8 flex gap-2">
-            {VALUES.slides.map((s, i) => (
-              <button
-                key={s.title}
-                type="button"
-                onClick={() => setActive(i)}
-                aria-label={`Show value ${i + 1}: ${s.title}`}
-                aria-current={i === active}
-                className="h-6 flex-1"
-              >
-                <span className="block h-1 overflow-hidden rounded-full bg-jet/10">
-                  <span
-                    key={`${i}-${active}-${paused}`}
-                    className={clsx(
-                      "block h-full origin-left rounded-full bg-gradient-to-r from-brand-blue to-brand-green",
-                      i < active && "scale-x-100",
-                      i > active && "scale-x-0",
-                      i === active && (paused ? "scale-x-100" : "how-fill")
-                    )}
-                    style={i === active && !paused ? { animationDuration: `${SLIDE_MS}ms` } : undefined}
-                  />
-                </span>
-              </button>
-            ))}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -344,19 +364,12 @@ export default function About() {
         </div>
       </section>
 
-      {/* ------------------------------------------------------ values --- */}
-      <section className="bg-white py-20 md:py-28">
+      <ValuesScroll />
+
+      {/* Compliance: how we work, not a badge. */}
+      <section className="bg-white pb-20 md:pb-28">
         <div className="mx-auto max-w-[84rem] px-5 md:px-10">
-          <Reveal from="left">
-            <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">{VALUES.title}</p>
-            <h2 className="mt-3 max-w-2xl text-[clamp(2rem,3.8vw,3.2rem)] font-extrabold leading-[1.04] tracking-[-0.04em] text-jet">
-              {VALUES.subtitle}
-            </h2>
-          </Reveal>
-
-          <ValuesSlider />
-
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {COMPLIANCE.map((item, i) => (
               <Reveal key={item.title} from="up" delay={i * 0.06}>
                 <div className="flex h-full items-center gap-3 rounded-2xl border border-hairline bg-floral px-4 py-3.5">
