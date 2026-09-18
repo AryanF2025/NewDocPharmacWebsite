@@ -1,16 +1,25 @@
 /**
  * Partner with us — the contact page.
- * The form posts to the wrapper service at VITE_API_BASE_URL (POST /send-mail/).
+ * An auto-advancing slider of the five audiences we build for, wired to the
+ * enquiry form, which posts to the wrapper service at VITE_API_BASE_URL.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import clsx from "clsx";
 import { Reveal, PageHero } from "@/components/ui/Reveal";
 import { COMPLIANCE, ComplianceIcon } from "@/components/experience/compliance";
 import { CONTACT, OFFICE, SOCIAL } from "@/components/experience/siteInfo";
 import { submitContactEnquiry } from "@/api/contact.api";
-import { BUSINESS_TYPES, MONTHLY_ORDERS, CONTACT_INITIAL, PARTNER_HERO, PARTNER_ASSURANCES } from "@/data/contact";
+import {
+  BUSINESS_TYPES,
+  SLIDER_TYPES,
+  SLIDE_INTERVAL_MS,
+  MONTHLY_ORDERS,
+  CONTACT_INITIAL,
+  CONTACT_HERO,
+  PARTNER_ASSURANCES,
+} from "@/data/contact";
 import { usePageMeta } from "@/hooks/usePageMeta";
-import stillHandover from "@/assets/images/still-handover.jpg";
 
 const NEXT_STEPS = [
   ["01", "You tell us what you sell", "Categories, cities and the volumes you handle today."],
@@ -45,11 +54,96 @@ function Field({ label, error, children, hint }) {
   );
 }
 
+/**
+ * The five audiences, sliding sideways. Picking one sets the enquiry form's
+ * business type, so the slider and the form always agree.
+ */
+function BusinessTypeSlider({ value, onPick }) {
+  const [paused, setPaused] = useState(false);
+  const active = Math.max(0, SLIDER_TYPES.findIndex((type) => type.value === value));
+  const shown = active === -1 ? 0 : active;
+
+  useEffect(() => {
+    if (paused) return undefined;
+    const id = window.setTimeout(() => {
+      onPick(SLIDER_TYPES[(shown + 1) % SLIDER_TYPES.length].value);
+    }, SLIDE_INTERVAL_MS);
+    return () => window.clearTimeout(id);
+  }, [shown, paused, onPick]);
+
+  return (
+    <div onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+      {/* Tabs */}
+      <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
+        {SLIDER_TYPES.map((type) => (
+          <button
+            key={type.value}
+            type="button"
+            onClick={() => onPick(type.value)}
+            aria-current={type.value === SLIDER_TYPES[shown].value}
+            className={clsx(
+              "shrink-0 rounded-full border px-4 py-2 text-[0.85rem] font-bold transition-colors",
+              type.value === SLIDER_TYPES[shown].value
+                ? "border-jet bg-jet text-white"
+                : "border-hairline bg-white text-ink-soft hover:border-brand-blue hover:text-jet"
+            )}
+          >
+            {type.tab}
+          </button>
+        ))}
+      </div>
+
+      {/* Image track */}
+      <div className="relative mt-4 aspect-[16/10] overflow-hidden rounded-[1.75rem] bg-jet sm:aspect-[16/8]">
+        <div
+          className="absolute inset-0 flex transition-transform duration-[900ms] ease-[cubic-bezier(.76,0,.24,1)]"
+          style={{ transform: `translateX(-${shown * 100}%)` }}
+        >
+          {SLIDER_TYPES.map((type, i) => (
+            <div key={type.value} className="h-full w-full shrink-0 overflow-hidden">
+              <img
+                src={type.image}
+                alt=""
+                className={clsx(
+                  "h-full w-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(.22,1,.36,1)]",
+                  i === shown ? "scale-100" : "scale-110"
+                )}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-jet via-jet/30 to-transparent" />
+        <div className="absolute inset-x-6 bottom-6">
+          <p key={shown} className="reveal-up text-[clamp(1.2rem,2.6vw,2rem)] font-extrabold leading-tight tracking-[-0.03em] text-white">
+            {SLIDER_TYPES[shown].heading}
+          </p>
+          <div className="mt-4 flex gap-1.5">
+            {SLIDER_TYPES.map((type, i) => (
+              <span key={type.value} className="h-1 flex-1 overflow-hidden rounded-full bg-white/25">
+                <span
+                  key={`${i}-${shown}-${paused}`}
+                  className={clsx(
+                    "block h-full origin-left rounded-full bg-brand-green",
+                    i < shown && "scale-x-100",
+                    i > shown && "scale-x-0",
+                    i === shown && (paused ? "scale-x-100" : "how-fill")
+                  )}
+                  style={i === shown && !paused ? { animationDuration: `${SLIDE_INTERVAL_MS}ms` } : undefined}
+                />
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Partner() {
   usePageMeta({
     title: "Partner with us — DocPharma",
     description:
-      "Tell us what you sell and where you deliver. We'll map the darkstores, compliance and SLA to put your products 30 minutes from your customers.",
+      "Let's build better healthcare access together. Fulfil more orders, reach customers faster, expand into new cities or build a healthcare delivery layer.",
   });
 
   const [form, setForm] = useState(CONTACT_INITIAL);
@@ -62,6 +156,8 @@ export default function Partner() {
     setForm((f) => ({ ...f, [key]: value }));
     setErrors((e) => (e[key] ? { ...e, [key]: undefined } : e));
   };
+
+  const pickType = (value) => setForm((f) => ({ ...f, businessType: value }));
 
   const onSubmit = async (event) => {
     event.preventDefault();
@@ -83,10 +179,13 @@ export default function Partner() {
 
   return (
     <>
-      <PageHero eyebrow={PARTNER_HERO.eyebrow} headline={PARTNER_HERO.headline} sub={PARTNER_HERO.sub}>
+      <PageHero eyebrow={CONTACT_HERO.eyebrow} headline={CONTACT_HERO.title} sub={CONTACT_HERO.subtitle}>
         <ul className="flex flex-wrap gap-2.5">
           {PARTNER_ASSURANCES.map((point) => (
-            <li key={point} className="flex items-center gap-2 rounded-full border border-hairline bg-white px-4 py-2 text-[0.88rem] font-semibold text-ink-soft">
+            <li
+              key={point}
+              className="flex items-center gap-2 rounded-full border border-hairline bg-white px-4 py-2 text-[0.88rem] font-semibold text-ink-soft"
+            >
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-green text-[0.6rem] text-white">✓</span>
               {point}
             </li>
@@ -94,10 +193,25 @@ export default function Partner() {
         </ul>
       </PageHero>
 
-      <section className="bg-floral pb-20 md:pb-28">
+      {/* --------------------------------------- who we build for --- */}
+      <section className="bg-floral pt-14 md:pt-20">
+        <div className="mx-auto max-w-[84rem] px-5 md:px-10">
+          <Reveal from="up">
+            <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Who we build for</p>
+            <h2 className="mt-3 max-w-2xl text-[clamp(1.6rem,3vw,2.4rem)] font-extrabold leading-[1.08] tracking-[-0.04em] text-jet">
+              Pick what fits you — we'll shape the network around it.
+            </h2>
+          </Reveal>
+          <Reveal from="up" delay={0.08} className="mt-8">
+            <BusinessTypeSlider value={form.businessType} onPick={pickType} />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------ form + aside --- */}
+      <section className="bg-floral py-14 md:py-20">
         <div className="mx-auto grid max-w-[84rem] gap-6 px-5 md:px-10 lg:grid-cols-[1.15fr_1fr] lg:gap-10">
-          {/* ------------------------------------------------- form --- */}
-          <Reveal>
+          <Reveal from="left">
             <div className="rounded-[2rem] border border-hairline bg-white p-6 md:p-10">
               {status === "sent" ? (
                 <div className="flex min-h-[26rem] flex-col items-start justify-center">
@@ -124,59 +238,23 @@ export default function Partner() {
                   <h2 className="text-[clamp(1.5rem,2.4vw,2rem)] font-extrabold tracking-[-0.03em] text-jet">
                     Tell us about your business
                   </h2>
-                  <p className="mt-2 text-[0.98rem] text-ink-soft">
-                    Fields marked with an asterisk are required.
-                  </p>
+                  <p className="mt-2 text-[0.98rem] text-ink-soft">Fields marked with an asterisk are required.</p>
 
                   <div className="mt-7 grid gap-5 sm:grid-cols-2">
                     <Field label="Your name *" error={errors.name}>
-                      <input
-                        id="name"
-                        name="name"
-                        value={form.name}
-                        onChange={set("name")}
-                        placeholder="Priya Sharma"
-                        autoComplete="name"
-                        className={FIELD}
-                      />
+                      <input id="name" name="name" value={form.name} onChange={set("name")} placeholder="Priya Sharma" autoComplete="name" className={FIELD} />
                     </Field>
 
                     <Field label="Company" error={errors.company}>
-                      <input
-                        id="company"
-                        name="company"
-                        value={form.company}
-                        onChange={set("company")}
-                        placeholder="Company name"
-                        autoComplete="organization"
-                        className={FIELD}
-                      />
+                      <input id="company" name="company" value={form.company} onChange={set("company")} placeholder="Company name" autoComplete="organization" className={FIELD} />
                     </Field>
 
                     <Field label="Work email *" error={errors.email}>
-                      <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={form.email}
-                        onChange={set("email")}
-                        placeholder="you@company.com"
-                        autoComplete="email"
-                        className={FIELD}
-                      />
+                      <input id="email" name="email" type="email" value={form.email} onChange={set("email")} placeholder="you@company.com" autoComplete="email" className={FIELD} />
                     </Field>
 
                     <Field label="Phone" error={errors.phone}>
-                      <input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        value={form.phone}
-                        onChange={set("phone")}
-                        placeholder="+91 98765 43210"
-                        autoComplete="tel"
-                        className={FIELD}
-                      />
+                      <input id="phone" name="phone" type="tel" value={form.phone} onChange={set("phone")} placeholder="+91 98765 43210" autoComplete="tel" className={FIELD} />
                     </Field>
 
                     <Field label="Type of business *">
@@ -201,14 +279,7 @@ export default function Partner() {
 
                     <div className="sm:col-span-2">
                       <Field label="Cities you need" hint="Where your customers are — we'll map the nearest darkstores.">
-                        <input
-                          id="cities"
-                          name="cities"
-                          value={form.cities}
-                          onChange={set("cities")}
-                          placeholder="Bengaluru, Mumbai, Delhi NCR"
-                          className={FIELD}
-                        />
+                        <input id="cities" name="cities" value={form.cities} onChange={set("cities")} placeholder="Bengaluru, Mumbai, Delhi NCR" className={FIELD} />
                       </Field>
                     </div>
 
@@ -252,9 +323,8 @@ export default function Partner() {
             </div>
           </Reveal>
 
-          {/* ------------------------------------------------- aside --- */}
           <div className="space-y-4">
-            <Reveal delay={0.08}>
+            <Reveal from="right" delay={0.06}>
               <div className="rounded-[2rem] border border-hairline bg-white p-7">
                 <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">What happens next</p>
                 <ol className="mt-5 space-y-5">
@@ -271,33 +341,26 @@ export default function Partner() {
               </div>
             </Reveal>
 
-            <Reveal delay={0.12}>
-              <div className="relative overflow-hidden rounded-[2rem] bg-jet p-7 text-white">
-                <img src={stillHandover} alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />
-                <div className="absolute inset-0 bg-gradient-to-t from-jet via-jet/80 to-jet/40" />
-                <div className="relative">
-                  <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-green">Why partners stay</p>
-                  <ul className="mt-5 grid gap-2">
-                    {COMPLIANCE.map((item) => (
-                      <li key={item.title} className="flex items-center gap-3 text-[0.94rem] font-semibold text-white/85">
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-green/15 text-brand-green">
-                          <ComplianceIcon name={item.icon} />
-                        </span>
-                        {item.title}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+            <Reveal from="right" delay={0.12}>
+              <div className="rounded-[2rem] bg-jet p-7 text-white">
+                <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-green">Why partners stay</p>
+                <ul className="mt-5 grid gap-2">
+                  {COMPLIANCE.map((item) => (
+                    <li key={item.title} className="flex items-center gap-3 text-[0.94rem] font-semibold text-white/85">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-green/15 text-brand-green">
+                        <ComplianceIcon name={item.icon} />
+                      </span>
+                      {item.title}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </Reveal>
 
-            <Reveal delay={0.16}>
+            <Reveal from="right" delay={0.18}>
               <div className="rounded-[2rem] border border-hairline bg-white p-7">
                 <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Reach us</p>
-                <a
-                  href={CONTACT.phoneHref}
-                  className="mt-4 block text-[1.05rem] font-extrabold text-jet transition-colors hover:text-brand-blue"
-                >
+                <a href={CONTACT.phoneHref} className="mt-4 block text-[1.05rem] font-extrabold text-jet transition-colors hover:text-brand-blue">
                   {CONTACT.phone}
                 </a>
                 <a

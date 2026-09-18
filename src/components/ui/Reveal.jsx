@@ -1,16 +1,23 @@
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 
+const DIRECTIONS = {
+  up: "reveal-up",
+  left: "reveal-left",
+  right: "reveal-right",
+  scale: "reveal-scale",
+};
+
 /**
- * The site's single scroll reveal: content rises a little as it comes into
- * view, once.
+ * The site's scroll reveal: content slides into place as it comes into view,
+ * once. `from` picks the direction — "up" (default), "left", "right" or
+ * "scale".
  *
  * Deliberately not tied to the animation library: content must never be left
  * invisible if a scroll trigger misfires, so a fallback timer always reveals
- * it. The motion itself is the shared `.rise` keyframe from index.css, which
- * reduced-motion collapses to an instant cut.
+ * it. The motion itself is CSS, which reduced-motion collapses to a cut.
  */
-export function Reveal({ children, delay = 0, className, as: Tag = "div" }) {
+export function Reveal({ children, delay = 0, from = "up", className, as: Tag = "div" }) {
   const ref = useRef(null);
   const [shown, setShown] = useState(false);
 
@@ -42,7 +49,7 @@ export function Reveal({ children, delay = 0, className, as: Tag = "div" }) {
   return (
     <Tag
       ref={ref}
-      className={clsx(className, shown && "rise")}
+      className={clsx(className, shown && (DIRECTIONS[from] ?? DIRECTIONS.up))}
       style={shown ? { animationDelay: `${delay}s` } : { opacity: 0 }}
     >
       {children}

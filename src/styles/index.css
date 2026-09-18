@@ -664,3 +664,57 @@
   animation-timing-function: linear;
   animation-fill-mode: both;
 }
+
+/* Scroll reveals — content slides into place from a chosen direction. */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes reveal-left {
+  from {
+    opacity: 0;
+    transform: translateX(-42px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes reveal-right {
+  from {
+    opacity: 0;
+    transform: translateX(42px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes reveal-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.reveal-up {
+  animation: reveal-up 0.75s var(--ease-brand) both;
+}
+.reveal-left {
+  animation: reveal-left 0.85s var(--ease-brand) both;
+}
+.reveal-right {
+  animation: reveal-right 0.85s var(--ease-brand) both;
+}
+.reveal-scale {
+  animation: reveal-scale 0.85s var(--ease-brand) both;
+}
