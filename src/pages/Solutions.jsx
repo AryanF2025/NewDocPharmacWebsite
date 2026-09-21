@@ -1,32 +1,27 @@
 /**
  * Solutions — who we build for.
  *
- * Motion is deliberately restrained: one thing moves at a time. The hero's
- * audience list previews itself, the five business types travel sideways while
- * the section is pinned, and the impact figures count up once against the live
- * coverage map. Phones get the simpler version — stacked, no pinning.
+ * This page's own device is the configurator: pick a business type and the
+ * network assembles itself, module by module, with the outcome and the call to
+ * action changing to match. Nothing here is borrowed from another page — the
+ * coverage map belongs to the home page, the console to Technology.
  */
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import clsx from "clsx";
-import { motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
+import { motion, useScroll, useSpring, useTransform } from "motion/react";
 import { Reveal } from "@/components/ui/Reveal";
 import { Magnetic } from "@/components/experience/Magnetic";
 import { CountUp } from "@/components/experience/HeroParts";
-import { COMPLIANCE, ComplianceIcon } from "@/components/experience/compliance";
-import { IndiaCoverageMap } from "@/components/art/IndiaCoverageMap";
-import { LogoMarquee } from "@/components/ui/LogoMarquee";
-import { INTEGRATION_LOGOS } from "@/data/logos";
 import { usePageMeta } from "@/hooks/usePageMeta";
-import { SOLUTIONS_HERO, SOLUTION_TABS, SOLUTIONS_IMPACT, INTEGRATIONS } from "@/data/site";
+import { SOLUTIONS_HERO, SOLUTION_TABS, SOLUTIONS_IMPACT } from "@/data/site";
 import stillPick from "@/assets/images/still-pick.jpg";
 import stillVerify from "@/assets/images/still-verify.jpg";
 import stillPack from "@/assets/images/still-pack.jpg";
 import stillRider from "@/assets/images/still-rider.jpg";
 import stillHandover from "@/assets/images/still-handover.jpg";
 
-/** One still per business type, from our own darkstore film. */
 const ART = {
   pharmacy: stillPick,
   platform: stillVerify,
@@ -35,25 +30,18 @@ const ART = {
   hospital: stillRider,
 };
 
-function useIsDesktop() {
-  const [desktop, setDesktop] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px)");
-    const update = () => setDesktop(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
-  return desktop;
-}
+/** What each business type gets out of it — the line under the assembled stack. */
+const OUTCOME = {
+  "e-pharmacies": "Your pharmacy, live in a new city without a new lease.",
+  "corporate-wellness": "Your members order; our network delivers.",
+  "health-insurers": "Cover turns into medicine at the member's door.",
+  "d2c-health": "Your bestsellers, minutes from your customers.",
+  hospitals: "Care that continues after the patient leaves.",
+};
 
 /* ------------------------------------------------------------------ hero --- */
 
-/**
- * The opener previews the page: the five audiences are listed live, and
- * whichever is hovered — or cycling on its own — shows its own photograph.
- */
-function SolutionsHero() {
+function SolutionsHero({ onPick }) {
   const [active, setActive] = useState(0);
   const [held, setHeld] = useState(false);
 
@@ -76,7 +64,6 @@ function SolutionsHero() {
           WebkitMaskImage: "radial-gradient(ellipse 75% 65% at 35% 45%, #000 25%, transparent 78%)",
         }}
       />
-      <div aria-hidden className="pointer-events-none absolute -right-40 top-10 h-[32rem] w-[32rem] rounded-full bg-brand-blue/10 blur-[130px]" />
 
       <div className="relative mx-auto grid w-full max-w-[88rem] items-center gap-12 px-5 md:px-10 lg:grid-cols-[1fr_1fr] lg:gap-16">
         <div>
@@ -98,24 +85,12 @@ function SolutionsHero() {
             {SOLUTIONS_HERO.sub}
           </p>
 
-          <div className="rise mt-6 flex flex-wrap gap-2" style={{ animationDelay: ".32s" }}>
-            {SOLUTIONS_HERO.pills.map((pill) => (
-              <span key={pill} className="rounded-full border border-hairline bg-white px-3.5 py-1.5 text-[0.82rem] font-semibold text-ink-soft">
-                {pill}
-              </span>
-            ))}
-          </div>
-
-          {/* The five audiences, listed live. */}
-          <ul
-            className="rise mt-7 border-t border-hairline"
-            style={{ animationDelay: ".4s" }}
-            onMouseLeave={() => setHeld(false)}
-          >
+          <ul className="rise mt-7 border-t border-hairline" style={{ animationDelay: ".4s" }} onMouseLeave={() => setHeld(false)}>
             {SOLUTION_TABS.map((item, i) => (
               <li key={item.id}>
                 <a
-                  href="#who"
+                  href="#build"
+                  onClick={() => onPick(i)}
                   onMouseEnter={() => {
                     setHeld(true);
                     setActive(i);
@@ -151,7 +126,6 @@ function SolutionsHero() {
           </ul>
         </div>
 
-        {/* Whichever audience is live shows its own photograph. */}
         <div className="rise relative" style={{ animationDelay: ".2s" }}>
           <div className="relative aspect-[4/3] overflow-hidden rounded-[2.25rem] bg-jet shadow-[0_50px_100px_-45px_rgba(5,36,57,.6)] lg:aspect-auto lg:h-[min(64svh,32rem)]">
             {SOLUTION_TABS.map((item, i) => (
@@ -179,194 +153,143 @@ function SolutionsHero() {
   );
 }
 
-/* --------------------------------------------------- the five audiences --- */
+/* ---------------------------------------------------------- configurator --- */
 
-function SolutionPanel({ item, index, total, active = true }) {
+/**
+ * The page's own idea: choosing a business type assembles its network, one
+ * module at a time, and the outcome and call to action follow the choice.
+ */
+function Configurator({ picked, setPicked }) {
+  const item = SOLUTION_TABS[picked];
+
   return (
-    <article className="flex h-full w-full shrink-0 items-center">
-      <div className="mx-auto grid w-full max-w-[84rem] items-center gap-8 px-5 md:px-10 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
-        <div className={clsx("transition-opacity duration-500", active ? "opacity-100" : "opacity-40")}>
-          <p className="tabular text-[0.78rem] font-extrabold text-brand-green">
-            {String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
-          </p>
-          <p className="mt-3 text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">{item.tab}</p>
-          <h2 className="mt-3 max-w-xl text-[clamp(1.5rem,min(2.8vw,4.4vh),2.5rem)] font-extrabold leading-[1.08] tracking-[-0.04em] text-jet">
-            {item.headline}
-          </h2>
-          <p className="mt-4 max-w-lg text-[clamp(0.95rem,1.9vh,1.05rem)] leading-relaxed text-ink-soft">{item.copy}</p>
+    <section id="build" className="scroll-mt-24 bg-jet py-20 text-white md:py-28">
+      {/* The header menu and the footer link straight to a business type
+          (/solutions#d2c-health). These are the marks those links land on —
+          all five sit here, because the configurator is where they all lead. */}
+      {SOLUTION_TABS.map((tab) => (
+        <span key={tab.id} id={tab.id} aria-hidden className="block scroll-mt-24" />
+      ))}
 
-          <ul className="mt-6 grid max-w-xl gap-x-6 gap-y-2 sm:grid-cols-2">
-            {item.props.map((prop) => (
-              <li key={prop} className="flex items-start gap-2.5 text-[clamp(0.85rem,1.7vh,0.95rem)] text-ink-soft">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-green" />
-                {prop}
+      <div className="mx-auto max-w-[84rem] px-5 md:px-10">
+        <Reveal from="left">
+          <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-green">Build your network</p>
+          <h2 className="mt-3 max-w-2xl text-[clamp(1.9rem,3.6vw,3rem)] font-extrabold leading-[1.05] tracking-[-0.04em]">
+            Pick what you are. We&apos;ll assemble the rest.
+          </h2>
+        </Reveal>
+
+        {/* Choose */}
+        <div className="mt-9 flex flex-wrap gap-2">
+          {SOLUTION_TABS.map((tab, i) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setPicked(i)}
+              aria-pressed={i === picked}
+              className={clsx(
+                "relative rounded-full px-5 py-2.5 text-[0.88rem] font-bold transition-colors duration-300",
+                i === picked ? "text-jet" : "text-white/70 hover:text-white"
+              )}
+            >
+              {i === picked ? (
+                <motion.span
+                  layoutId="config-pill"
+                  className="absolute inset-0 -z-10 rounded-full bg-brand-green"
+                  transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                />
+              ) : (
+                <span className="absolute inset-0 -z-10 rounded-full border border-white/20" />
+              )}
+              {tab.tab}
+            </button>
+          ))}
+        </div>
+
+        {/* Assemble */}
+        <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_1.1fr] lg:gap-12">
+          <div key={item.id} className="reveal-up">
+            <h3 className="text-[clamp(1.4rem,2.6vw,2.2rem)] font-extrabold leading-[1.1] tracking-[-0.03em]">{item.headline}</h3>
+            <p className="mt-4 max-w-md text-[1.02rem] leading-relaxed text-white/65">{item.copy}</p>
+
+            <p className="mt-8 text-[0.75rem] font-bold uppercase tracking-[0.16em] text-white/45">What you get</p>
+            <p className="mt-3 max-w-md text-[clamp(1.1rem,2.2vw,1.5rem)] font-extrabold leading-snug tracking-[-0.02em] text-brand-green">
+              {OUTCOME[item.id]}
+            </p>
+
+            <Magnetic className="mt-8 inline-block">
+              <Link
+                to="/partner"
+                className="group flex items-center gap-3 rounded-full bg-white py-2 pl-7 pr-2 text-[0.98rem] font-extrabold text-jet transition-colors duration-300 hover:bg-brand-green"
+              >
+                {item.cta}
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-jet text-white transition-transform duration-300 group-hover:rotate-[-45deg]">
+                  →
+                </span>
+              </Link>
+            </Magnetic>
+          </div>
+
+          {/* The modules snap into place, one after another. */}
+          <ul className="grid gap-2.5">
+            {item.props.map((prop, i) => (
+              <li
+                key={`${item.id}-${prop}`}
+                className="reveal-up flex items-center gap-3.5 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3.5 transition-colors duration-300 hover:border-brand-green/40 hover:bg-white/[0.07]"
+                style={{ animationDelay: `${i * 70}ms` }}
+              >
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-green/15 text-[0.7rem] font-extrabold text-brand-green">
+                  ✓
+                </span>
+                <span className="text-[0.98rem] font-semibold text-white/90">{prop}</span>
+                <span className="tabular ml-auto text-[0.72rem] font-extrabold text-white/30">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
               </li>
             ))}
           </ul>
-
-          <Magnetic className="mt-7 inline-block">
-            <Link
-              to="/partner"
-              className="group flex items-center gap-3 rounded-full bg-jet py-2 pl-6 pr-2 text-[0.92rem] font-bold text-white transition-colors duration-300 hover:bg-brand-blue"
-            >
-              {item.cta}
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 transition-transform duration-300 group-hover:rotate-[-45deg]">
-                →
-              </span>
-            </Link>
-          </Magnetic>
         </div>
-
-        <figure className="relative aspect-[4/3] overflow-hidden rounded-[2rem] bg-jet lg:aspect-auto lg:h-[min(56svh,30rem)]">
-          <img
-            src={ART[item.art]}
-            alt=""
-            className={clsx("h-full w-full object-cover transition-transform duration-[1.4s] ease-[cubic-bezier(.22,1,.36,1)]", active ? "scale-100" : "scale-105")}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-jet/70 via-transparent to-transparent" />
-          <figcaption className="absolute inset-x-6 bottom-6 text-[0.95rem] font-extrabold text-white">{item.tab}</figcaption>
-        </figure>
       </div>
-    </article>
+    </section>
   );
 }
 
-/** Desktop: the panels travel sideways while the section is pinned. */
-function AudiencesPinned({ openAt }) {
+/* --------------------------------------------------------------- outcomes --- */
+
+/** The figures, on a rail that fills as the section passes. */
+function Outcomes() {
   const ref = useRef(null);
-  const [active, setActive] = useState(0);
-  const total = SOLUTION_TABS.length;
-
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const progress = useSpring(scrollYProgress, { stiffness: 140, damping: 32, mass: 0.35 });
-  const x = useTransform(progress, [0, 1], ["0%", `-${(total - 1) * 100}%`]);
-  const fill = useTransform(progress, [0, 1], ["0%", "100%"]);
-
-  useMotionValueEvent(scrollYProgress, "change", (p) => {
-    setActive(Math.min(total - 1, Math.max(0, Math.round(p * (total - 1)))));
-  });
-
-  const goTo = (i, behavior = "smooth") => {
-    const host = ref.current;
-    if (!host) return;
-    const travel = host.offsetHeight - window.innerHeight;
-    const top = host.getBoundingClientRect().top + window.scrollY;
-    window.scrollTo({ top: top + (travel * i) / (total - 1), behavior });
-  };
-
-  // Arriving from the header menu (/solutions#health-insurers) opens that one.
-  useLayoutEffect(() => {
-    if (openAt == null || openAt < 0) return undefined;
-    const id = window.setTimeout(() => goTo(openAt, "auto"), 60);
-    return () => window.clearTimeout(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [openAt]);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 80%", "end 60%"] });
+  const rail = useSpring(scrollYProgress, { stiffness: 120, damping: 30 });
+  const width = useTransform(rail, [0, 1], ["0%", "100%"]);
 
   return (
-    <section id="who" ref={ref} className="relative bg-floral" style={{ height: `${total * 100}svh` }}>
-      <div className="sticky top-0 flex h-[100svh] flex-col justify-center overflow-hidden pb-8 pt-24">
-        <div className="mx-auto w-full max-w-[84rem] px-5 md:px-10">
-          <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Who we build for</p>
-        </div>
-
-        <div className="mt-6 flex min-h-0 flex-1 items-center">
-          <motion.div className="flex h-full w-full" style={{ x }}>
-            {SOLUTION_TABS.map((item, i) => (
-              <SolutionPanel key={item.id} item={item} index={i} total={total} active={i === active} />
-            ))}
-          </motion.div>
-        </div>
-
-        <div className="mx-auto mt-6 w-full max-w-[84rem] px-5 md:px-10">
-          <div className="relative flex gap-2">
-            {SOLUTION_TABS.map((item, i) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => goTo(i)}
-                aria-current={i === active}
-                className={clsx(
-                  "flex-1 pb-3 text-left text-[0.82rem] font-bold transition-colors duration-300",
-                  i === active ? "text-jet" : "text-ink-faint hover:text-ink-soft"
-                )}
-              >
-                {item.tab}
-              </button>
-            ))}
-            <span aria-hidden className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-jet/10" />
-            <motion.span
-              aria-hidden
-              className="absolute bottom-0 left-0 h-0.5 rounded-full bg-gradient-to-r from-brand-blue to-brand-green"
-              style={{ width: fill }}
-            />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/** Phones and tablets: the same content, stacked. */
-function AudiencesStacked() {
-  return (
-    <section id="who" className="bg-floral py-20">
+    <section ref={ref} className="bg-white py-20 md:py-28">
       <div className="mx-auto max-w-[84rem] px-5 md:px-10">
-        <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Who we build for</p>
-      </div>
-      <div className="mt-8 space-y-14">
-        {SOLUTION_TABS.map((item, i) => (
-          <Reveal key={item.id} from="up">
-            <div id={item.id} className="scroll-mt-24">
-              <SolutionPanel item={item} index={i} total={SOLUTION_TABS.length} />
-            </div>
-          </Reveal>
-        ))}
-      </div>
-    </section>
-  );
-}
+        <Reveal from="left">
+          <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">{SOLUTIONS_IMPACT.eyebrow}</p>
+          <h2 className="mt-3 max-w-2xl text-[clamp(2rem,3.8vw,3.2rem)] font-extrabold leading-[1.04] tracking-[-0.04em] text-jet">
+            {SOLUTIONS_IMPACT.headline}
+          </h2>
+        </Reveal>
 
-/* ---------------------------------------------------------------- impact --- */
-
-/** The figures sit against the live coverage map — the reach they describe. */
-function Impact() {
-  return (
-    <section className="relative overflow-hidden bg-jet py-20 text-white md:py-28">
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-40 top-0 h-[34rem] w-[34rem] rounded-full bg-brand-blue/20 blur-[140px]" />
-        <div className="absolute -right-40 bottom-0 h-[30rem] w-[30rem] rounded-full bg-brand-green/15 blur-[140px]" />
-      </div>
-
-      <div className="relative mx-auto grid max-w-[84rem] items-center gap-12 px-5 md:px-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
-        <div>
-          <Reveal from="left">
-            <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-green">{SOLUTIONS_IMPACT.eyebrow}</p>
-            <h2 className="mt-3 max-w-xl text-[clamp(2rem,3.8vw,3.2rem)] font-extrabold leading-[1.04] tracking-[-0.04em]">
-              {SOLUTIONS_IMPACT.headline}
-            </h2>
-          </Reveal>
-
-          <div className="mt-10 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-white/10">
-            {SOLUTIONS_IMPACT.stats.map((stat, i) => (
-              <Reveal key={stat.label} from="up" delay={(i % 2) * 0.06}>
-                <div className="h-full bg-jet p-6">
-                  <p className="text-[clamp(1.9rem,3.6vw,2.8rem)] font-extrabold leading-none tracking-[-0.05em] text-white">
-                    <CountUp value={stat.value} suffix={stat.suffix} />
-                  </p>
-                  <p className="mt-3 text-[0.95rem] font-bold text-white">{stat.label}</p>
-                  <p className="mt-1 text-[0.85rem] text-white/55">{stat.note}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
+        <div className="relative mt-12 h-0.5 rounded-full bg-jet/10">
+          <motion.span className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-brand-blue to-brand-green" style={{ width }} />
         </div>
 
-        <Reveal from="right">
-          <IndiaCoverageMap className="mx-auto h-auto w-full max-w-[26rem]" />
-          <p className="mt-6 text-center text-[0.8rem] font-bold uppercase tracking-[0.16em] text-white/45">
-            12+ cities · 50+ darkstores · 19,000+ pincodes
-          </p>
-        </Reveal>
+        <div className="grid gap-px bg-hairline sm:grid-cols-2 lg:grid-cols-4">
+          {SOLUTIONS_IMPACT.stats.map((stat, i) => (
+            <Reveal key={stat.label} from="up" delay={(i % 4) * 0.06}>
+              <div className="h-full bg-white p-6 md:p-8">
+                <p className="text-[clamp(2rem,4vw,3.2rem)] font-extrabold leading-none tracking-[-0.05em] text-jet">
+                  <CountUp value={stat.value} suffix={stat.suffix} />
+                </p>
+                <p className="mt-3 text-[0.95rem] font-bold text-jet">{stat.label}</p>
+                <p className="mt-1 text-[0.88rem] text-ink-faint">{stat.note}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -381,51 +304,24 @@ export default function Solutions() {
       "End-to-end supply chain built for healthcare: e-pharmacies, corporate wellness platforms, health insurers, D2C brands, doctors and hospitals.",
   });
 
-  const desktop = useIsDesktop();
-  const reduce = useReducedMotion();
   const { hash } = useLocation();
-  const openAt = SOLUTION_TABS.findIndex((item) => item.id === hash.slice(1));
+  const [picked, setPicked] = useState(() => {
+    const i = SOLUTION_TABS.findIndex((tab) => tab.id === hash.slice(1));
+    return i < 0 ? 0 : i;
+  });
+
+  // Arriving from the header menu or the footer opens that business type; the
+  // app's ScrollManager brings the section itself into view.
+  useEffect(() => {
+    const i = SOLUTION_TABS.findIndex((tab) => tab.id === hash.slice(1));
+    if (i >= 0) setPicked(i);
+  }, [hash]);
 
   return (
     <>
-      <SolutionsHero />
-      {desktop && !reduce ? <AudiencesPinned openAt={openAt} /> : <AudiencesStacked />}
-      <Impact />
-
-      {/* Plugs into what you already run */}
-      <section className="bg-white py-20 md:py-24">
-        <div className="mx-auto max-w-[84rem] px-5 md:px-10">
-          <Reveal from="left">
-            <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Integrations</p>
-            <h2 className="mt-3 max-w-2xl text-[clamp(1.8rem,3.4vw,2.8rem)] font-extrabold leading-[1.06] tracking-[-0.04em] text-jet">
-              {INTEGRATIONS.headline}
-            </h2>
-            <p className="mt-4 max-w-xl text-[1.02rem] leading-relaxed text-ink-soft">{INTEGRATIONS.sub}</p>
-          </Reveal>
-        </div>
-
-        <div className="mt-10">
-          <LogoMarquee items={INTEGRATION_LOGOS} rows={1} duration={55} logoArea={4200} slot={210} />
-        </div>
-
-        <div className="mx-auto mt-12 max-w-[84rem] px-5 md:px-10">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {COMPLIANCE.map((item, i) => (
-              <Reveal key={item.title} from="up" delay={i * 0.05}>
-                <div className="flex h-full items-center gap-3 rounded-2xl border border-hairline bg-floral px-4 py-3.5">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-peppermint text-[#5f8a0f]">
-                    <ComplianceIcon name={item.icon} />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-[0.92rem] font-bold text-jet">{item.title}</span>
-                    <span className="block text-[0.78rem] text-ink-faint">{item.line}</span>
-                  </span>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
+      <SolutionsHero onPick={setPicked} />
+      <Configurator picked={picked} setPicked={setPicked} />
+      <Outcomes />
     </>
   );
 }
