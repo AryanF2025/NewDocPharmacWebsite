@@ -2,19 +2,43 @@ import { Suspense, lazy, useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { SiteHeader } from "@/components/experience/SiteHeader";
 import { SiteFooter } from "@/components/experience/SiteFooter";
-import { LogoMark } from "@/components/ui/Logo";
+import { BrandLoader } from "@/components/ui/BrandLoader";
 import { scrollToTarget } from "@/components/motion/smoothScroll";
 import Home from "@/pages/Home";
 
 // Home ships in the main bundle; the rest split so first paint stays light.
-const Solutions = lazy(() => import("@/pages/Solutions"));
-const Technology = lazy(() => import("@/pages/Technology"));
-const About = lazy(() => import("@/pages/About"));
-const Partner = lazy(() => import("@/pages/Partner"));
-const Resources = lazy(() => import("@/pages/Resources"));
-const NotFound = lazy(() => import("@/pages/NotFound"));
-const PrivacyPolicy = lazy(() => import("@/pages/Legal").then((m) => ({ default: m.PrivacyPolicy })));
-const TermsOfUse = lazy(() => import("@/pages/Legal").then((m) => ({ default: m.TermsOfUse })));
+const PAGES = {
+  solutions: () => import("@/pages/Solutions"),
+  technology: () => import("@/pages/Technology"),
+  about: () => import("@/pages/About"),
+  partner: () => import("@/pages/Partner"),
+  resources: () => import("@/pages/Resources"),
+  legal: () => import("@/pages/Legal"),
+  notFound: () => import("@/pages/NotFound"),
+};
+const Solutions = lazy(PAGES.solutions);
+const Technology = lazy(PAGES.technology);
+const About = lazy(PAGES.about);
+const Partner = lazy(PAGES.partner);
+const Resources = lazy(PAGES.resources);
+const NotFound = lazy(PAGES.notFound);
+const PrivacyPolicy = lazy(() => PAGES.legal().then((m) => ({ default: m.PrivacyPolicy })));
+const TermsOfUse = lazy(() => PAGES.legal().then((m) => ({ default: m.TermsOfUse })));
+
+/**
+ * Once the first page is up and the browser is idle, fetch the other pages in
+ * the background, so moving around the site rarely has to wait on the loader.
+ * Skipped on data-saver connections.
+ */
+function usePrefetchPages() {
+  useEffect(() => {
+    if (navigator.connection?.saveData) return undefined;
+    const idle = window.requestIdleCallback ?? ((fn) => window.setTimeout(fn, 1500));
+    const cancel = window.cancelIdleCallback ?? window.clearTimeout;
+    const id = idle(() => Object.values(PAGES).forEach((load) => load().catch(() => {})), { timeout: 4000 });
+    return () => cancel(id);
+  }, []);
+}
 
 /**
  * Restores the top of the page between routes, but honours in-page anchors so
@@ -65,16 +89,12 @@ function useAnchorScroll() {
 }
 
 function RouteFallback() {
-  return (
-    <div className="flex min-h-[100svh] items-center justify-center">
-      <LogoMark className="h-10 w-10 animate-soft-pulse" />
-      <span className="sr-only">Loading</span>
-    </div>
-  );
+  return <BrandLoader />;
 }
 
 export default function App() {
   useAnchorScroll();
+  usePrefetchPages();
 
   return (
     <>
