@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring, useTransform } from "motion/react";
 import clsx from "clsx";
-import { ConsoleMock } from "@/components/directions/shared";
+import { Eyebrow, SplitText } from "@/components/motion/Text";
+import { scrollToTarget } from "@/components/motion/smoothScroll";
 import stillVerify from "@/assets/images/still-verify.jpg";
 import stillPick from "@/assets/images/still-pick.jpg";
 import stillPack from "@/assets/images/still-pack.jpg";
@@ -18,14 +19,8 @@ const STEPS = [
   { title: "Delivered", body: "OTP-confirmed handover at the door, inside 30 minutes.", at: 30, media: stillHandover },
 ];
 
-function Media({ step }) {
-  if (step.media === "console") {
-    return (
-      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-jet via-[#053a66] to-brand-blue-deep p-6 xl:p-10">
-        <ConsoleMock compact className="w-full max-w-lg" />
-      </div>
-    );
-  }
+function Media({ step, active }) {
+  if (step.media === "console") return <OrderReceivedMobile active={active} wide />;
   return <img src={step.media} alt="" className="h-full w-full object-cover" />;
 }
 
@@ -62,10 +57,11 @@ export function HowItWorksPinned() {
       <div className="mx-auto hidden max-w-[84rem] gap-10 px-5 md:px-10 lg:grid lg:grid-cols-2 lg:gap-20">
         {/* ------------------------------------------ left: one screen --- */}
         <div className="pt-20 lg:sticky lg:top-0 lg:flex lg:h-[100svh] lg:flex-col lg:pb-8 lg:pt-24">
-          <p className="text-[0.8rem] font-bold text-brand-blue">How it works</p>
-          <h2 className="mt-2 text-[clamp(2.1rem,3.4vw,3.2rem)] font-extrabold leading-[1] tracking-[-0.04em] text-jet">
-            Every order, on the clock.
-          </h2>
+          <Eyebrow>How it works</Eyebrow>
+          <SplitText
+            lines="Every order, on the clock."
+            className="mt-3 text-[clamp(2.1rem,3.4vw,3.2rem)] font-extrabold leading-[1] tracking-[-0.04em] text-jet"
+          />
           <p className="mt-3 max-w-md text-[1.02rem] leading-relaxed text-ink-soft">
             Six checkpoints, one continuous flow, tracked to the minute.
           </p>
@@ -90,7 +86,7 @@ export function HowItWorksPinned() {
                       filter: i === active ? "none" : "saturate(.6)",
                     }}
                   >
-                    <Media step={s} />
+                    <Media step={s} active={i === active} />
                   </div>
                 </div>
               ))}
@@ -194,9 +190,14 @@ export function HowItWorksPinned() {
 /* ================================================================ mobile === */
 
 /** Step 1 on phones: a new-order notification sized for a narrow card. */
-function OrderReceivedMobile({ active }) {
+function OrderReceivedMobile({ active, wide = false }) {
   return (
-    <div className="relative flex h-full w-full flex-col justify-center gap-3 overflow-hidden bg-gradient-to-br from-jet via-[#053a66] to-brand-blue-deep p-5">
+    <div
+      className={clsx(
+        "relative flex h-full w-full flex-col justify-center gap-3 overflow-hidden bg-gradient-to-br from-jet via-[#053a66] to-brand-blue-deep",
+        wide ? "px-[18%]" : "p-5"
+      )}
+    >
       <div key={active ? "on" : "off"} className={clsx("rounded-2xl bg-white p-4 shadow-xl", active && "how-pop")}>
         <div className="flex items-center justify-between">
           <span className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-ink-faint">New order</span>
@@ -256,7 +257,7 @@ function HowItWorksMobile() {
     if (!host) return;
     const travel = host.offsetHeight - window.innerHeight;
     const top = host.getBoundingClientRect().top + window.scrollY;
-    window.scrollTo({ top: top + (travel * i) / (count - 1), behavior: "smooth" });
+    scrollToTarget(top + (travel * i) / (count - 1));
   };
 
   return (
@@ -264,7 +265,7 @@ function HowItWorksMobile() {
     <div ref={hostRef} className="relative lg:hidden" style={{ height: `${100 + (count - 1) * 70}svh` }}>
       <div className="sticky top-0 flex h-[100svh] flex-col overflow-hidden pb-5 pt-[4.5rem]">
         <div className="px-5">
-          <p className="text-[0.78rem] font-bold text-brand-blue">How it works</p>
+          <p className="text-[0.75rem] font-bold uppercase tracking-[0.16em] text-brand-blue">How it works</p>
           <h2 className="mt-1 text-[clamp(1.6rem,4.2svh,2.1rem)] font-extrabold leading-[1.04] tracking-[-0.04em] text-jet">
             Every order, on the clock.
           </h2>

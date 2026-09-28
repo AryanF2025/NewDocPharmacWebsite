@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Logo } from "@/components/ui/Logo";
 import { Magnetic } from "./Magnetic";
 import { FooterWordmark } from "./FooterWordmark";
+import { scrollToTarget } from "@/components/motion/smoothScroll";
 import { SOCIAL, CAREERS_URL, OFFICE } from "./siteInfo";
 
 const COLUMNS = [
@@ -49,7 +50,7 @@ function FooterLink({ href, children }) {
 
 export function SiteFooter() {
   return (
-    <footer className="relative overflow-hidden rounded-t-[2.5rem] bg-jet text-white">
+    <footer className="relative overflow-hidden rounded-t-[2.5rem] border-t border-white/10 bg-jet text-white">
       <div className="mx-auto max-w-[84rem] px-6 pt-16 md:px-10 md:pt-20">
         {/* Links */}
         <div className="grid gap-12 pb-14 md:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
@@ -106,7 +107,7 @@ export function SiteFooter() {
             <Link to="/terms" className="transition-colors hover:text-white">Terms of use</Link>
             <button
               type="button"
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              onClick={() => scrollToTarget(0)}
               className="group flex items-center gap-2 font-semibold text-white/70 transition-colors hover:text-white"
             >
               Back to top

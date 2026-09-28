@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { Logo } from "@/components/ui/Logo";
 import { Magnetic } from "./Magnetic";
 import { SOCIAL } from "./siteInfo";
+import { lockScroll } from "@/components/motion/smoothScroll";
 import riderStill from "@/assets/images/still-rider.jpg";
 
 const SOLUTIONS = [
@@ -41,10 +42,8 @@ export function SiteHeader() {
   });
 
   useEffect(() => {
-    document.body.style.overflow = menu ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
+    lockScroll(menu);
+    return () => lockScroll(false);
   }, [menu]);
 
   const openSolutions = () => {
@@ -108,10 +107,11 @@ export function SiteHeader() {
             <Magnetic className="hidden sm:block">
               <Link
                 to="/partner"
-                className="group flex items-center gap-2 rounded-full bg-brand-blue py-2.5 pl-5 pr-2.5 text-[0.88rem] font-bold text-white transition-colors hover:bg-jet"
+                className="cta group relative isolate flex items-center gap-2 overflow-hidden rounded-full bg-brand-blue py-2.5 pl-5 pr-2.5 text-[0.88rem] font-bold text-white"
               >
-                Partner with us
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 transition-transform duration-300 group-hover:rotate-[-45deg]">
+                <span aria-hidden className="cta-fill cta-fill--sm absolute inset-0 rounded-full bg-jet" />
+                <span className="relative">Partner with us</span>
+                <span className="relative flex h-7 w-7 items-center justify-center rounded-full bg-white/20 transition-transform duration-500 group-hover:rotate-[-45deg]">
                   →
                 </span>
               </Link>

@@ -6,27 +6,32 @@
  * gets a wider tile, so the page has a clear first read.
  */
 
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import { motion } from "motion/react";
 import { Reveal } from "@/components/ui/Reveal";
-import { Magnetic } from "@/components/experience/Magnetic";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { PRESS, PRESS_HERO, PRESS_TOPICS } from "@/data/press";
-import { INVESTORS } from "@/data/about";
-import { LogoImg } from "@/components/ui/LogoImg";
+import { HeroBackdrop, HeroHeading, Enter } from "@/components/motion/Hero";
+import { CtaButton } from "@/components/motion/CtaButton";
+import { useInViewOnce } from "@/components/motion/useInViewOnce";
 
 const EASE = [0.22, 1, 0.36, 1];
 
-function PressCard({ item, lead = false }) {
+function PressCard({ item, lead = false, index = 0 }) {
+  const ref = useRef(null);
+  const seen = useInViewOnce(ref);
   return (
     <motion.a
+      ref={ref}
       layout
+      initial={{ opacity: 0, y: 40 }}
+      animate={seen ? { opacity: 1, y: 0 } : undefined}
+      exit={{ opacity: 0, scale: 0.96 }}
       href={item.href}
       target="_blank"
       rel="noreferrer"
-      transition={{ duration: 0.45, ease: EASE }}
+      transition={{ duration: 0.8, ease: EASE, delay: seen ? (index % 2) * 0.1 : 0, layout: { duration: 0.5, ease: EASE } }}
       className={clsx(
         "group flex flex-col overflow-hidden rounded-[1.75rem] border border-hairline bg-white transition-all duration-300 hover:-translate-y-1 hover:border-brand-blue/30 hover:shadow-[0_24px_50px_-30px_rgba(5,36,57,.4)]",
         lead && "lg:col-span-2 lg:flex-row"
@@ -36,6 +41,7 @@ function PressCard({ item, lead = false }) {
         <img
           src={item.image}
           alt=""
+          loading="lazy"
           className="h-full w-full object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-105"
         />
       </div>
@@ -81,32 +87,16 @@ export default function Resources() {
     <>
       {/* ------------------------------------------------------- hero --- */}
       <section className="relative overflow-hidden bg-white pb-12 pt-28 md:pb-16 md:pt-36">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(5,36,57,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(5,36,57,.045) 1px, transparent 1px)",
-            backgroundSize: "64px 64px",
-            maskImage: "radial-gradient(ellipse 70% 60% at 35% 40%, #000 20%, transparent 75%)",
-            WebkitMaskImage: "radial-gradient(ellipse 70% 60% at 35% 40%, #000 20%, transparent 75%)",
-          }}
-        />
-        <div aria-hidden className="pointer-events-none absolute -right-40 -top-24 h-[28rem] w-[28rem] rounded-full bg-brand-blue/10 blur-[130px]" />
+        <HeroBackdrop focus="35% 40%" />
 
         <div className="relative mx-auto max-w-[84rem] px-5 md:px-10">
-          <p className="rise text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">{PRESS_HERO.eyebrow}</p>
-          <h1 className="mt-4 text-[clamp(2.2rem,5vw,4rem)] font-extrabold leading-[1.02] tracking-[-0.045em] text-jet">
-            <span className="block overflow-hidden pb-1">
-              <span className="wipe block">{PRESS_HERO.headline}</span>
-            </span>
-          </h1>
-          <p className="rise mt-5 max-w-2xl text-[1.08rem] leading-relaxed text-ink-soft" style={{ animationDelay: ".2s" }}>
+          <HeroHeading eyebrow={PRESS_HERO.eyebrow} lines={PRESS_HERO.headline} className="text-[clamp(2.2rem,5vw,4rem)]" />
+          <Enter as="p" delay={0.3} className="mt-5 max-w-2xl text-[1.08rem] leading-relaxed text-ink-soft">
             {PRESS_HERO.sub}
-          </p>
+          </Enter>
 
           {/* Filter */}
-          <div className="rise mt-9 flex flex-wrap gap-2" style={{ animationDelay: ".3s" }}>
+          <Enter delay={0.4} className="mt-9 flex flex-wrap gap-2">
             {PRESS_TOPICS.map((name) => (
               <button
                 key={name}
@@ -126,7 +116,7 @@ export default function Resources() {
                 {name}
               </button>
             ))}
-          </div>
+          </Enter>
         </div>
       </section>
 
@@ -135,33 +125,11 @@ export default function Resources() {
         <div className="mx-auto max-w-[84rem] px-5 md:px-10">
           <motion.div layout className="grid gap-5 md:grid-cols-2">
             {shown.map((item, i) => (
-              <PressCard key={item.id} item={item} lead={topic === "All" && i === 0} />
+              <PressCard key={item.id} item={item} index={i} lead={topic === "All" && i === 0} />
             ))}
           </motion.div>
 
           {shown.length === 0 ? <p className="py-16 text-center text-ink-faint">Nothing filed under this topic yet.</p> : null}
-        </div>
-      </section>
-
-      {/* -------------------------------------------------- investors --- */}
-      <section className="bg-floral py-20 md:py-24">
-        <div className="mx-auto max-w-[84rem] px-5 md:px-10">
-          <Reveal from="left">
-            <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">{INVESTORS.title}</p>
-            <h2 className="mt-3 max-w-2xl text-[clamp(1.8rem,3.4vw,2.8rem)] font-extrabold leading-[1.06] tracking-[-0.04em] text-jet">
-              Backed to build the network.
-            </h2>
-          </Reveal>
-
-          <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-4">
-            {INVESTORS.logos.map((logo, i) => (
-              <Reveal key={logo.name} from="up" delay={i * 0.06}>
-                <div className="flex h-32 items-center justify-center rounded-3xl border border-hairline bg-white px-7 transition-all duration-300 hover:-translate-y-1 hover:border-brand-blue/30">
-                  <LogoImg src={logo.src} alt={logo.name} area={8000} maxWidth={200} maxHeight={76} />
-                </div>
-              </Reveal>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -178,17 +146,9 @@ export default function Resources() {
                   Our partnerships team can help with figures, quotes and interviews.
                 </p>
               </div>
-              <Magnetic>
-                <Link
-                  to="/partner"
-                  className="group flex shrink-0 items-center gap-3 rounded-full bg-brand-blue py-2 pl-7 pr-2 text-[0.98rem] font-bold text-white transition-colors duration-300 hover:bg-jet"
-                >
-                  Get in touch
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 transition-transform duration-300 group-hover:rotate-[-45deg]">
-                    →
-                  </span>
-                </Link>
-              </Magnetic>
+              <CtaButton to="/partner" className="shrink-0">
+                Get in touch
+              </CtaButton>
             </div>
           </Reveal>
         </div>

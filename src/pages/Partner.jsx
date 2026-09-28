@@ -1,6 +1,6 @@
 /**
  * Partner with us — the contact page.
- * An auto-advancing slider of the five audiences we build for, wired to the
+ * Expanding panels for the five audiences we build for, wired to the
  * enquiry form, which posts to the wrapper service at VITE_API_BASE_URL.
  */
 
@@ -20,6 +20,8 @@ import {
   PARTNER_ASSURANCES,
 } from "@/data/contact";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { SectionHeader } from "@/components/motion/Text";
+import { CtaButton } from "@/components/motion/CtaButton";
 
 const NEXT_STEPS = [
   ["01", "You tell us what you sell", "Categories, cities and the volumes you handle today."],
@@ -55,13 +57,13 @@ function Field({ label, error, children, hint }) {
 }
 
 /**
- * The five audiences, sliding sideways. Picking one sets the enquiry form's
- * business type, so the slider and the form always agree.
+ * The five audiences as expanding panels: the chosen one opens wide, the rest
+ * fold into slim labelled strips. Picking one sets the enquiry form's
+ * business type, so the panels and the form always agree.
  */
-function BusinessTypeSlider({ value, onPick }) {
+function BusinessTypePanels({ value, onPick }) {
   const [paused, setPaused] = useState(false);
-  const active = Math.max(0, SLIDER_TYPES.findIndex((type) => type.value === value));
-  const shown = active === -1 ? 0 : active;
+  const shown = Math.max(0, SLIDER_TYPES.findIndex((type) => type.value === value));
 
   useEffect(() => {
     if (paused) return undefined;
@@ -72,69 +74,73 @@ function BusinessTypeSlider({ value, onPick }) {
   }, [shown, paused, onPick]);
 
   return (
-    <div onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
-      {/* Tabs */}
-      <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
-        {SLIDER_TYPES.map((type) => (
+    <div
+      className="flex h-[34rem] flex-col gap-2 md:h-[26rem] md:flex-row md:gap-3"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {SLIDER_TYPES.map((type, i) => {
+        const active = i === shown;
+        return (
           <button
             key={type.value}
             type="button"
             onClick={() => onPick(type.value)}
-            aria-current={type.value === SLIDER_TYPES[shown].value}
+            onFocus={() => onPick(type.value)}
+            aria-pressed={active}
+            aria-label={type.label}
             className={clsx(
-              "shrink-0 rounded-full border px-4 py-2 text-[0.85rem] font-bold transition-colors",
-              type.value === SLIDER_TYPES[shown].value
-                ? "border-jet bg-jet text-white"
-                : "border-hairline bg-white text-ink-soft hover:border-brand-blue hover:text-jet"
+              "panel group relative min-h-0 min-w-0 overflow-hidden rounded-[1.5rem] bg-jet text-left",
+              active ? "is-active" : ""
             )}
+            style={{ flexGrow: active ? 5 : 1 }}
           >
-            {type.tab}
-          </button>
-        ))}
-      </div>
+            <img
+              src={type.image}
+              alt=""
+              loading="lazy"
+              className={clsx(
+                "absolute inset-0 h-full w-full object-cover transition-[transform,filter] duration-[1200ms] ease-[cubic-bezier(.22,1,.36,1)]",
+                active ? "scale-100" : "scale-125 grayscale-[60%] group-hover:grayscale-0"
+              )}
+            />
+            <div
+              className={clsx(
+                "absolute inset-0 transition-colors duration-700",
+                active ? "bg-gradient-to-t from-jet via-jet/30 to-transparent" : "bg-jet/65 group-hover:bg-jet/45"
+              )}
+            />
 
-      {/* Image track */}
-      <div className="relative mt-4 aspect-[16/10] overflow-hidden rounded-[1.75rem] bg-jet sm:aspect-[16/8]">
-        <div
-          className="absolute inset-0 flex transition-transform duration-[900ms] ease-[cubic-bezier(.76,0,.24,1)]"
-          style={{ transform: `translateX(-${shown * 100}%)` }}
-        >
-          {SLIDER_TYPES.map((type, i) => (
-            <div key={type.value} className="h-full w-full shrink-0 overflow-hidden">
-              <img
-                src={type.image}
-                alt=""
-                className={clsx(
-                  "h-full w-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(.22,1,.36,1)]",
-                  i === shown ? "scale-100" : "scale-110"
-                )}
-              />
-            </div>
-          ))}
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-jet via-jet/30 to-transparent" />
-        <div className="absolute inset-x-6 bottom-6">
-          <p key={shown} className="reveal-up text-[clamp(1.2rem,2.6vw,2rem)] font-extrabold leading-tight tracking-[-0.03em] text-white">
-            {SLIDER_TYPES[shown].heading}
-          </p>
-          <div className="mt-4 flex gap-1.5">
-            {SLIDER_TYPES.map((type, i) => (
-              <span key={type.value} className="h-1 flex-1 overflow-hidden rounded-full bg-white/25">
-                <span
-                  key={`${i}-${shown}-${paused}`}
-                  className={clsx(
-                    "block h-full origin-left rounded-full bg-brand-green",
-                    i < shown && "scale-x-100",
-                    i > shown && "scale-x-0",
-                    i === shown && (paused ? "scale-x-100" : "how-fill")
-                  )}
-                  style={i === shown && !paused ? { animationDuration: `${SLIDE_INTERVAL_MS}ms` } : undefined}
-                />
+            {/* Folded: a vertical label on desktop, a single line on phones */}
+            <span
+              className={clsx(
+                "absolute text-[0.85rem] font-extrabold uppercase tracking-[0.14em] text-white transition-opacity duration-500",
+                "left-5 top-1/2 -translate-y-1/2 md:left-1/2 md:top-auto md:bottom-6 md:-translate-x-1/2 md:translate-y-0 md:[writing-mode:vertical-rl] md:rotate-180",
+                active ? "opacity-0" : "opacity-100"
+              )}
+            >
+              {type.tab}
+            </span>
+
+            {/* Open: the heading, and the time until the next one */}
+            <span className={clsx("absolute inset-x-6 bottom-6", active ? "panel-copy" : "pointer-events-none opacity-0")}>
+              <span className="block text-[0.72rem] font-bold uppercase tracking-[0.16em] text-brand-green">{type.tab}</span>
+              <span className="mt-2 block max-w-md text-[clamp(1.2rem,2.4vw,1.9rem)] font-extrabold leading-tight tracking-[-0.03em] text-white">
+                {type.heading}
               </span>
-            ))}
-          </div>
-        </div>
-      </div>
+              <span className="mt-4 block h-1 w-full max-w-xs overflow-hidden rounded-full bg-white/25">
+                {active ? (
+                  <span
+                    key={`${shown}-${paused}`}
+                    className={clsx("block h-full origin-left rounded-full bg-brand-green", paused ? "scale-x-100" : "how-fill")}
+                    style={paused ? undefined : { animationDuration: `${SLIDE_INTERVAL_MS}ms` }}
+                  />
+                ) : null}
+              </span>
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -196,14 +202,9 @@ export default function Partner() {
       {/* --------------------------------------- who we build for --- */}
       <section className="bg-floral pt-14 md:pt-20">
         <div className="mx-auto max-w-[84rem] px-5 md:px-10">
-          <Reveal from="up">
-            <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Who we build for</p>
-            <h2 className="mt-3 max-w-2xl text-[clamp(1.6rem,3vw,2.4rem)] font-extrabold leading-[1.08] tracking-[-0.04em] text-jet">
-              Pick what fits you — we'll shape the network around it.
-            </h2>
-          </Reveal>
+          <SectionHeader eyebrow="Who we build for" title="Pick what fits you. We'll shape the network around it." />
           <Reveal from="up" delay={0.08} className="mt-8">
-            <BusinessTypeSlider value={form.businessType} onPick={pickType} />
+            <BusinessTypePanels value={form.businessType} onPick={pickType} />
           </Reveal>
         </div>
       </section>
@@ -308,16 +309,9 @@ export default function Partner() {
                     </p>
                   ) : null}
 
-                  <button
-                    type="submit"
-                    disabled={status === "sending"}
-                    className="group mt-8 flex items-center gap-3 rounded-full bg-brand-blue py-2 pl-7 pr-2 text-[1rem] font-bold text-white transition-colors hover:bg-jet disabled:opacity-60"
-                  >
+                  <CtaButton type="submit" disabled={status === "sending"} className="mt-8">
                     {status === "sending" ? "Sending…" : "Send enquiry"}
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 transition-transform duration-300 group-hover:rotate-[-45deg]">
-                      →
-                    </span>
-                  </button>
+                  </CtaButton>
                 </form>
               )}
             </div>

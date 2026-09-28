@@ -3,8 +3,7 @@
  *
  * This page's own device is the configurator: pick a business type and the
  * network assembles itself, module by module, with the outcome and the call to
- * action changing to match. Nothing here is borrowed from another page — the
- * coverage map belongs to the home page, the console to Technology.
+ * action changing to match. Nothing here is borrowed from another page.
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -12,8 +11,10 @@ import { Link, useLocation } from "react-router-dom";
 import clsx from "clsx";
 import { motion, useScroll, useSpring, useTransform } from "motion/react";
 import { Reveal } from "@/components/ui/Reveal";
-import { Magnetic } from "@/components/experience/Magnetic";
 import { CountUp } from "@/components/experience/HeroParts";
+import { HeroBackdrop, HeroHeading, Enter, HIGHLIGHT } from "@/components/motion/Hero";
+import { SectionHeader } from "@/components/motion/Text";
+import { CtaButton } from "@/components/motion/CtaButton";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { SOLUTIONS_HERO, SOLUTION_TABS, SOLUTIONS_IMPACT } from "@/data/site";
 import stillPick from "@/assets/images/still-pick.jpg";
@@ -53,39 +54,21 @@ function SolutionsHero({ onPick }) {
 
   return (
     <section className="relative flex flex-col justify-center overflow-hidden bg-white pb-16 pt-28 md:pb-20 lg:h-[100svh] lg:min-h-[44rem] lg:pt-24">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(5,36,57,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(5,36,57,.045) 1px, transparent 1px)",
-          backgroundSize: "64px 64px",
-          maskImage: "radial-gradient(ellipse 75% 65% at 35% 45%, #000 25%, transparent 78%)",
-          WebkitMaskImage: "radial-gradient(ellipse 75% 65% at 35% 45%, #000 25%, transparent 78%)",
-        }}
-      />
+      <HeroBackdrop focus="35% 45%" />
 
       <div className="relative mx-auto grid w-full max-w-[88rem] items-center gap-12 px-5 md:px-10 lg:grid-cols-[1fr_1fr] lg:gap-16">
         <div>
-          <p className="rise text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">{SOLUTIONS_HERO.eyebrow}</p>
+          <HeroHeading
+            eyebrow={SOLUTIONS_HERO.eyebrow}
+            lines={["End-to-end supply chain,", ["built for", { text: "healthcare.", className: HIGHLIGHT }]]}
+            className="text-[clamp(2rem,min(4vw,7.4vh),3.9rem)]"
+          />
 
-          <h1 className="mt-4 text-[clamp(2rem,min(4vw,7.4vh),3.9rem)] font-extrabold leading-[1.03] tracking-[-0.045em] text-jet">
-            <span className="block overflow-hidden pb-1">
-              <span className="wipe block">End-to-end supply chain,</span>
-            </span>
-            <span className="block overflow-hidden pb-1">
-              <span className="wipe block" style={{ animationDelay: ".1s" }}>
-                built for{" "}
-                <span className="bg-gradient-to-r from-brand-blue to-brand-green bg-clip-text text-transparent">healthcare.</span>
-              </span>
-            </span>
-          </h1>
-
-          <p className="rise mt-5 max-w-xl text-[clamp(0.98rem,1.9vh,1.12rem)] leading-relaxed text-ink-soft" style={{ animationDelay: ".25s" }}>
+          <Enter as="p" delay={0.35} className="mt-5 max-w-xl text-[clamp(0.98rem,1.9vh,1.12rem)] leading-relaxed text-ink-soft">
             {SOLUTIONS_HERO.sub}
-          </p>
+          </Enter>
 
-          <ul className="rise mt-7 border-t border-hairline" style={{ animationDelay: ".4s" }} onMouseLeave={() => setHeld(false)}>
+          <Enter as="ul" delay={0.45} className="mt-7 border-t border-hairline" onMouseLeave={() => setHeld(false)}>
             {SOLUTION_TABS.map((item, i) => (
               <li key={item.id}>
                 <a
@@ -123,31 +106,28 @@ function SolutionsHero({ onPick }) {
                 </a>
               </li>
             ))}
-          </ul>
+          </Enter>
         </div>
 
-        <div className="rise relative" style={{ animationDelay: ".2s" }}>
+        <Enter delay={0.2} className="hero-film relative">
           <div className="relative aspect-[4/3] overflow-hidden rounded-[2.25rem] bg-jet shadow-[0_50px_100px_-45px_rgba(5,36,57,.6)] lg:aspect-auto lg:h-[min(64svh,32rem)]">
             {SOLUTION_TABS.map((item, i) => (
               <img
                 key={item.id}
                 src={ART[item.art]}
                 alt=""
-                className={clsx(
-                  "absolute inset-0 h-full w-full object-cover transition-opacity duration-500",
-                  i === active ? "opacity-100" : "opacity-0"
-                )}
+                className={clsx("sol-slide absolute inset-0 h-full w-full object-cover", i === active && "is-active")}
               />
             ))}
             <div className="absolute inset-0 bg-gradient-to-t from-jet/80 via-jet/10 to-transparent" />
-            <div key={active} className="reveal-up absolute inset-x-6 bottom-6 text-white">
+            <div key={active} className="sol-caption absolute inset-x-6 bottom-6 text-white">
               <p className="text-[0.72rem] font-bold uppercase tracking-[0.16em] text-brand-green">{SOLUTION_TABS[active].tab}</p>
               <p className="mt-2 max-w-md text-[clamp(1.05rem,2.2vw,1.5rem)] font-extrabold leading-snug tracking-[-0.02em]">
                 {SOLUTION_TABS[active].copy}
               </p>
             </div>
           </div>
-        </div>
+        </Enter>
       </div>
     </section>
   );
@@ -172,12 +152,7 @@ function Configurator({ picked, setPicked }) {
       ))}
 
       <div className="mx-auto max-w-[84rem] px-5 md:px-10">
-        <Reveal from="left">
-          <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-green">Build your network</p>
-          <h2 className="mt-3 max-w-2xl text-[clamp(1.9rem,3.6vw,3rem)] font-extrabold leading-[1.05] tracking-[-0.04em]">
-            Pick what you are. We&apos;ll assemble the rest.
-          </h2>
-        </Reveal>
+        <SectionHeader tone="dark" eyebrow="Build your network" title="Pick what you are. We'll assemble the rest." />
 
         {/* Choose */}
         <div className="mt-9 flex flex-wrap gap-2">
@@ -217,17 +192,9 @@ function Configurator({ picked, setPicked }) {
               {OUTCOME[item.id]}
             </p>
 
-            <Magnetic className="mt-8 inline-block">
-              <Link
-                to="/partner"
-                className="group flex items-center gap-3 rounded-full bg-white py-2 pl-7 pr-2 text-[0.98rem] font-extrabold text-jet transition-colors duration-300 hover:bg-brand-green"
-              >
-                {item.cta}
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-jet text-white transition-transform duration-300 group-hover:rotate-[-45deg]">
-                  →
-                </span>
-              </Link>
-            </Magnetic>
+            <CtaButton to="/partner" variant="white" className="mt-8">
+              {item.cta}
+            </CtaButton>
           </div>
 
           {/* The modules snap into place, one after another. */}
@@ -266,12 +233,7 @@ function Outcomes() {
   return (
     <section ref={ref} className="bg-white py-20 md:py-28">
       <div className="mx-auto max-w-[84rem] px-5 md:px-10">
-        <Reveal from="left">
-          <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">{SOLUTIONS_IMPACT.eyebrow}</p>
-          <h2 className="mt-3 max-w-2xl text-[clamp(2rem,3.8vw,3.2rem)] font-extrabold leading-[1.04] tracking-[-0.04em] text-jet">
-            {SOLUTIONS_IMPACT.headline}
-          </h2>
-        </Reveal>
+        <SectionHeader eyebrow={SOLUTIONS_IMPACT.eyebrow} title={SOLUTIONS_IMPACT.headline} />
 
         <div className="relative mt-12 h-0.5 rounded-full bg-jet/10">
           <motion.span className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-brand-blue to-brand-green" style={{ width }} />

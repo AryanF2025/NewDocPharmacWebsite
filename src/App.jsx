@@ -3,6 +3,8 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import { SiteHeader } from "@/components/experience/SiteHeader";
 import { SiteFooter } from "@/components/experience/SiteFooter";
 import { LogoMark } from "@/components/ui/Logo";
+import { PageCurtain } from "@/components/motion/PageCurtain";
+import { scrollToTarget, startSmoothScroll, stopSmoothScroll } from "@/components/motion/smoothScroll";
 import Home from "@/pages/Home";
 
 // Home ships in the main bundle; the rest split so first paint stays light.
@@ -29,12 +31,9 @@ function ScrollManager() {
       let frame;
       const deadline = performance.now() + 2500;
       const find = () => {
-        const target = document.getElementById(hash.slice(1));
+        const target = document.getElementById(decodeURIComponent(hash.slice(1)));
         if (target) {
-          // Gliding to an anchor is motion too — jump straight there if the
-          // visitor has asked for less of it.
-          const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-          target.scrollIntoView({ behavior: reduce ? "auto" : "smooth" });
+          scrollToTarget(target);
           return;
         }
         if (performance.now() < deadline) frame = requestAnimationFrame(find);
@@ -42,15 +41,33 @@ function ScrollManager() {
       frame = requestAnimationFrame(find);
       return () => cancelAnimationFrame(frame);
     }
-    window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+    scrollToTarget(0, { immediate: true });
   }, [pathname, hash]);
 
   return null;
 }
 
+/** Same-page `#anchor` links glide through the smooth scroller. */
+function useAnchorScroll() {
+  useEffect(() => {
+    const onClick = (event) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey) return;
+      const a = event.target.closest?.('a[href^="#"]');
+      // The skip link has to move keyboard focus, so it keeps its native jump.
+      if (!a || a.getAttribute("href") === "#main") return;
+      const target = document.getElementById(decodeURIComponent(a.getAttribute("href").slice(1)));
+      if (!target) return;
+      event.preventDefault();
+      scrollToTarget(target);
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, []);
+}
+
 function RouteFallback() {
   return (
-    <div className="flex min-h-[70vh] items-center justify-center">
+    <div className="flex min-h-[100svh] items-center justify-center">
       <LogoMark className="h-10 w-10 animate-soft-pulse" />
       <span className="sr-only">Loading</span>
     </div>
@@ -58,6 +75,11 @@ function RouteFallback() {
 }
 
 export default function App() {
+  useEffect(() => {
+    startSmoothScroll();
+    return stopSmoothScroll;
+  }, []);
+  useAnchorScroll();
 
   return (
     <>
@@ -68,6 +90,8 @@ export default function App() {
         Skip to content
       </a>
 
+      {/* Rendered ahead of the page so the hero knows when it will be seen. */}
+      <PageCurtain />
       <ScrollManager />
       <SiteHeader />
 
