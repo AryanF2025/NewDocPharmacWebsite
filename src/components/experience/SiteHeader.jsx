@@ -75,20 +75,24 @@ export function SiteHeader() {
 
           <nav className="hidden items-center gap-1 text-[0.9rem] font-semibold text-ink-soft lg:flex">
             <div onPointerEnter={openSolutions} onPointerLeave={closeSolutions} className="relative">
-              <button
-                type="button"
+              {/* Clicking opens the Solutions page; hovering shows the menu. */}
+              <NavLink
+                to="/solutions"
                 aria-expanded={solutions}
-                onClick={() => setSolutions((v) => !v)}
-                className={clsx(
-                  "flex items-center gap-1.5 rounded-full px-4 py-2 transition-colors",
-                  solutions ? "bg-floral text-jet" : "hover:text-jet"
-                )}
+                onClick={() => setSolutions(false)}
+                onFocus={openSolutions}
+                className={({ isActive }) =>
+                  clsx(
+                    "flex items-center gap-1.5 rounded-full px-4 py-2 transition-colors",
+                    solutions || isActive ? "bg-floral text-jet" : "hover:text-jet"
+                  )
+                }
               >
                 Solutions
                 <motion.svg animate={{ rotate: solutions ? 180 : 0 }} width="10" height="10" viewBox="0 0 10 10" aria-hidden>
                   <path d="M1.5 3.5 5 7l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                 </motion.svg>
-              </button>
+              </NavLink>
             </div>
             {LINKS.map((l) => (
               <NavLink

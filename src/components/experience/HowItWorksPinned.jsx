@@ -194,7 +194,7 @@ function OrderReceivedMobile({ active, wide = false }) {
   return (
     <div
       className={clsx(
-        "relative flex h-full w-full flex-col justify-center gap-3 overflow-hidden bg-gradient-to-br from-jet via-[#053a66] to-brand-blue-deep",
+        "relative flex h-full w-full flex-col justify-center gap-3 overflow-hidden bg-jet",
         wide ? "px-[18%]" : "p-5"
       )}
     >

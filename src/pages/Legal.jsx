@@ -113,7 +113,7 @@ function LegalDocument({ doc, description }) {
           {/* Contents */}
           <aside className="lg:sticky lg:top-28 lg:self-start">
             <p className="text-[0.75rem] font-bold uppercase tracking-[0.16em] text-ink-faint">Contents</p>
-            <nav ref={railRef} data-lenis-prevent className="mt-4 max-h-[60svh] overflow-y-auto pr-2 [scrollbar-width:thin]">
+            <nav ref={railRef} className="mt-4 max-h-[60svh] overflow-y-auto pr-2 [scrollbar-width:thin]">
               <ol className="space-y-1">
                 {doc.sections.map((section) => (
                   <li key={section.id}>

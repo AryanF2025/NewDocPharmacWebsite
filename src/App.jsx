@@ -3,8 +3,7 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import { SiteHeader } from "@/components/experience/SiteHeader";
 import { SiteFooter } from "@/components/experience/SiteFooter";
 import { LogoMark } from "@/components/ui/Logo";
-import { PageCurtain } from "@/components/motion/PageCurtain";
-import { scrollToTarget, startSmoothScroll, stopSmoothScroll } from "@/components/motion/smoothScroll";
+import { scrollToTarget } from "@/components/motion/smoothScroll";
 import Home from "@/pages/Home";
 
 // Home ships in the main bundle; the rest split so first paint stays light.
@@ -75,10 +74,6 @@ function RouteFallback() {
 }
 
 export default function App() {
-  useEffect(() => {
-    startSmoothScroll();
-    return stopSmoothScroll;
-  }, []);
   useAnchorScroll();
 
   return (
@@ -90,8 +85,6 @@ export default function App() {
         Skip to content
       </a>
 
-      {/* Rendered ahead of the page so the hero knows when it will be seen. */}
-      <PageCurtain />
       <ScrollManager />
       <SiteHeader />
 

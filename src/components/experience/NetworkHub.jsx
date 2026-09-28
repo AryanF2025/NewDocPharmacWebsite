@@ -23,7 +23,7 @@ const ICON_KEYS = ["inventory", "orders", "pick", "route", "control"];
  * from the core out to every module continuously; the module being read
  * about gets the bright, fast line. Auto-advances until the visitor picks one.
  */
-export function NetworkHub({ modules }) {
+export function NetworkHub({ modules, children }) {
   const ref = useRef(null);
   const inView = useInViewOnce(ref);
   const [active, setActive] = useState(0);
@@ -37,72 +37,83 @@ export function NetworkHub({ modules }) {
 
   const nodes = modules.map((m, i) => {
     const a = ((-90 + i * (360 / modules.length)) * Math.PI) / 180;
-    return { ...m, x: C + R * Math.cos(a), y: C + R * Math.sin(a), short: SHORT[i], icon: ICONS[ICON_KEYS[i]] };
+    return {
+      ...m,
+      x: C + R * Math.cos(a),
+      y: C + R * Math.sin(a),
+      short: SHORT[i],
+      icon: ICONS[ICON_KEYS[i]],
+    };
   });
 
   return (
-    <div ref={ref} className={clsx("hub grid items-center gap-10 lg:grid-cols-[1fr_1.05fr] lg:gap-14", inView && "is-in")}>
-      {/* The five systems, as a list you can read */}
-      <ol className="order-2 lg:order-1" onMouseLeave={() => setHeld(false)}>
-        {nodes.map((m, i) => (
-          <li key={m.n} className="hub-item border-t border-white/10 last:border-b" style={{ "--i": i }}>
-            <button
-              type="button"
-              onMouseEnter={() => {
-                setHeld(true);
-                setActive(i);
-              }}
-              onFocus={() => {
-                setHeld(true);
-                setActive(i);
-              }}
-              onClick={() => setActive(i)}
-              aria-pressed={i === active}
-              className="group grid w-full grid-cols-[2.5rem_1fr] gap-x-3 py-4 text-left"
+    <div
+      ref={ref}
+      className={clsx(
+        "hub grid items-center gap-10 lg:grid-cols-[1fr_1.05fr] lg:gap-14",
+        inView && "is-in"
+      )}
+    >
+      {/* The heading, then the five systems as a list you can read */}
+      <div className="order-2 lg:order-1">
+        {children}
+        <ol className="mt-8" onMouseLeave={() => setHeld(false)}>
+          {nodes.map((m, i) => (
+            <li
+              key={m.n}
+              className="hub-item border-t border-white/10 last:border-b"
+              style={{ "--i": i }}
             >
-              <span
-                className={clsx(
-                  "tabular pt-1 text-[0.75rem] font-extrabold transition-colors duration-500",
-                  i === active ? "text-brand-green" : "text-white/35"
-                )}
+              <button
+                type="button"
+                onMouseEnter={() => {
+                  setHeld(true);
+                  setActive(i);
+                }}
+                onFocus={() => {
+                  setHeld(true);
+                  setActive(i);
+                }}
+                onClick={() => setActive(i)}
+                aria-pressed={i === active}
+                className="group grid w-full grid-cols-[2.5rem_1fr] gap-x-3 py-3 text-left"
               >
-                {m.n}
-              </span>
-              <span>
                 <span
                   className={clsx(
-                    "block text-[1.1rem] font-extrabold tracking-tight transition-colors duration-500",
-                    i === active ? "text-white" : "text-white/45 group-hover:text-white/80"
+                    "tabular pt-1 text-[0.75rem] font-extrabold transition-colors duration-500",
+                    i === active ? "text-brand-green" : "text-white/35"
                   )}
                 >
-                  {m.title}
+                  {m.n}
                 </span>
-                <span
-                  className="grid transition-[grid-template-rows] duration-500 ease-[cubic-bezier(.22,1,.36,1)]"
-                  style={{ gridTemplateRows: i === active ? "1fr" : "0fr" }}
-                >
-                  <span className="overflow-hidden">
-                    <span className="block pt-2 text-[0.95rem] leading-relaxed text-white/65">{m.body}</span>
+                <span>
+                  <span
+                    className={clsx(
+                      "block text-[1.1rem] font-extrabold tracking-tight transition-colors duration-500",
+                      i === active ? "text-white" : "text-white/45 group-hover:text-white/80"
+                    )}
+                  >
+                    {m.title}
+                  </span>
+                  <span
+                    className="grid transition-[grid-template-rows] duration-500 ease-[cubic-bezier(.22,1,.36,1)]"
+                    style={{ gridTemplateRows: i === active ? "1fr" : "0fr" }}
+                  >
+                    <span className="overflow-hidden">
+                      <span className="block pt-1.5 text-[0.95rem] leading-relaxed text-white/65">
+                        {m.body}
+                      </span>
+                    </span>
                   </span>
                 </span>
-                {/* How long until the next module takes over */}
-                <span className="mt-3 block h-px overflow-hidden bg-white/10">
-                  {i === active ? (
-                    <span
-                      key={`${active}-${held}`}
-                      className={clsx("block h-full origin-left bg-brand-green", held ? "scale-x-100" : "how-fill")}
-                      style={held ? undefined : { animationDuration: "3200ms" }}
-                    />
-                  ) : null}
-                </span>
-              </span>
-            </button>
-          </li>
-        ))}
-      </ol>
+              </button>
+            </li>
+          ))}
+        </ol>
+      </div>
 
-      {/* The system */}
-      <div className="relative order-1 mx-auto w-full max-w-[34rem] lg:order-2">
+      {/* The system — capped by screen height so the section fits one view */}
+      <div className="relative order-1 mx-auto w-full max-w-[min(34rem,72svh)] lg:order-2">
         <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="h-auto w-full overflow-visible" aria-hidden>
           <defs>
             <radialGradient id="hub-core" cx="50%" cy="50%" r="50%">
@@ -118,7 +129,15 @@ export function NetworkHub({ modules }) {
           {/* Spokes, with data travelling out along each */}
           {nodes.map((n, i) => (
             <g key={n.n}>
-              <line x1={C} y1={C} x2={n.x} y2={n.y} pathLength="1" className="hub-spoke" style={{ "--i": i }} />
+              <line
+                x1={C}
+                y1={C}
+                x2={n.x}
+                y2={n.y}
+                pathLength="1"
+                className="hub-spoke"
+                style={{ "--i": i }}
+              />
               <line
                 x1={C}
                 y1={C}
@@ -159,7 +178,12 @@ export function NetworkHub({ modules }) {
                 strokeLinejoin="round"
                 className="hub-node-icon"
               />
-              <text x={n.x} y={n.y + (n.y > C ? 62 : -50)} textAnchor="middle" className="hub-node-label">
+              <text
+                x={n.x}
+                y={n.y + (n.y > C ? 62 : -50)}
+                textAnchor="middle"
+                className="hub-node-label"
+              >
                 {n.short}
               </text>
             </g>

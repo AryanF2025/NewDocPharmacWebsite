@@ -253,9 +253,18 @@
 }
 .cov-dot {
   fill: #0296d9;
+  opacity: 0.16;
+}
+.cov-dot.is-covered {
+  opacity: 0.6;
+}
+/* The dot layer fades in as one group — cheap, unlike per-dot animation. */
+.cov-dots {
   opacity: 0;
-  transform-box: fill-box;
-  transform-origin: center;
+  transition: opacity 1s var(--ease-brand) 0.3s;
+}
+.cov-map.is-live .cov-dots {
+  opacity: 1;
 }
 .cov-spoke,
 .cov-lastmile,
@@ -323,17 +332,6 @@
 
 .cov-map.is-live .cov-outline {
   animation: cov-draw 1.6s var(--ease-brand) forwards;
-}
-/* Reveal once, then ripple from the centre forever. */
-.cov-map.is-live .cov-dot {
-  animation:
-    cov-dot-in 0.6s var(--ease-brand) forwards,
-    cov-wave 5.2s ease-in-out infinite;
-}
-.cov-map.is-live .cov-dot.is-covered {
-  animation:
-    cov-dot-in-covered 0.6s var(--ease-brand) forwards,
-    cov-wave-covered 5.2s ease-in-out infinite;
 }
 .cov-map.is-live .cov-hub {
   animation: cov-pop 0.6s var(--ease-brand) 0.3s forwards;
@@ -550,7 +548,7 @@
   animation-fill-mode: forwards;
 }
 .cov-map.is-live .cov-dest {
-  animation: cov-dest 2.8s ease-out infinite;
+  animation: cov-dest 1.2s ease-out forwards;
 }
 @keyframes cov-dest {
   0% {
@@ -724,22 +722,7 @@
 
 /* ================================================================ motion kit */
 
-/* Lenis smooth scroll */
-html.lenis,
-html.lenis body {
-  height: auto;
-}
-.lenis.lenis-smooth {
-  scroll-behavior: auto !important;
-}
-.lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
-}
-.lenis.lenis-stopped {
-  overflow: clip;
-}
-
-/* Split headline: each word rises out of its own mask and unblurs. */
+/* Split headline: each word rises out of its own mask. */
 .split-mask {
   display: inline-block;
   overflow: hidden;
@@ -761,33 +744,21 @@ html.lenis body {
   0% {
     transform: translateY(110%) rotate(5deg);
     opacity: 0;
-    filter: blur(8px);
-  }
-  60% {
-    filter: blur(0);
   }
   100% {
     transform: none;
     opacity: 1;
-    filter: none;
   }
 }
 
-/* Eyebrow: the rule draws, then the label slides out from behind it. */
-.eyebrow-rule {
-  transform: scaleX(0);
-  transform-origin: left;
-}
+/* Eyebrow: the label slides in ahead of its headline. */
 .eyebrow-text {
   display: inline-block;
   opacity: 0;
   transform: translateX(-10px);
 }
-.eyebrow-line.is-in .eyebrow-rule {
-  animation: grow-x 0.8s var(--ease-brand) var(--d, 0s) both;
-}
 .eyebrow-line.is-in .eyebrow-text {
-  animation: eyebrow-in 0.8s var(--ease-brand) calc(var(--d, 0s) + 0.15s) both;
+  animation: eyebrow-in 0.7s var(--ease-brand) var(--d, 0s) both;
 }
 @keyframes eyebrow-in {
   to {
@@ -822,7 +793,7 @@ html.lenis body {
   clip-path: circle(150% at calc(100% - 1.75rem) 50%);
 }
 
-/* Scroll cue: a wheel that rolls down its mouse. */
+/* (scroll cue removed) */
 @keyframes cue-roll {
   0% {
     transform: translateY(0);
@@ -840,94 +811,11 @@ html.lenis body {
   animation: cue-roll 1.8s var(--ease-brand) infinite;
 }
 
-/* Page curtain + first-load preloader */
-.curtain {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-jet);
-  pointer-events: auto;
-}
-.curtain-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.curtain--intro {
-  animation: curtain-lift 0.82s cubic-bezier(0.76, 0, 0.24, 1) 0.9s both;
-}
-.curtain--intro .curtain-mark {
-  animation: curtain-mark 0.9s var(--ease-brand) both;
-}
-.curtain--intro .curtain-word > span {
-  animation: wipe-up 0.8s var(--ease-brand) 0.15s both;
-}
-.curtain--intro .curtain-tag {
-  animation: rise-in 0.7s var(--ease-brand) 0.35s both;
-}
-.curtain--intro .curtain-bar > span {
-  animation: grow-x 0.75s cubic-bezier(0.65, 0, 0.35, 1) 0.1s both;
-}
-.curtain--intro .curtain-inner {
-  animation: curtain-inner-out 0.6s var(--ease-brand) 0.9s both;
-}
-.curtain--cover {
-  animation: curtain-cover 0.52s cubic-bezier(0.76, 0, 0.24, 1) both;
-}
-.curtain--cover .curtain-inner {
-  animation: rise-in 0.5s var(--ease-brand) 0.2s both;
-}
-.curtain--lift {
-  animation: curtain-lift 0.82s cubic-bezier(0.76, 0, 0.24, 1) both;
-  pointer-events: none;
-}
-.curtain--lift .curtain-inner {
-  animation: curtain-inner-out 0.5s var(--ease-brand) both;
-}
-@keyframes curtain-cover {
-  from {
-    clip-path: inset(100% 0 0 0 round 3rem 3rem 0 0);
-  }
-  to {
-    clip-path: inset(0 0 0 0 round 0);
-  }
-}
-@keyframes curtain-lift {
-  from {
-    clip-path: inset(0 0 0 0 round 0);
-  }
-  to {
-    clip-path: inset(0 0 100% 0 round 0 0 3rem 3rem);
-  }
-}
-@keyframes curtain-inner-out {
-  to {
-    opacity: 0;
-    transform: translateY(-40px);
-  }
-}
-@keyframes curtain-mark {
-  from {
-    opacity: 0;
-    transform: scale(0.6) rotate(-90deg);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .reveal,
   .split-word,
   .eyebrow-text {
     opacity: 1;
-    transform: none;
-  }
-  .eyebrow-rule {
     transform: none;
   }
   .img-wipe {
@@ -1054,7 +942,7 @@ html.lenis body {
   animation: cov-show 1.2s ease-out 0.4s forwards;
 }
 .hub.is-in .hub-mark {
-  animation: curtain-mark 0.9s var(--ease-brand) 0.45s forwards;
+  animation: cov-pop 0.9s var(--ease-brand) 0.45s forwards;
 }
 .hub.is-in .hub-node {
   animation: cov-show 0.6s var(--ease-brand) forwards;
@@ -1066,7 +954,6 @@ html.lenis body {
 .hub.is-in .hub-pulse.is-active {
   stroke-width: 4.5;
   animation-duration: 1s;
-  filter: drop-shadow(0 0 5px rgba(143, 193, 36, 0.9));
 }
 .hub.is-in .hub-item {
   animation: rise-in 0.8s var(--ease-brand) forwards;

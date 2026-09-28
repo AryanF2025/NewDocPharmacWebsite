@@ -9,7 +9,7 @@ import clsx from "clsx";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { Reveal } from "@/components/ui/Reveal";
 import { LogoImg } from "@/components/ui/LogoImg";
-import { HeroBackdrop, HeroHeading, Enter, ScrollCue, HIGHLIGHT } from "@/components/motion/Hero";
+import { HeroBackdrop, HeroHeading, Enter, HIGHLIGHT } from "@/components/motion/Hero";
 import { SectionHeader, SplitText, Eyebrow } from "@/components/motion/Text";
 import { ParallaxImage } from "@/components/motion/Media";
 import { CtaButton, GhostButton } from "@/components/motion/CtaButton";
@@ -58,7 +58,6 @@ function AboutHero() {
         </Enter>
       </div>
 
-      <ScrollCue href="#story" />
     </section>
   );
 }
@@ -90,8 +89,6 @@ function Story() {
 
 /* --------------------------------------------------- values, as a stack --- */
 
-const CARD_TINTS = ["bg-white", "bg-viking", "bg-peppermint"];
-
 /**
  * One value card. It sticks near the top of the screen; as the next card
  * slides up over it, it eases back — smaller and dimmer — so the deck reads
@@ -104,12 +101,16 @@ function ValueCard({ slide, i, count, progress }) {
   const dim = useTransform(progress, [i / count, 1], [0, (count - 1 - i) * 0.12]);
 
   return (
-    <div className="sticky top-0 flex h-[88svh] items-start justify-center pt-[calc(6rem+var(--offset))]" style={{ "--offset": `${i * 1.6}rem` }}>
+    // The last card has nothing arriving over it, so it simply scrolls on.
+    <div
+      className={clsx("flex items-start justify-center pt-[calc(6rem+var(--offset))]", i < count - 1 ? "sticky top-0 h-[88svh]" : "pb-24")}
+      style={{ "--offset": `${i * 1.6}rem` }}
+    >
       <motion.article
         style={reduce ? undefined : { scale, transformOrigin: "50% 0%" }}
         className={clsx(
           "relative grid w-full overflow-hidden rounded-[2rem] border border-hairline shadow-[0_-20px_60px_-40px_rgba(5,36,57,.45)] lg:h-[min(64svh,34rem)] lg:grid-cols-[1fr_1.05fr]",
-          CARD_TINTS[i % CARD_TINTS.length]
+          "bg-floral"
         )}
       >
         <div className="flex flex-col justify-between gap-8 p-7 md:p-11">
@@ -146,7 +147,7 @@ function ValuesStack() {
     <section className="bg-white pt-24 md:pt-32">
       <div className="mx-auto max-w-[84rem] px-5 md:px-10">
         <SectionHeader eyebrow={VALUES.title} title="What we are building, and why." />
-        <div ref={ref} className="relative mt-4 -mb-[10svh]">
+        <div ref={ref} className="relative mt-4">
           {VALUES.slides.map((slide, i) => (
             <ValueCard key={slide.title} slide={slide} i={i} count={count} progress={scrollYProgress} />
           ))}
@@ -329,7 +330,6 @@ function Leadership() {
           onClick={() => setOpen(null)}
         >
           <div
-            data-lenis-prevent
             className="reveal-up max-h-[85svh] w-full max-w-2xl overflow-y-auto rounded-[1.75rem] bg-white p-6 md:p-9"
             onClick={(event) => event.stopPropagation()}
           >

@@ -30,7 +30,6 @@ const SILIGURI = { lon: 88.43, lat: 26.73 };
 /** Malda, West Bengal — on the land route north from Kolkata. */
 const MALDA = { lon: 88.14, lat: 25.0 };
 
-const WAVE_SECONDS = 5.2;
 const GRID = 10.5; // spacing of the dot grid in src/data/indiaMap.js
 const LONGEST_LINE = 420; // map units; scales line timing
 
@@ -51,7 +50,6 @@ export function IndiaCoverageMap({ active, className }) {
       y,
       nearCity: Math.min(...cities.map((c) => Math.hypot(c.x - x, c.y - y))),
     }));
-    const maxNear = Math.max(...dots.map((d) => d.nearCity));
 
     // Fast land test: the dots sit on a regular grid, so look up nearby cells.
     const cells = new Set(dots.map((d) => `${Math.round(d.x / GRID)},${Math.round(d.y / GRID)}`));
@@ -90,7 +88,11 @@ export function IndiaCoverageMap({ active, className }) {
     const buckets = new Map();
     for (const d of dots) {
       if (d.nearCity < 40) continue;
-      const neighbours = dots.filter((o) => Math.hypot(o.x - d.x, o.y - d.y) < GRID * 1.6).length;
+      // Neighbours within 1.6 grid steps are exactly the surrounding 3×3 cells.
+      const cx = Math.round(d.x / GRID);
+      const cy = Math.round(d.y / GRID);
+      let neighbours = 0;
+      for (let ox = -1; ox <= 1; ox++) for (let oy = -1; oy <= 1; oy++) if (cells.has(`${cx + ox},${cy + oy}`)) neighbours++;
       if (neighbours < 4) continue;
       const gx = Math.floor(d.x / CELL);
       const gy = Math.floor(d.y / CELL);
@@ -132,10 +134,10 @@ export function IndiaCoverageMap({ active, className }) {
       }
     }
 
-    return { cities, dots, maxNear, reach };
+    return { cities, dots, reach };
   }, []);
 
-  const { cities, dots, maxNear, reach } = model;
+  const { cities, dots, reach } = model;
   const dim = (city) => (active && active !== city ? 0.1 : 1);
 
   return (
@@ -148,19 +150,11 @@ export function IndiaCoverageMap({ active, className }) {
     >
       <path d={INDIA_OUTLINE} className="cov-outline" pathLength={1} />
 
-      {/* Dots: blue waves ripple outward from every city, forever. */}
-      <g>
+      {/* Dots: static, faded in once as a single layer — a thousand
+          individually animated SVG dots repaint the whole map every frame. */}
+      <g className="cov-dots">
         {dots.map((d, i) => (
-          <circle
-            key={i}
-            cx={d.x}
-            cy={d.y}
-            r={d.nearCity < 40 ? 2.7 : 2.2}
-            className={clsx("cov-dot", d.nearCity < 40 && "is-covered")}
-            style={{
-              animationDelay: `${0.6 + (d.nearCity / maxNear) * 1.6}s, ${2 + (d.nearCity / maxNear) * (WAVE_SECONDS * 0.6)}s`,
-            }}
-          />
+          <circle key={i} cx={d.x} cy={d.y} r={d.nearCity < 40 ? 2.7 : 2.2} className={clsx("cov-dot", d.nearCity < 40 && "is-covered")} />
         ))}
       </g>
 
@@ -175,11 +169,6 @@ export function IndiaCoverageMap({ active, className }) {
               style={{ animationDelay: `${r.begin}s`, animationDuration: `${r.duration}s` }}
             />
             <circle cx={r.x} cy={r.y} r="3" className="cov-dest" style={{ animationDelay: `${r.begin + r.duration * 0.9}s` }} />
-            {inView ? (
-              <circle r="2.8" className="cov-rider" style={{ animationDelay: `${r.begin}s` }}>
-                <animateMotion dur={`${r.duration + 1.2}s`} begin={`${r.begin}s`} repeatCount="indefinite" path={r.d} />
-              </circle>
-            ) : null}
           </g>
         ))}
       </g>

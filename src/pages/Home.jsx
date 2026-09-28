@@ -17,9 +17,8 @@ import { LogoMarquee } from "@/components/ui/LogoMarquee";
 import { LogoImg } from "@/components/ui/LogoImg";
 import { COMPLIANCE, ComplianceIcon } from "@/components/experience/compliance";
 import { IndiaCoverageMap, COVERAGE_CITIES } from "@/components/art/IndiaCoverageMap";
-import { HeroBackdrop, Enter, ScrollCue, HIGHLIGHT } from "@/components/motion/Hero";
+import { HeroBackdrop, Enter, HIGHLIGHT } from "@/components/motion/Hero";
 import { SplitText, SectionHeader, Eyebrow } from "@/components/motion/Text";
-import { ParallaxImage } from "@/components/motion/Media";
 import { CtaButton, GhostButton } from "@/components/motion/CtaButton";
 import { useInViewOnce } from "@/components/motion/useInViewOnce";
 import { usePageMeta } from "@/hooks/usePageMeta";
@@ -89,7 +88,6 @@ function Hero() {
         </Enter>
       </div>
 
-      <ScrollCue href="#trusted" />
     </section>
   );
 }
@@ -98,7 +96,7 @@ function Hero() {
 
 function PlatformBand() {
   return (
-    <section id="platform" className="relative overflow-hidden bg-gradient-to-br from-jet via-[#053a66] to-brand-blue-deep py-24 text-white lg:py-32">
+    <section id="platform" className="relative flex flex-col justify-center overflow-hidden bg-jet py-20 text-white lg:min-h-[100svh] lg:py-14">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-60"
@@ -111,10 +109,14 @@ function PlatformBand() {
         }}
       />
       <div className="relative mx-auto max-w-[88rem] px-5 md:px-10">
-        <SectionHeader tone="dark" eyebrow="DocPharma One · AI-driven intelligence" title={TECH_SECTION.headline} sub={TECH_SECTION.sub} />
-        <div className="mt-14">
-          <NetworkHub modules={TECH_SECTION.modules} />
-        </div>
+        <NetworkHub modules={TECH_SECTION.modules}>
+          <SectionHeader
+            tone="dark"
+            eyebrow="DocPharma One · AI-driven intelligence"
+            title={TECH_SECTION.headline}
+            titleClassName="!text-[clamp(1.9rem,3vw,2.8rem)]"
+          />
+        </NetworkHub>
       </div>
     </section>
   );
@@ -172,8 +174,13 @@ function CoverageTile() {
   );
 }
 
-function Bento() {
+/** The running clock, in its own component so its tick re-renders only itself. */
+function SpeedClock() {
   const t = useTicker(0, 30 * 60, 1000, 1);
+  return <p className="tabular mt-3 text-[clamp(3.5rem,8vw,6.5rem)] font-extrabold leading-none tracking-[-0.05em]">{fmt(t)}</p>;
+}
+
+function Bento() {
   return (
     <section id="bento" className="bg-floral">
       <div className="mx-auto max-w-[88rem] px-5 py-24 md:px-10 lg:py-32">
@@ -187,11 +194,11 @@ function Bento() {
         <div className="mt-14 grid gap-4 md:grid-cols-6">
           {/* Speed, with the rider photo */}
           <Tile className="min-h-[26rem] border-0 bg-jet p-0 text-white md:col-span-4">
-            <ParallaxImage src={rider} alt="DocPharma rider on a delivery" className="!absolute inset-0" strength={8} />
+            <img src={rider} alt="DocPharma rider on a delivery" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-r from-jet via-jet/80 to-transparent" />
             <div className="relative p-8">
               <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-green">Speed</p>
-              <p className="tabular mt-3 text-[clamp(3.5rem,8vw,6.5rem)] font-extrabold leading-none tracking-[-0.05em]">{fmt(t)}</p>
+              <SpeedClock />
               <p className="mt-4 max-w-xs text-[1.05rem] leading-relaxed text-white/70">
                 Inventory sits inside the catchment, so the 30-minute promise holds.
               </p>
@@ -218,7 +225,7 @@ function Bento() {
 
           {/* Packing */}
           <Tile delay={0.12} className="min-h-[15rem] border-0 p-0 md:col-span-2">
-            <ParallaxImage src={packing} alt="An order being sealed for dispatch" className="!absolute inset-0" strength={8} />
+            <img src={packing} alt="An order being sealed for dispatch" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-jet/90 to-transparent" />
             <div className="absolute bottom-0 p-7 text-white">
               <p className="text-[2.2rem] font-extrabold leading-none">
@@ -229,7 +236,7 @@ function Bento() {
           </Tile>
 
           {/* Numbers */}
-          <Tile className="flex items-stretch border-0 bg-brand-blue p-0 text-white md:col-span-3">
+          <Tile className="flex items-stretch bg-white p-0 md:col-span-3">
             <div className="grid w-full grid-cols-2 grid-rows-2">
               {[
                 [95, "%", "Fulfilment rate"],
@@ -241,14 +248,14 @@ function Bento() {
                   key={l}
                   className={clsx(
                     "flex flex-col items-center justify-center px-4 py-7 text-center",
-                    i % 2 === 0 && "border-r border-white/20",
-                    i < 2 && "border-b border-white/20"
+                    i % 2 === 0 && "border-r border-hairline",
+                    i < 2 && "border-b border-hairline"
                   )}
                 >
-                  <p className="text-[clamp(2.2rem,3.6vw,3rem)] font-extrabold leading-none tracking-tight">
+                  <p className="text-[clamp(2.2rem,3.6vw,3rem)] font-extrabold leading-none tracking-tight text-jet">
                     <CountUp value={v} suffix={suffix} delay={i * 90} />
                   </p>
-                  <p className="mt-2 text-[0.95rem] text-white/80">{l}</p>
+                  <p className="mt-2 text-[0.95rem] text-ink-faint">{l}</p>
                 </div>
               ))}
             </div>

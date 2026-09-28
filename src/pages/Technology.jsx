@@ -14,7 +14,7 @@ import { motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, us
 import { Reveal } from "@/components/ui/Reveal";
 import { ConsoleMock } from "@/components/directions/shared";
 import { HeroBackdrop, HeroHeading, Enter, HIGHLIGHT } from "@/components/motion/Hero";
-import { SectionHeader, Eyebrow } from "@/components/motion/Text";
+import { SectionHeader, SplitText } from "@/components/motion/Text";
 import { CtaButton, GhostButton } from "@/components/motion/CtaButton";
 import { useInViewOnce } from "@/components/motion/useInViewOnce";
 import { usePageMeta } from "@/hooks/usePageMeta";
@@ -385,39 +385,36 @@ function Verticals() {
 /* ------------------------------------------------------- final statement --- */
 
 /**
- * The brand's black-panel break: a large Georgia statement, with the words
- * lighting up one by one as the page scrolls through it. Then the pause, and
- * the answer.
+ * The closing statement, as the brief scripts it: the claim, a pause, the
+ * answer, then the brand. It plays once when it arrives — nothing waits on
+ * the scroll, so it never sits half-lit.
  */
 function FinalStatement() {
-  const ref = useRef(null);
-  const reduce = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 75%", "end 55%"] });
-  const words = FINAL_STATEMENT.lines.slice(0, 2).join(" ").split(" ");
+  const claim = FINAL_STATEMENT.lines.slice(0, 2).join(" ");
   const answer = FINAL_STATEMENT.lines[2];
 
   // Runs under the footer's rounded top, so the two dark panels meet cleanly.
   return (
-    <section ref={ref} className="relative -mb-10 overflow-hidden bg-jet pb-40 pt-28 text-white md:pb-52 md:pt-40">
-      <div className="mx-auto max-w-[84rem] px-5 md:px-10">
-        <Eyebrow tone="dark">Final statement</Eyebrow>
-        <p className="font-editorial mt-8 max-w-5xl text-[clamp(2.2rem,5.4vw,5rem)] leading-[1.06] tracking-[-0.02em]">
-          {words.map((word, i) => (
-            <ScrubWord key={i} progress={scrollYProgress} range={[i / (words.length + 3), (i + 1) / (words.length + 3)]} reduce={reduce}>
-              {word}
-            </ScrubWord>
-          ))}{" "}
-          <ScrubWord progress={scrollYProgress} range={[(words.length + 1) / (words.length + 3), 1]} reduce={reduce} className="italic text-brand-green">
-            {answer}
-          </ScrubWord>
-        </p>
-        <div className="rule-thin mt-12 max-w-5xl" />
-        <Reveal>
-          <div className="mt-10 flex flex-wrap items-center justify-between gap-6">
-            <div>
-              <p className="text-[1.6rem] font-extrabold tracking-[-0.03em]">{FINAL_STATEMENT.brand}</p>
-              <p className="mt-1 text-[0.8rem] font-bold uppercase tracking-[0.18em] text-white/55">{FINAL_STATEMENT.positioning}</p>
-            </div>
+    <section className="relative -mb-10 flex min-h-[100svh] items-center overflow-hidden bg-jet pb-24 pt-20 text-center text-white">
+      <div className="mx-auto max-w-5xl px-5 md:px-10">
+        <SplitText
+          as="p"
+          lines={claim}
+          stagger={0.05}
+          className="font-editorial text-[clamp(2.2rem,5.2vw,4.6rem)] leading-[1.08] tracking-[-0.02em]"
+        />
+        {/* The pause, then the answer. */}
+        <SplitText
+          as="p"
+          lines={answer}
+          delay={1}
+          stagger={0.09}
+          className="font-editorial mt-2 text-[clamp(2.2rem,5.2vw,4.6rem)] italic leading-[1.08] tracking-[-0.02em] text-brand-green"
+        />
+        <Reveal delay={1.5}>
+          <p className="mt-12 text-[1.5rem] font-extrabold tracking-[-0.03em]">{FINAL_STATEMENT.brand}</p>
+          <p className="mt-1 text-[0.8rem] font-bold uppercase tracking-[0.2em] text-white/55">{FINAL_STATEMENT.positioning}</p>
+          <div className="mt-8 flex justify-center">
             <CtaButton to="/partner" variant="white">
               {FINAL_STATEMENT.cta}
             </CtaButton>
@@ -425,17 +422,6 @@ function FinalStatement() {
         </Reveal>
       </div>
     </section>
-  );
-}
-
-function ScrubWord({ progress, range, reduce, className, children }) {
-  const opacity = useTransform(progress, range, [0.16, 1]);
-  return (
-    <>
-      <motion.span style={{ opacity: reduce ? 1 : opacity }} className={clsx("inline", className)}>
-        {children}
-      </motion.span>{" "}
-    </>
   );
 }
 

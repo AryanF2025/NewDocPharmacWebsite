@@ -87,10 +87,12 @@ function BusinessTypePanels({ value, onPick }) {
             type="button"
             onClick={() => onPick(type.value)}
             onFocus={() => onPick(type.value)}
+            // Hovering a folded panel opens it — the pointer leads, no click needed.
+            onMouseEnter={() => onPick(type.value)}
             aria-pressed={active}
             aria-label={type.label}
             className={clsx(
-              "panel group relative min-h-0 min-w-0 overflow-hidden rounded-[1.5rem] bg-jet text-left",
+              "panel group relative min-h-0 min-w-0 overflow-hidden rounded-[1.5rem] bg-jet text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-green focus-visible:ring-offset-2 focus-visible:ring-offset-floral",
               active ? "is-active" : ""
             )}
             style={{ flexGrow: active ? 5 : 1 }}
@@ -101,7 +103,7 @@ function BusinessTypePanels({ value, onPick }) {
               loading="lazy"
               className={clsx(
                 "absolute inset-0 h-full w-full object-cover transition-[transform,filter] duration-[1200ms] ease-[cubic-bezier(.22,1,.36,1)]",
-                active ? "scale-100" : "scale-125 grayscale-[60%] group-hover:grayscale-0"
+                active ? "scale-100 group-hover:scale-[1.05]" : "scale-125 grayscale-[60%]"
               )}
             />
             <div
@@ -127,6 +129,10 @@ function BusinessTypePanels({ value, onPick }) {
               <span className="block text-[0.72rem] font-bold uppercase tracking-[0.16em] text-brand-green">{type.tab}</span>
               <span className="mt-2 block max-w-md text-[clamp(1.2rem,2.4vw,1.9rem)] font-extrabold leading-tight tracking-[-0.03em] text-white">
                 {type.heading}
+              </span>
+              <span className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1.5 text-[0.78rem] font-bold text-white backdrop-blur-sm">
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand-green text-[0.55rem] text-jet">✓</span>
+                Selected in the form below
               </span>
               <span className="mt-4 block h-1 w-full max-w-xs overflow-hidden rounded-full bg-white/25">
                 {active ? (

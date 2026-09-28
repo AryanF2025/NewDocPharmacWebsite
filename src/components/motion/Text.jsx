@@ -66,7 +66,7 @@ export function SplitText({ lines, as: Tag = "h2", className, trigger = "view", 
   );
 }
 
-/** Small uppercase label with a rule that draws in ahead of it. */
+/** Small uppercase label that slides in above a headline. */
 export function Eyebrow({ children, tone = "light", className, trigger = "view", delay = 0 }) {
   const ref = useRef(null);
   const seen = useInViewOnce(ref);
@@ -77,14 +77,13 @@ export function Eyebrow({ children, tone = "light", className, trigger = "view",
     <p
       ref={ref}
       className={clsx(
-        "eyebrow-line flex items-center gap-3 text-[0.8rem] font-bold uppercase tracking-[0.16em]",
+        "eyebrow-line flex items-center text-[0.8rem] font-bold uppercase tracking-[0.16em]",
         tone === "dark" ? "text-brand-green" : "text-brand-blue",
         shown && "is-in",
         className
       )}
       style={{ "--d": `${start + delay}s` }}
     >
-      <span aria-hidden className="eyebrow-rule h-px w-8 bg-current" />
       <span className="eyebrow-text">{children}</span>
     </p>
   );
