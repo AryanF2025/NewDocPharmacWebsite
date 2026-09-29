@@ -252,13 +252,7 @@ function Bento() {
                     i < 2 && "border-b border-hairline"
                   )}
                 >
-                  {/* Solid brand colours, set diagonally: blue, green / green, blue. */}
-                  <p
-                    className={clsx(
-                      "text-[clamp(2.2rem,3.6vw,3rem)] font-extrabold leading-none tracking-tight",
-                      i === 0 || i === 3 ? "text-brand-blue" : "text-brand-green"
-                    )}
-                  >
+                  <p className="text-[clamp(2.2rem,3.6vw,3rem)] font-extrabold leading-none tracking-tight text-brand-blue">
                     <CountUp value={v} suffix={suffix} delay={i * 90} />
                   </p>
                   <p className="mt-2 text-[0.95rem] text-ink-soft">{l}</p>
