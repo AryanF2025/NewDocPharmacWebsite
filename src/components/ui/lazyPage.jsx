@@ -13,16 +13,32 @@ const RELOAD_KEY = "dp-chunk-reload";
  * leaving a blank screen.
  */
 export function lazyPage(load, pick) {
+  const choose = (module) => (pick ? { default: module[pick] } : module);
+
   return lazy(() =>
     load()
       .then((module) => {
         clearFlag();
-        return pick ? { default: module[pick] } : module;
+        return choose(module);
       })
       .catch(async (error) => {
+        const url = String(error?.message ?? "").match(/https?:\/\/\S+?\.js/)?.[0];
+
+        // First, ask for the same file under a one-off URL. Nothing can have
+        // cached that — not the browser, not a leftover service worker — so if
+        // the server has the file (it does, for the current build) this loads
+        // the page without any reload at all.
+        if (url) {
+          try {
+            const module = await import(/* @vite-ignore */ `${url}?v=${Date.now()}`);
+            return choose(module);
+          } catch {
+            // Fall through to a clean reload.
+          }
+        }
+
         if (readFlag()) throw error;
         setFlag();
-        const url = String(error?.message ?? "").match(/https?:\/\/\S+?\.js/)?.[0];
         await Promise.allSettled([
           url ? fetch(url, { cache: "reload" }) : null,
           fetch(window.location.pathname, { cache: "reload" }),

@@ -58,7 +58,7 @@ const TILE_PLACE = [
 function useOpen(setPicked) {
   return (i) => {
     setPicked(i);
-    const el = document.getElementById("solution-tabs");
+    const el = document.getElementById("solutions");
     if (el) scrollToTarget(el);
   };
 }
@@ -149,26 +149,31 @@ function SolutionTabs({ picked, setPicked }) {
   };
 
   return (
-    <section id="solutions" className="relative scroll-mt-24 bg-white py-24 md:py-28">
+    // On desktop the whole section is exactly one screen: heading, tabs, and
+    // the business panel filling what is left.
+    <section id="solutions" className="relative bg-white py-20 lg:flex lg:h-[100svh] lg:min-h-[44rem] lg:flex-col lg:pb-10 lg:pt-24">
+      {/* Picking a business (hero tiles, header menu, footer
+          /solutions#d2c-health) lands on the section top, so the whole
+          business view fits the screen. */}
+      <div className="absolute inset-x-0 top-0">
+        {SOLUTION_TABS.map((tab) => (
+          <span key={tab.id} id={tab.id} aria-hidden className="absolute top-0 block" />
+        ))}
+      </div>
 
-      <div className="mx-auto max-w-[84rem] px-5 md:px-10">
-        <SectionHeader eyebrow="Who we build for" title="One network. Five ways to plug in." />
-
-        {/* Picking a business (hero tiles, header menu, footer
-            /solutions#d2c-health) lands here, on the tabs, so the business
-            itself fills the screen rather than the section heading. */}
-        <div id="solution-tabs" className="relative scroll-mt-24">
-          {SOLUTION_TABS.map((tab) => (
-            <span key={tab.id} id={tab.id} aria-hidden className="absolute top-0 block scroll-mt-24" />
-          ))}
-        </div>
+      <div className="mx-auto w-full max-w-[84rem] px-5 md:px-10 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
+        <SectionHeader
+          eyebrow="Who we build for"
+          title="One network. Five ways to plug in."
+          titleClassName="!mt-3 !max-w-none !text-[clamp(1.8rem,2.6vw,2.5rem)]"
+        />
 
         {/* Tabs */}
         <div
           role="tablist"
           aria-label="Business type"
           onKeyDown={onKey}
-          className="-mx-5 mt-10 flex gap-1 overflow-x-auto px-5 pb-1 [scrollbar-width:none] md:mx-0 md:inline-flex md:rounded-full md:border md:border-hairline md:bg-floral md:p-1.5 [&::-webkit-scrollbar]:hidden"
+          className="-mx-5 mt-6 flex shrink-0 gap-1 self-start overflow-x-auto px-5 pb-1 [scrollbar-width:none] md:mx-0 md:inline-flex md:rounded-full md:border md:border-hairline md:bg-floral md:p-1.5 [&::-webkit-scrollbar]:hidden"
         >
           {SOLUTION_TABS.map((tab, i) => (
             <button
@@ -192,7 +197,7 @@ function SolutionTabs({ picked, setPicked }) {
         </div>
 
         {/* Panel */}
-        <div role="tabpanel" className="mt-10">
+        <div role="tabpanel" className="mt-8 lg:min-h-0 lg:flex-1">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={item.id}
@@ -200,23 +205,23 @@ function SolutionTabs({ picked, setPicked }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.45, ease: EASE }}
-              className="grid gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-14"
+              className="grid gap-10 lg:h-full lg:grid-cols-[1.05fr_1fr] lg:gap-14"
             >
-              <div>
+              <div className="lg:flex lg:flex-col lg:justify-center">
                 <p className="tabular text-[0.8rem] font-extrabold text-brand-blue">
                   {String(picked + 1).padStart(2, "0")} / {String(SOLUTION_TABS.length).padStart(2, "0")} · {item.tab}
                 </p>
-                <h3 className="mt-3 text-[clamp(1.7rem,3vw,2.5rem)] font-extrabold leading-[1.08] tracking-[-0.035em] text-jet">{item.headline}</h3>
-                <p className="mt-4 max-w-lg text-[1.05rem] leading-relaxed text-ink-soft">{item.copy}</p>
+                <h3 className="mt-3 text-[clamp(1.6rem,2.5vw,2.3rem)] font-extrabold leading-[1.08] tracking-[-0.035em] text-jet">{item.headline}</h3>
+                <p className="mt-3 max-w-lg text-[1.02rem] leading-relaxed text-ink-soft">{item.copy}</p>
 
-                <ul className="mt-8 grid gap-x-6 gap-y-3 sm:grid-cols-2">
+                <ul className="mt-6 grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
                   {item.props.map((prop, i) => (
                     <motion.li
                       key={prop}
                       initial={{ opacity: 0, x: -12 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.45, ease: EASE, delay: 0.15 + i * 0.06 }}
-                      className="flex items-start gap-3 text-[0.97rem] font-semibold text-jet"
+                      className="flex items-start gap-3 text-[0.95rem] font-semibold text-jet"
                     >
                       <motion.span
                         initial={{ scale: 0 }}
@@ -231,13 +236,13 @@ function SolutionTabs({ picked, setPicked }) {
                   ))}
                 </ul>
 
-                <CtaButton to="/partner" className="mt-10">
+                <CtaButton to="/partner" className="mt-8 self-start">
                   {item.cta}
                 </CtaButton>
               </div>
 
-              <div className="relative">
-                <div className="img-wipe is-in relative aspect-[4/3] overflow-hidden rounded-[2rem] bg-jet lg:aspect-auto lg:h-full lg:min-h-[28rem]">
+              <div className="relative lg:min-h-0">
+                <div className="img-wipe is-in relative aspect-[4/3] overflow-hidden rounded-[2rem] bg-jet lg:aspect-auto lg:h-full">
                   <motion.img
                     src={ART[item.art]}
                     alt=""
@@ -272,57 +277,79 @@ const POWER = [
   {
     key: "fleet",
     eyebrow: "Our own fleet",
-    title: "500+ riders who work for us, not a marketplace.",
-    body: "Trained on medicine handling, assigned automatically by distance and SLA, and every handover confirmed by OTP.",
-    points: ["OTP-verified handover", "Live tracking", "30-minute hyperlocal SLA"],
+    stat: "500+",
+    statLabel: "in-house riders",
+    title: "Riders who work for us, not a marketplace.",
+    points: ["OTP-verified handover", "Live tracking", "30-minute SLA"],
     image: stillHandover,
     link: { to: "/about", label: "Meet the team" },
   },
   {
     key: "one",
     eyebrow: "DocPharma One",
+    stat: "6",
+    statLabel: "apps, one platform",
     title: "One system from shelf to doorstep.",
-    body: "Inventory, orders, picking, verification and last mile on our own platform, so every order is visible and every step accountable.",
-    points: ["Real-time inventory", "Pharmacist-verified orders", "Plugs into your stack"],
+    points: ["IMS · OMS · WMS", "Picking & rider apps", "Plugs into your stack"],
     image: stillVerify,
     link: { to: "/technology", label: "See the technology" },
   },
 ];
 
+/**
+ * What every solution runs on, as two full-photo panels on one navy screen.
+ * The photo zooms and the copy lifts on hover; the stat leads each panel.
+ */
 function PoweredBy() {
   return (
-    <section className="bg-floral py-24 md:py-28">
-      <div className="mx-auto max-w-[84rem] px-5 md:px-10">
-        <SectionHeader eyebrow="Powered by" title="Every solution runs on the same two things." />
+    <section className="relative overflow-hidden bg-jet py-20 text-white lg:flex lg:h-[100svh] lg:min-h-[42rem] lg:flex-col lg:pb-12 lg:pt-24">
+      <div className="mx-auto w-full max-w-[84rem] px-5 md:px-10 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
+        <SectionHeader
+          tone="dark"
+          eyebrow="Powered by"
+          title="Every solution runs on the same two things."
+          titleClassName="!mt-3 !text-[clamp(1.8rem,2.6vw,2.5rem)]"
+        />
 
-        <div className="mt-12 grid gap-5 lg:grid-cols-2">
+        <div className="mt-10 grid gap-4 lg:min-h-0 lg:flex-1 lg:grid-cols-2">
           {POWER.map((card, i) => (
-            <Reveal key={card.key} from="up" delay={i * 0.1}>
-              <article className="group flex h-full flex-col overflow-hidden rounded-[2rem] border border-hairline bg-white transition-shadow duration-500 hover:shadow-[0_30px_60px_-35px_rgba(5,36,57,.45)]">
-                <div className="relative aspect-[16/8] overflow-hidden bg-jet">
-                  <img
-                    src={card.image}
-                    alt=""
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-105"
-                  />
+            <Reveal key={card.key} from="up" delay={i * 0.12} className="lg:min-h-0">
+              <Link
+                to={card.link.to}
+                className="group relative flex h-[30rem] flex-col justify-end overflow-hidden rounded-[2rem] bg-[#0a2d45] lg:h-full"
+              >
+                <img
+                  src={card.image}
+                  alt=""
+                  loading="lazy"
+                  className="absolute inset-0 h-full w-full object-cover opacity-80 transition-[transform,opacity] duration-[1400ms] ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.06] group-hover:opacity-95"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-jet via-jet/70 to-jet/5" />
+
+                <div className="relative p-7 transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:-translate-y-1.5 md:p-9">
+                  <p className="text-[0.75rem] font-bold uppercase tracking-[0.16em] text-brand-green">{card.eyebrow}</p>
+                  <p className="mt-3 flex items-baseline gap-3">
+                    <span className="text-[clamp(3rem,5vw,4.4rem)] font-extrabold leading-none tracking-[-0.05em]">{card.stat}</span>
+                    <span className="text-[0.95rem] font-semibold text-white/70">{card.statLabel}</span>
+                  </p>
+                  <h3 className="mt-3 max-w-md text-[clamp(1.25rem,1.8vw,1.6rem)] font-extrabold leading-[1.15] tracking-[-0.03em]">{card.title}</h3>
+                  <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+                    <ul className="flex flex-wrap gap-2">
+                      {card.points.map((point) => (
+                        <li key={point} className="rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-[0.8rem] font-semibold text-white/90">
+                          {point}
+                        </li>
+                      ))}
+                    </ul>
+                    <span className="flex items-center gap-2 text-[0.9rem] font-bold">
+                      {card.link.label}
+                      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-jet transition-transform duration-500 group-hover:rotate-[-45deg]">
+                        →
+                      </span>
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-1 flex-col p-7 md:p-9">
-                  <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">{card.eyebrow}</p>
-                  <h3 className="mt-3 text-[clamp(1.4rem,2.2vw,1.9rem)] font-extrabold leading-[1.1] tracking-[-0.03em] text-jet">{card.title}</h3>
-                  <p className="mt-3 text-[1rem] leading-relaxed text-ink-soft">{card.body}</p>
-                  <ul className="mt-6 flex flex-wrap gap-2">
-                    {card.points.map((point) => (
-                      <li key={point} className="rounded-full bg-floral px-3.5 py-1.5 text-[0.82rem] font-semibold text-jet">
-                        {point}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link to={card.link.to} className="link-underline mt-auto self-start pt-8 text-[0.95rem] font-bold text-brand-blue">
-                    {card.link.label} →
-                  </Link>
-                </div>
-              </article>
+              </Link>
             </Reveal>
           ))}
         </div>
