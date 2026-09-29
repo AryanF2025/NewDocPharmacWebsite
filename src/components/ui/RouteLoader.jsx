@@ -130,24 +130,31 @@ async function waitForPage() {
     return r.bottom > 0 && r.top < window.innerHeight && r.width > 0;
   };
 
-  // 2. Images and video in the first screen.
-  // Images marked loading="lazy" are deliberately deferred; do not wait on them.
-  const images = [...main.querySelectorAll("img")]
-    .filter((img) => img.loading !== "lazy")
-    .filter(inFirstScreen)
-    .filter((img) => !img.complete);
-  const videos = [...main.querySelectorAll("video")].filter(inFirstScreen).filter((v) => v.readyState < 2);
-  const media = [
-    ...images.map((img) => new Promise((r) => {
-      img.addEventListener("load", r, { once: true });
-      img.addEventListener("error", r, { once: true });
-    })),
-    ...videos.map((v) => new Promise((r) => {
-      v.addEventListener("loadeddata", r, { once: true });
-      v.addEventListener("error", r, { once: true });
-    })),
-  ];
+  // 2. Fonts.
+  await (document.fonts?.ready ?? Promise.resolve());
 
-  // 3. Fonts.
-  await Promise.all([...media, document.fonts?.ready ?? Promise.resolve()]);
+  // 3. Images and video in the first screen, re-checked every 100ms so an
+  //    element swapped in after the first look is still caught. A video
+  //    counts as ready once its first frame or its poster is in — the poster
+  //    is what shows until playback, so the screen already looks complete.
+  //    Images marked loading="lazy" are deliberately deferred; not waited on.
+  const posters = new Map();
+  const posterReady = (video) => {
+    const src = video.poster;
+    if (!src) return false;
+    if (!posters.has(src)) {
+      const img = new Image();
+      img.src = src;
+      posters.set(src, img);
+    }
+    return posters.get(src).complete;
+  };
+  const firstScreenReady = () => {
+    const images = [...main.querySelectorAll("img")].filter((img) => img.loading !== "lazy").filter(inFirstScreen);
+    const videos = [...main.querySelectorAll("video")].filter(inFirstScreen);
+    return images.every((img) => img.complete) && videos.every((v) => v.readyState >= 2 || posterReady(v));
+  };
+  while (!firstScreenReady()) {
+    await new Promise((r) => setTimeout(r, 100));
+  }
 }
