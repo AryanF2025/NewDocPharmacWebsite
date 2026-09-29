@@ -30,6 +30,8 @@ const SILIGURI = { lon: 88.43, lat: 26.73 };
 /** Malda, West Bengal — on the land route north from Kolkata. */
 const MALDA = { lon: 88.14, lat: 25.0 };
 
+/** How far a city's wave reaches — far enough that together they cover India. */
+const WAVE_RADIUS = 230;
 const GRID = 10.5; // spacing of the dot grid in src/data/indiaMap.js
 const LONGEST_LINE = 420; // map units; scales line timing
 
@@ -148,7 +150,38 @@ export function IndiaCoverageMap({ active, className }) {
       role="img"
       aria-label="Map of India showing DocPharma's darkstore cities and delivery reaching 19,000+ pincodes across the country"
     >
+      <defs>
+        <clipPath id="cov-india">
+          <path d={INDIA_OUTLINE} />
+        </clipPath>
+        {/* A soft band near the rim: the crest of the wave. */}
+        <radialGradient id="cov-wave-band">
+          <stop offset="0%" stopColor="#0296d9" stopOpacity="0" />
+          <stop offset="62%" stopColor="#0296d9" stopOpacity="0" />
+          <stop offset="86%" stopColor="#0296d9" stopOpacity="0.32" />
+          <stop offset="96%" stopColor="#62b8de" stopOpacity="0.12" />
+          <stop offset="100%" stopColor="#0296d9" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+
       <path d={INDIA_OUTLINE} className="cov-outline" pathLength={1} />
+
+      {/* The wave: from every darkstore city a ring washes out across India,
+          trimmed to the country's outline, on a loop. Seven shapes, not a
+          thousand animated dots, so the section stays smooth to scroll. */}
+      <g clipPath="url(#cov-india)" className="cov-waves" aria-hidden>
+        {cities.map((c, i) => (
+          <circle
+            key={c.name}
+            cx={c.x}
+            cy={c.y}
+            r={WAVE_RADIUS}
+            fill="url(#cov-wave-band)"
+            className="cov-wave"
+            style={{ animationDelay: `${1.6 + (i % 3) * 0.12}s` }}
+          />
+        ))}
+      </g>
 
       {/* Dots: static, faded in once as a single layer — a thousand
           individually animated SVG dots repaint the whole map every frame. */}

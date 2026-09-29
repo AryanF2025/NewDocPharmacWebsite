@@ -247,15 +247,26 @@ function Bento() {
                 <div
                   key={l}
                   className={clsx(
-                    "flex flex-col items-center justify-center px-4 py-7 text-center",
+                    "group relative flex flex-col items-center justify-center overflow-hidden px-4 py-7 text-center transition-colors duration-500 hover:bg-peppermint/60",
                     i % 2 === 0 && "border-r border-hairline",
                     i < 2 && "border-b border-hairline"
                   )}
                 >
-                  <p className="text-[clamp(2.2rem,3.6vw,3rem)] font-extrabold leading-none tracking-tight text-jet">
+                  {/* Figures in the brand gradient; hovering lifts one. */}
+                  <p className="bg-gradient-to-r from-brand-blue to-brand-green bg-clip-text text-[clamp(2.2rem,3.6vw,3rem)] font-extrabold leading-none tracking-tight text-transparent transition-transform duration-500 ease-[cubic-bezier(.22,1,.36,1)] group-hover:-translate-y-1 group-hover:scale-[1.06]">
                     <CountUp value={v} suffix={suffix} delay={i * 90} />
                   </p>
-                  <p className="mt-2 text-[0.95rem] text-ink-faint">{l}</p>
+                  <p className="mt-2 text-[0.95rem] text-ink-faint transition-colors duration-500 group-hover:text-jet">{l}</p>
+                  {/* A rate fills its bar to the rate; a count grows its bar on hover. */}
+                  <span className="mt-3 block h-1 w-16 overflow-hidden rounded-full bg-jet/8">
+                    <span
+                      className={clsx(
+                        "stat-bar block h-full origin-left rounded-full bg-gradient-to-r from-brand-blue to-brand-green transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)]",
+                        suffix !== "%" && "scale-x-[0.35] group-hover:scale-x-100"
+                      )}
+                      style={suffix === "%" ? { "--to": v / 100 } : undefined}
+                    />
+                  </span>
                 </div>
               ))}
             </div>

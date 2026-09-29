@@ -282,6 +282,51 @@
 .cov-map.is-live .cov-dots {
   opacity: 1;
 }
+/* Home numbers tile: a rate's bar fills to the rate once the tile arrives. */
+.stat-bar[style*="--to"] {
+  transform: scaleX(0);
+}
+.reveal-up .stat-bar[style*="--to"] {
+  animation: stat-fill 1.4s var(--ease-brand) 0.5s forwards;
+}
+@keyframes stat-fill {
+  to {
+    transform: scaleX(var(--to));
+  }
+}
+
+/* The wave: each city's ring grows from nothing to its full reach and fades,
+   every 5.2s. */
+.cov-wave {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(0);
+  opacity: 0;
+}
+.cov-map.is-live .cov-wave {
+  animation: cov-wave-out 5.2s cubic-bezier(0.25, 0.6, 0.35, 1) infinite;
+}
+@keyframes cov-wave-out {
+  0% {
+    transform: scale(0.04);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cov-wave {
+    display: none;
+  }
+}
 .cov-spoke,
 .cov-lastmile,
 .cov-spoke-glow {
