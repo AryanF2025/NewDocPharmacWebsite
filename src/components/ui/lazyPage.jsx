@@ -2,45 +2,36 @@ import { Component, lazy } from "react";
 
 const RELOAD_KEY = "dp-chunk-reload";
 
+/** A page file that hasn't arrived in this long is treated as failed. */
+const LOAD_TIMEOUT_MS = 15000;
+
 /**
- * `React.lazy` for a page, hardened against stale builds.
+ * `React.lazy` for a page, hardened against bad cached files.
  *
- * After a deploy, a browser can still hold an old copy of a page file (or an
- * HTML page cached in its place), so the import fails. When that happens this
- * refetches the failed file and the HTML past the browser cache, then reloads
- * once to pick up the new build. A session flag stops it looping; if the
- * reload doesn't help, the error reaches <PageErrorBoundary> instead of
- * leaving a blank screen.
+ * A browser can hold a broken copy of a page file — or of any file that page
+ * imports (an HTML page cached under a script's URL, say). When a page fails
+ * to load, or takes too long, this re-downloads the page file and every file
+ * it imports, overwriting whatever the browser had stored, then reloads once
+ * (a failed script can't be retried within the same page view). A session
+ * flag stops it looping; if that still doesn't help, <PageErrorBoundary>
+ * shows a way out instead of a stuck loader.
  */
 export function lazyPage(load, pick) {
   const choose = (module) => (pick ? { default: module[pick] } : module);
 
   return lazy(() =>
-    load()
+    withTimeout(load(), LOAD_TIMEOUT_MS)
       .then((module) => {
         clearFlag();
         return choose(module);
       })
       .catch(async (error) => {
-        const url = String(error?.message ?? "").match(/https?:\/\/\S+?\.js/)?.[0];
-
-        // First, ask for the same file under a one-off URL. Nothing can have
-        // cached that — not the browser, not a leftover service worker — so if
-        // the server has the file (it does, for the current build) this loads
-        // the page without any reload at all.
-        if (url) {
-          try {
-            const module = await import(/* @vite-ignore */ `${url}?v=${Date.now()}`);
-            return choose(module);
-          } catch {
-            // Fall through to a clean reload.
-          }
-        }
-
         if (readFlag()) throw error;
         setFlag();
+
+        const url = String(error?.message ?? "").match(/https?:\/\/\S+?\.js/)?.[0];
         await Promise.allSettled([
-          url ? fetch(url, { cache: "reload" }) : null,
+          url ? refreshModuleGraph(url) : refreshLoadedScripts(),
           fetch(window.location.pathname, { cache: "reload" }),
         ]);
         window.location.reload();
@@ -48,6 +39,57 @@ export function lazyPage(load, pick) {
         return new Promise(() => {});
       })
   );
+}
+
+function withTimeout(promise, ms) {
+  return new Promise((resolve, reject) => {
+    const id = window.setTimeout(() => reject(new Error("Page load timed out")), ms);
+    promise.then(
+      (value) => {
+        window.clearTimeout(id);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(id);
+        reject(error);
+      }
+    );
+  });
+}
+
+/**
+ * Re-download a script and everything it imports, past the browser cache.
+ * `cache: "reload"` replaces the stored copy, so the next load gets the real
+ * file even where a broken one was cached "forever".
+ */
+async function refreshModuleGraph(start) {
+  const seen = new Set();
+  const queue = [start];
+  while (queue.length && seen.size < 60) {
+    const url = queue.shift();
+    if (seen.has(url)) continue;
+    seen.add(url);
+    try {
+      const res = await fetch(url, { cache: "reload" });
+      const type = res.headers.get("content-type") ?? "";
+      if (!type.includes("javascript")) continue;
+      const text = await res.text();
+      for (const match of text.matchAll(/["'](\.{1,2}\/[\w.-]+\.js)["']/g)) {
+        queue.push(new URL(match[1], url).href);
+      }
+    } catch {
+      // Keep going with the rest.
+    }
+  }
+}
+
+/** No URL in the error (e.g. a timeout): refresh every script this page has used. */
+async function refreshLoadedScripts() {
+  const urls = performance
+    .getEntriesByType("resource")
+    .map((entry) => entry.name)
+    .filter((name) => name.startsWith(window.location.origin) && name.endsWith(".js"));
+  await Promise.allSettled(urls.map((u) => refreshModuleGraph(u)));
 }
 
 function readFlag() {
