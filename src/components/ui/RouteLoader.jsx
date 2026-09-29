@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { BrandLoader } from "./BrandLoader";
 
 const MIN_MS = 700; // long enough for one heartbeat to read
-const MAX_MS = 6000; // a slow image never traps the visitor here
+const MAX_MS = 4000; // a slow image never traps the visitor here
 
 /**
  * The loader between pages. On every page change it covers the screen and
@@ -116,11 +116,15 @@ async function waitForPage() {
   if (!main) return;
   const inFirstScreen = (el) => {
     const r = el.getBoundingClientRect();
-    return r.bottom > 0 && r.top < window.innerHeight * 1.2 && r.width > 0;
+    return r.bottom > 0 && r.top < window.innerHeight && r.width > 0;
   };
 
   // 2. Images and video in the first screen.
-  const images = [...main.querySelectorAll("img")].filter(inFirstScreen).filter((img) => !img.complete);
+  // Images marked loading="lazy" are deliberately deferred; do not wait on them.
+  const images = [...main.querySelectorAll("img")]
+    .filter((img) => img.loading !== "lazy")
+    .filter(inFirstScreen)
+    .filter((img) => !img.complete);
   const videos = [...main.querySelectorAll("video")].filter(inFirstScreen).filter((v) => v.readyState < 2);
   const media = [
     ...images.map((img) => new Promise((r) => {
