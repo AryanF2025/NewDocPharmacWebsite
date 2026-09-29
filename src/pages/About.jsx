@@ -101,9 +101,14 @@ function ValueCard({ slide, i, count, progress }) {
   const dim = useTransform(progress, [i / count, 1], [0, (count - 1 - i) * 0.12]);
 
   return (
-    // The last card has nothing arriving over it, so it simply scrolls on.
+    // Every card is pinned, so the stack leaves as one piece with the last card
+    // on top. The last card needs no scroll room after it, so its wrapper is
+    // only as tall as the card — the stack releases the moment it lands.
     <div
-      className={clsx("flex items-start justify-center pt-[calc(6rem+var(--offset))]", i < count - 1 ? "sticky top-0 h-[88svh]" : "pb-24")}
+      className={clsx(
+        "sticky top-0 flex items-start justify-center pt-[calc(6rem+var(--offset))]",
+        i < count - 1 ? "h-[88svh]" : "pb-24"
+      )}
       style={{ "--offset": `${i * 1.6}rem` }}
     >
       <motion.article

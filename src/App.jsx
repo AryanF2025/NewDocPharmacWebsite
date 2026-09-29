@@ -1,8 +1,9 @@
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { SiteHeader } from "@/components/experience/SiteHeader";
 import { SiteFooter } from "@/components/experience/SiteFooter";
 import { BrandLoader } from "@/components/ui/BrandLoader";
+import { lazyPage, PageErrorBoundary } from "@/components/ui/lazyPage";
 import { scrollToTarget } from "@/components/motion/smoothScroll";
 import Home from "@/pages/Home";
 
@@ -16,14 +17,14 @@ const PAGES = {
   legal: () => import("@/pages/Legal"),
   notFound: () => import("@/pages/NotFound"),
 };
-const Solutions = lazy(PAGES.solutions);
-const Technology = lazy(PAGES.technology);
-const About = lazy(PAGES.about);
-const Partner = lazy(PAGES.partner);
-const Resources = lazy(PAGES.resources);
-const NotFound = lazy(PAGES.notFound);
-const PrivacyPolicy = lazy(() => PAGES.legal().then((m) => ({ default: m.PrivacyPolicy })));
-const TermsOfUse = lazy(() => PAGES.legal().then((m) => ({ default: m.TermsOfUse })));
+const Solutions = lazyPage(PAGES.solutions);
+const Technology = lazyPage(PAGES.technology);
+const About = lazyPage(PAGES.about);
+const Partner = lazyPage(PAGES.partner);
+const Resources = lazyPage(PAGES.resources);
+const NotFound = lazyPage(PAGES.notFound);
+const PrivacyPolicy = lazyPage(PAGES.legal, "PrivacyPolicy");
+const TermsOfUse = lazyPage(PAGES.legal, "TermsOfUse");
 
 /**
  * Once the first page is up and the browser is idle, fetch the other pages in
@@ -35,7 +36,9 @@ function usePrefetchPages() {
     if (navigator.connection?.saveData) return undefined;
     const idle = window.requestIdleCallback ?? ((fn) => window.setTimeout(fn, 1500));
     const cancel = window.cancelIdleCallback ?? window.clearTimeout;
-    const id = idle(() => Object.values(PAGES).forEach((load) => load().catch(() => {})), { timeout: 4000 });
+    const id = idle(() => Object.values(PAGES).forEach((load) => load().catch(() => {})), {
+      timeout: 4000,
+    });
     return () => cancel(id);
   }, []);
 }
@@ -109,20 +112,22 @@ export default function App() {
       <SiteHeader />
 
       <main id="main">
-        <Suspense fallback={<RouteFallback />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/solutions" element={<Solutions />} />
-            <Route path="/technology" element={<Technology />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/partner" element={<Partner />} />
-            <Route path="/contact" element={<Partner />} />
-            <Route path="/resources" element={<Resources />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<TermsOfUse />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
+        <PageErrorBoundary>
+          <Suspense fallback={<RouteFallback />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/solutions" element={<Solutions />} />
+              <Route path="/technology" element={<Technology />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/partner" element={<Partner />} />
+              <Route path="/contact" element={<Partner />} />
+              <Route path="/resources" element={<Resources />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfUse />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </PageErrorBoundary>
       </main>
 
       <SiteFooter />

@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
 import clsx from "clsx";
 import { Logo } from "@/components/ui/Logo";
 import { Magnetic } from "./Magnetic";
-import { SOCIAL } from "./siteInfo";
+import { MobileMenu } from "./MobileMenu";
 import { lockScroll } from "@/components/motion/smoothScroll";
 import riderStill from "@/assets/images/still-rider.jpg";
 
@@ -33,6 +33,7 @@ export function SiteHeader() {
   const [menu, setMenu] = useState(false);
   const [solutions, setSolutions] = useState(false);
   const closeTimer = useRef(null);
+  const closeMenu = useCallback(() => setMenu(false), []);
 
   useMotionValueEvent(scrollY, "change", (current) => {
     const previous = scrollY.getPrevious() ?? 0;
@@ -182,40 +183,7 @@ export function SiteHeader() {
       </motion.header>
 
       {/* Mobile menu */}
-      <AnimatePresence>
-        {menu ? (
-          <motion.div
-            className="fixed inset-0 z-[60] flex flex-col bg-jet px-6 pb-8 pt-5 text-white lg:hidden"
-            initial={{ clipPath: "circle(0% at calc(100% - 3rem) 2.5rem)" }}
-            animate={{ clipPath: "circle(150% at calc(100% - 3rem) 2.5rem)" }}
-            exit={{ clipPath: "circle(0% at calc(100% - 3rem) 2.5rem)" }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className="flex items-center justify-between">
-              <Logo tone="mono" markClass="h-7 w-7" className="text-white" />
-              <button type="button" onClick={() => setMenu(false)} aria-label="Close menu" className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-2xl">
-                ×
-              </button>
-            </div>
-            <nav className="mt-12 flex flex-col">
-              {[{ label: "Solutions", to: "/solutions" }, ...LINKS, { label: "Partner with us", to: "/partner" }].map((l, i) => (
-                <motion.div key={l.to} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.06 }}>
-                  <Link to={l.to} onClick={() => setMenu(false)} className="block border-b border-white/10 py-4 text-[2.1rem] font-extrabold tracking-tight">
-                    {l.label}
-                  </Link>
-                </motion.div>
-              ))}
-            </nav>
-            <div className="mt-auto flex gap-3">
-              {SOCIAL.map((s) => (
-                <a key={s.name} href={s.href} target="_blank" rel="noreferrer" className="rounded-full border border-white/20 px-4 py-2 text-sm font-semibold">
-                  {s.name}
-                </a>
-              ))}
-            </div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+      <AnimatePresence>{menu ? <MobileMenu solutions={SOLUTIONS} onClose={closeMenu} /> : null}</AnimatePresence>
     </>
   );
 }

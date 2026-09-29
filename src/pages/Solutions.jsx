@@ -58,7 +58,7 @@ const TILE_PLACE = [
 function useOpen(setPicked) {
   return (i) => {
     setPicked(i);
-    const el = document.getElementById("solutions");
+    const el = document.getElementById("solution-tabs");
     if (el) scrollToTarget(el);
   };
 }
@@ -150,14 +150,18 @@ function SolutionTabs({ picked, setPicked }) {
 
   return (
     <section id="solutions" className="relative scroll-mt-24 bg-white py-24 md:py-28">
-      {/* The header menu and the footer link straight to a business type
-          (/solutions#d2c-health); these are the marks they land on. */}
-      {SOLUTION_TABS.map((tab) => (
-        <span key={tab.id} id={tab.id} aria-hidden className="absolute top-0 block scroll-mt-24" />
-      ))}
 
       <div className="mx-auto max-w-[84rem] px-5 md:px-10">
         <SectionHeader eyebrow="Who we build for" title="One network. Five ways to plug in." />
+
+        {/* Picking a business (hero tiles, header menu, footer
+            /solutions#d2c-health) lands here, on the tabs, so the business
+            itself fills the screen rather than the section heading. */}
+        <div id="solution-tabs" className="relative scroll-mt-24">
+          {SOLUTION_TABS.map((tab) => (
+            <span key={tab.id} id={tab.id} aria-hidden className="absolute top-0 block scroll-mt-24" />
+          ))}
+        </div>
 
         {/* Tabs */}
         <div

@@ -109,7 +109,7 @@ export function SectionHeader({ eyebrow, title, sub, tone = "light", align = "le
       <SplitText
         lines={title}
         className={clsx(
-          "mt-4 max-w-3xl",
+          "mt-4 max-w-3xl text-balance",
           TITLE_CLASS,
           dark ? "text-white" : "text-jet",
           center && "mx-auto",

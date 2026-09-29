@@ -12,12 +12,18 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
 import { Reveal } from "@/components/ui/Reveal";
+import { LogoMark } from "@/components/ui/Logo";
 import { ConsoleMock } from "@/components/directions/shared";
 import { HeroBackdrop, HeroHeading, Enter, HIGHLIGHT } from "@/components/motion/Hero";
 import { SectionHeader, SplitText } from "@/components/motion/Text";
 import { CtaButton, GhostButton } from "@/components/motion/CtaButton";
 import { useInViewOnce } from "@/components/motion/useInViewOnce";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import stillVerify from "@/assets/images/still-verify.jpg";
+import stillPick from "@/assets/images/still-pick.jpg";
+import stillPack from "@/assets/images/still-pack.jpg";
+import stillRider from "@/assets/images/still-rider.jpg";
+import packing from "@/assets/images/packing.webp";
 import { TECH_HERO, TECH_ONE, TECH_STACK, TRACE, TECH_VERTICALS, FINAL_STATEMENT, COMPLIANCE } from "@/data/pages";
 
 function useIsDesktop() {
@@ -313,22 +319,27 @@ const SEAL_ICONS = {
 };
 
 /**
- * Compliance shown, not stated: five seals, stamped onto the page one after
- * another — each with its ring of type rotating slowly, like an embossed mark.
+ * Compliance shown, not stated: five seals, each in its own card, stamped on
+ * one after another. Their rings turn slowly like an embossed mark; hovering a
+ * card lifts it and turns its seal to brand green.
  */
 function Seals() {
   const ref = useRef(null);
   const inView = useInViewOnce(ref);
 
   return (
-    <section className="relative overflow-hidden bg-white py-24 md:py-32">
+    <section className="relative overflow-hidden bg-floral py-24 md:py-32">
       <div className="mx-auto max-w-[84rem] px-5 md:px-10">
-        <SectionHeader eyebrow="Compliance" title={COMPLIANCE.headline} sub={COMPLIANCE.sub} />
+        <SectionHeader align="center" eyebrow="Compliance" title={COMPLIANCE.headline} sub={COMPLIANCE.sub} />
 
-        <div ref={ref} className={clsx("seals mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-5", inView && "is-in")}>
+        <div ref={ref} className={clsx("seals mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-5", inView && "is-in")}>
           {COMPLIANCE.seals.map((seal, i) => (
-            <div key={seal.key} className="seal group flex flex-col items-center text-center" style={{ "--i": i }}>
-              <div className="relative h-36 w-36">
+            <div
+              key={seal.key}
+              className="seal group flex flex-col items-center rounded-[1.75rem] border border-hairline bg-white px-5 pb-7 pt-8 text-center transition-[transform,box-shadow,border-color] duration-500 hover:-translate-y-1.5 hover:border-brand-green/40 hover:shadow-[0_30px_60px_-35px_rgba(5,36,57,.45)]"
+              style={{ "--i": i }}
+            >
+              <div className="relative h-32 w-32">
                 <svg viewBox="0 0 120 120" className="seal-ring absolute inset-0 h-full w-full" aria-hidden>
                   <defs>
                     <path id={`seal-${seal.key}`} d="M60 60 m-47 0 a47 47 0 1 1 94 0 a47 47 0 1 1 -94 0" />
@@ -338,14 +349,14 @@ function Seals() {
                     <textPath href={`#seal-${seal.key}`}>{`${seal.name} · DocPharma verified · `}</textPath>
                   </text>
                 </svg>
-                <span className="seal-core absolute inset-[22%] flex items-center justify-center rounded-full bg-peppermint text-[#5f8a0f] transition-colors duration-500 group-hover:bg-brand-green group-hover:text-jet">
-                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <span className="seal-core absolute inset-[22%] flex items-center justify-center rounded-full bg-peppermint text-[#5f8a0f] transition-[background-color,color,transform] duration-500 group-hover:scale-105 group-hover:bg-brand-green group-hover:text-jet">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                     <path d={SEAL_ICONS[seal.key]} />
                   </svg>
                 </span>
               </div>
-              <h3 className="mt-5 text-[1rem] font-extrabold uppercase tracking-[0.08em] text-jet">{seal.name}</h3>
-              <p className="mt-2 max-w-[15rem] text-[0.9rem] leading-relaxed text-ink-soft">{seal.body}</p>
+              <h3 className="mt-6 text-[0.95rem] font-extrabold uppercase tracking-[0.08em] text-jet">{seal.name}</h3>
+              <p className="mt-2 text-[0.9rem] leading-relaxed text-ink-soft">{seal.body}</p>
             </div>
           ))}
         </div>
@@ -356,26 +367,78 @@ function Seals() {
 
 /* ------------------------------------------------------------ verticals --- */
 
+const VERTICAL_ART = [stillVerify, stillPick, stillPack, packing, stillRider];
+
+/**
+ * The categories as rows. Hovering one sweeps a navy band in behind it and a
+ * photo of that category floats beside the cursor, following it on a spring —
+ * the photo swaps as you move between rows. Touch screens get the rows alone.
+ */
 function Verticals() {
+  const listRef = useRef(null);
+  const [hovered, setHovered] = useState(null);
+  const x = useSpring(0, { stiffness: 220, damping: 26, mass: 0.5 });
+  const y = useSpring(0, { stiffness: 220, damping: 26, mass: 0.5 });
+
+  const onMove = (event) => {
+    if (event.pointerType !== "mouse") return;
+    const r = listRef.current.getBoundingClientRect();
+    x.set(event.clientX - r.left);
+    y.set(event.clientY - r.top);
+  };
+
   return (
-    <section className="bg-floral py-24 md:py-32">
+    <section className="bg-white py-24 md:py-32">
       <div className="mx-auto max-w-[84rem] px-5 md:px-10">
         <SectionHeader eyebrow="Categories" title={TECH_VERTICALS.headline} />
 
-        <div className="mt-12 border-t border-hairline">
+        <div ref={listRef} className="relative mt-12 border-t border-hairline" onPointerMove={onMove} onPointerLeave={() => setHovered(null)}>
           {TECH_VERTICALS.items.map((item, i) => (
             <Reveal key={item.name} from="up" delay={i * 0.05}>
-              <div className="row-sweep group relative grid gap-2 overflow-hidden border-b border-hairline py-7 md:grid-cols-[4rem_1fr_2fr] md:items-baseline md:gap-8 md:px-4">
-                <span className="tabular relative text-[0.8rem] font-extrabold text-ink-faint transition-colors duration-500 group-hover:text-white/60">
+              <div
+                onPointerEnter={(event) => event.pointerType === "mouse" && setHovered(i)}
+                className="row-sweep group relative grid gap-2 overflow-hidden border-b border-hairline py-7 md:grid-cols-[4rem_1fr_2fr_2rem] md:items-center md:gap-8 md:px-4"
+              >
+                <span className="tabular relative text-[0.8rem] font-extrabold text-ink-faint transition-colors duration-500 group-hover:text-brand-green">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <h3 className="relative text-[clamp(1.2rem,2vw,1.6rem)] font-extrabold tracking-tight text-jet transition-[color,transform] duration-500 group-hover:translate-x-2 group-hover:text-white">
+                <h3 className="relative text-[clamp(1.3rem,2.2vw,1.8rem)] font-extrabold tracking-tight text-jet transition-[color,transform] duration-500 group-hover:translate-x-2 group-hover:text-white">
                   {item.name}
                 </h3>
                 <p className="relative text-[1rem] leading-relaxed text-ink-soft transition-colors duration-500 group-hover:text-white/75">{item.body}</p>
+                <span aria-hidden className="relative hidden -translate-x-2 text-[1.2rem] text-white opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100 md:block">
+                  →
+                </span>
               </div>
             </Reveal>
           ))}
+
+          {/* The photo that follows the cursor */}
+          <motion.div
+            aria-hidden
+            style={{ x, y }}
+            className="pointer-events-none absolute left-0 top-0 z-10 hidden md:block"
+          >
+            <div
+              className={clsx(
+                "relative -translate-x-1/2 -translate-y-[115%] overflow-hidden rounded-2xl shadow-[0_30px_60px_-20px_rgba(5,36,57,.55)] transition-[opacity,transform] duration-300 ease-out",
+                hovered === null ? "scale-75 opacity-0" : "scale-100 opacity-100"
+              )}
+              style={{ width: "17rem", height: "11rem" }}
+            >
+              {VERTICAL_ART.map((src, i) => (
+                <img
+                  key={i}
+                  src={src}
+                  alt=""
+                  className={clsx(
+                    "absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-500",
+                    hovered === i ? "scale-100 opacity-100" : "scale-110 opacity-0"
+                  )}
+                />
+              ))}
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>
@@ -395,8 +458,26 @@ function FinalStatement() {
 
   // Runs under the footer's rounded top, so the two dark panels meet cleanly.
   return (
-    <section className="relative -mb-10 flex min-h-[100svh] items-center overflow-hidden bg-jet pb-24 pt-20 text-center text-white">
-      <div className="mx-auto max-w-5xl px-5 md:px-10">
+    <section className="relative -mb-10 flex min-h-[86svh] items-center overflow-hidden bg-jet pb-32 pt-24 text-center text-white">
+      {/* The same grid and brand glows as the other dark panels, and the mark
+          itself, faint and oversized, behind the words. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px)",
+            backgroundSize: "64px 64px",
+            maskImage: "radial-gradient(ellipse 70% 65% at 50% 50%, #000 20%, transparent 75%)",
+            WebkitMaskImage: "radial-gradient(ellipse 70% 65% at 50% 50%, #000 20%, transparent 75%)",
+          }}
+        />
+        <div className="absolute left-1/2 top-1/2 h-[34rem] w-[34rem] -translate-x-[80%] -translate-y-1/2 rounded-full bg-brand-blue/15 blur-[130px]" />
+        <div className="absolute left-1/2 top-1/2 h-[28rem] w-[28rem] -translate-x-[10%] -translate-y-[30%] rounded-full bg-brand-green/10 blur-[130px]" />
+        <LogoMark tone="mono" className="absolute left-1/2 top-1/2 h-[min(70vw,34rem)] w-[min(70vw,34rem)] -translate-x-1/2 -translate-y-1/2 text-white opacity-[0.035]" />
+      </div>
+
+      <div className="relative mx-auto max-w-5xl px-5 md:px-10">
         <SplitText
           as="p"
           lines={claim}
@@ -411,7 +492,7 @@ function FinalStatement() {
           stagger={0.09}
           className="font-editorial mt-2 text-[clamp(2.2rem,5.2vw,4.6rem)] italic leading-[1.08] tracking-[-0.02em] text-brand-green"
         />
-        <Reveal delay={1.5}>
+        <Reveal delay={1.2}>
           <p className="mt-12 text-[1.5rem] font-extrabold tracking-[-0.03em]">{FINAL_STATEMENT.brand}</p>
           <p className="mt-1 text-[0.8rem] font-bold uppercase tracking-[0.2em] text-white/55">{FINAL_STATEMENT.positioning}</p>
           <div className="mt-8 flex justify-center">
