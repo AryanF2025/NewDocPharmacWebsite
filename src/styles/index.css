@@ -1329,3 +1329,19 @@
     display: none;
   }
 }
+
+/* ---------------------------------------------------- page-change loader */
+.route-loader {
+  transition: opacity 0.45s var(--ease-brand);
+}
+.route-loader.is-leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+/* Hold the new page's entrance animations until the loader lifts, so the
+   headline plays in view rather than underneath it. */
+.is-route-loading main *,
+.is-route-loading main *::before,
+.is-route-loading main *::after {
+  animation-play-state: paused !important;
+}

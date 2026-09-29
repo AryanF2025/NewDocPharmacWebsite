@@ -3,6 +3,7 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import { SiteHeader } from "@/components/experience/SiteHeader";
 import { SiteFooter } from "@/components/experience/SiteFooter";
 import { BrandLoader } from "@/components/ui/BrandLoader";
+import { RouteLoader } from "@/components/ui/RouteLoader";
 import { lazyPage, PageErrorBoundary } from "@/components/ui/lazyPage";
 import { scrollToTarget } from "@/components/motion/smoothScroll";
 import Home from "@/pages/Home";
@@ -109,6 +110,7 @@ export default function App() {
       </a>
 
       <ScrollManager />
+      <RouteLoader />
       <SiteHeader />
 
       <main id="main">

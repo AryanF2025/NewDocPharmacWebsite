@@ -151,7 +151,7 @@ function SolutionTabs({ picked, setPicked }) {
   return (
     // On desktop the whole section is exactly one screen: heading, tabs, and
     // the business panel filling what is left.
-    <section id="solutions" className="relative bg-white py-20 lg:flex lg:h-[100svh] lg:min-h-[44rem] lg:flex-col lg:pb-10 lg:pt-24">
+    <section id="solutions" className="relative bg-white py-20 lg:flex lg:min-h-[100svh] lg:flex-col lg:pb-12 lg:pt-24">
       {/* Picking a business (hero tiles, header menu, footer
           /solutions#d2c-health) lands on the section top, so the whole
           business view fits the screen. */}
@@ -242,7 +242,7 @@ function SolutionTabs({ picked, setPicked }) {
               </div>
 
               <div className="relative lg:min-h-0">
-                <div className="img-wipe is-in relative aspect-[4/3] overflow-hidden rounded-[2rem] bg-jet lg:aspect-auto lg:h-full">
+                <div className="img-wipe is-in relative aspect-[4/3] overflow-hidden rounded-[2rem] bg-jet lg:aspect-auto lg:h-full lg:min-h-[24rem]">
                   <motion.img
                     src={ART[item.art]}
                     alt=""
@@ -302,7 +302,7 @@ const POWER = [
  */
 function PoweredBy() {
   return (
-    <section className="relative overflow-hidden bg-jet py-20 text-white lg:flex lg:h-[100svh] lg:min-h-[42rem] lg:flex-col lg:pb-12 lg:pt-24">
+    <section className="relative overflow-hidden bg-jet py-20 text-white lg:flex lg:min-h-[100svh] lg:flex-col lg:pb-12 lg:pt-24">
       <div className="mx-auto w-full max-w-[84rem] px-5 md:px-10 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
         <SectionHeader
           tone="dark"
@@ -316,7 +316,7 @@ function PoweredBy() {
             <Reveal key={card.key} from="up" delay={i * 0.12} className="lg:min-h-0">
               <Link
                 to={card.link.to}
-                className="group relative flex h-[30rem] flex-col justify-end overflow-hidden rounded-[2rem] bg-[#0a2d45] lg:h-full"
+                className="group relative flex h-[30rem] flex-col justify-end overflow-hidden rounded-[2rem] bg-[#0a2d45] lg:h-full lg:min-h-[26rem]"
               >
                 <img
                   src={card.image}
