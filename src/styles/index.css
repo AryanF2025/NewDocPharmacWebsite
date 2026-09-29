@@ -282,6 +282,21 @@
 .cov-map.is-live .cov-dots {
   opacity: 1;
 }
+/* Partner timeline: the line draws down once its card arrives. */
+.timeline-line {
+  transform: scaleY(0);
+  transform-origin: top;
+}
+.reveal-right .timeline-line,
+.reveal-up .timeline-line {
+  animation: timeline-draw 1.2s var(--ease-brand) 0.4s forwards;
+}
+@keyframes timeline-draw {
+  to {
+    transform: none;
+  }
+}
+
 /* Home numbers tile: a rate's bar fills to the rate once the tile arrives. */
 .stat-bar[style*="--to"] {
   transform: scaleX(0);

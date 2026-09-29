@@ -20,8 +20,42 @@ import {
   PARTNER_ASSURANCES,
 } from "@/data/contact";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { CountUp } from "@/components/experience/HeroParts";
 import { SectionHeader } from "@/components/motion/Text";
 import { CtaButton } from "@/components/motion/CtaButton";
+
+/** The figures partners actually stay for. */
+const PROOF = [
+  [95, "%", "Fulfilment rate"],
+  [93, "%", "Delivered on time"],
+  [50, "+", "Licensed darkstores"],
+  [30, " min", "Hyperlocal delivery"],
+];
+
+function ContactIcon({ name }) {
+  const common = { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true };
+  if (name === "phone") {
+    return (
+      <svg {...common}>
+        <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" />
+      </svg>
+    );
+  }
+  if (name === "mail") {
+    return (
+      <svg {...common}>
+        <rect x="3" y="5" width="18" height="14" rx="2" />
+        <path d="m3 7 9 6 9-6" />
+      </svg>
+    );
+  }
+  return (
+    <svg {...common}>
+      <path d="M12 21s7-6.3 7-12a7 7 0 1 0-14 0c0 5.7 7 12 7 12z" />
+      <circle cx="12" cy="9" r="2.5" />
+    </svg>
+  );
+}
 
 const NEXT_STEPS = [
   ["01", "You tell us what you sell", "Categories, cities and the volumes you handle today."],
@@ -102,47 +136,67 @@ function BusinessTypePanels({ value, onPick }) {
               alt=""
               loading="lazy"
               className={clsx(
-                "absolute inset-0 h-full w-full object-cover transition-[transform,filter] duration-[1200ms] ease-[cubic-bezier(.22,1,.36,1)]",
-                active ? "scale-100 group-hover:scale-[1.05]" : "scale-125 grayscale-[60%]"
+                "absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(.22,1,.36,1)]",
+                active ? "scale-100 group-hover:scale-[1.04]" : "scale-125"
+              )}
+            />
+            {/* Folded panels read as solid brand navy with the photo just
+                showing through; the open one keeps its photo, darkened only
+                where the words sit. */}
+            <div
+              className={clsx(
+                "absolute inset-0 transition-[background-color,opacity] duration-700",
+                active ? "opacity-0" : "bg-jet/85 group-hover:bg-jet/70"
               )}
             />
             <div
               className={clsx(
-                "absolute inset-0 transition-colors duration-700",
-                active ? "bg-gradient-to-t from-jet via-jet/30 to-transparent" : "bg-jet/65 group-hover:bg-jet/45"
+                "absolute inset-0 bg-gradient-to-t from-jet via-jet/45 via-35% to-transparent to-70% transition-opacity duration-700",
+                active ? "opacity-100" : "opacity-0"
               )}
             />
 
-            {/* Folded: a vertical label on desktop, a single line on phones */}
+            {/* Folded: number at the top, label reading up from the bottom */}
             <span
               className={clsx(
-                "absolute text-[0.85rem] font-extrabold uppercase tracking-[0.14em] text-white transition-opacity duration-500",
-                "left-5 top-1/2 -translate-y-1/2 md:left-1/2 md:top-auto md:bottom-6 md:-translate-x-1/2 md:translate-y-0 md:[writing-mode:vertical-rl] md:rotate-180",
+                "pointer-events-none absolute inset-0 flex items-center gap-4 px-5 transition-opacity duration-500 md:flex-col md:items-center md:justify-between md:px-0 md:py-6",
                 active ? "opacity-0" : "opacity-100"
               )}
             >
-              {type.tab}
+              <span className="tabular text-[0.75rem] font-extrabold text-brand-green">{String(i + 1).padStart(2, "0")}</span>
+              <span className="text-[0.85rem] font-extrabold uppercase tracking-[0.14em] text-white transition-colors duration-500 group-hover:text-brand-green md:rotate-180 md:[writing-mode:vertical-rl]">
+                {type.tab}
+              </span>
             </span>
 
-            {/* Open: the heading, and the time until the next one */}
-            <span className={clsx("absolute inset-x-6 bottom-6", active ? "panel-copy" : "pointer-events-none opacity-0")}>
-              <span className="block text-[0.72rem] font-bold uppercase tracking-[0.16em] text-brand-green">{type.tab}</span>
-              <span className="mt-2 block max-w-md text-[clamp(1.2rem,2.4vw,1.9rem)] font-extrabold leading-tight tracking-[-0.03em] text-white">
+            {/* Open: the choice marked top-right, the heading bottom-left */}
+            <span
+              className={clsx(
+                "absolute right-5 top-5 inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[0.78rem] font-bold text-jet shadow-[0_8px_24px_-10px_rgba(5,36,57,.5)] transition-[opacity,transform] duration-500",
+                active ? "translate-y-0 opacity-100 delay-300" : "pointer-events-none -translate-y-2 opacity-0"
+              )}
+            >
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand-green text-[0.55rem] text-white">✓</span>
+              Selected below
+            </span>
+            <span className={clsx("absolute inset-x-6 bottom-7 md:inset-x-8", active ? "panel-copy" : "pointer-events-none opacity-0")}>
+              <span className="tabular block text-[0.75rem] font-extrabold uppercase tracking-[0.16em] text-brand-green">
+                {String(i + 1).padStart(2, "0")} · {type.tab}
+              </span>
+              <span className="mt-2 block max-w-lg text-[clamp(1.3rem,2.4vw,2rem)] font-extrabold leading-[1.1] tracking-[-0.03em] text-white">
                 {type.heading}
               </span>
-              <span className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1.5 text-[0.78rem] font-bold text-white backdrop-blur-sm">
-                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand-green text-[0.55rem] text-jet">✓</span>
-                Selected in the form below
-              </span>
-              <span className="mt-4 block h-1 w-full max-w-xs overflow-hidden rounded-full bg-white/25">
-                {active ? (
-                  <span
-                    key={`${shown}-${paused}`}
-                    className={clsx("block h-full origin-left rounded-full bg-brand-green", paused ? "scale-x-100" : "how-fill")}
-                    style={paused ? undefined : { animationDuration: `${SLIDE_INTERVAL_MS}ms` }}
-                  />
-                ) : null}
-              </span>
+            </span>
+
+            {/* Time until the next business: a thin line along the bottom edge */}
+            <span className="absolute inset-x-0 bottom-0 h-[3px] bg-white/10">
+              {active ? (
+                <span
+                  key={`${shown}-${paused}`}
+                  className={clsx("block h-full origin-left bg-brand-green", paused ? "scale-x-100" : "how-fill")}
+                  style={paused ? undefined : { animationDuration: `${SLIDE_INTERVAL_MS}ms` }}
+                />
+              ) : null}
             </span>
           </button>
         );
@@ -323,15 +377,20 @@ export default function Partner() {
             </div>
           </Reveal>
 
-          <div className="space-y-4">
+          {/* The column beside the form stays in view while the form scrolls. */}
+          <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+            {/* What happens next: a timeline whose line draws down on arrival */}
             <Reveal from="right" delay={0.06}>
               <div className="rounded-[2rem] border border-hairline bg-white p-7">
                 <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">What happens next</p>
-                <ol className="mt-5 space-y-5">
+                <ol className="relative mt-6 space-y-6">
+                  <span aria-hidden className="timeline-line absolute bottom-3 left-[0.95rem] top-3 w-px bg-gradient-to-b from-brand-blue to-brand-green" />
                   {NEXT_STEPS.map(([n, title, body]) => (
-                    <li key={n} className="flex gap-4">
-                      <span className="tabular text-[0.78rem] font-extrabold text-brand-green">{n}</span>
-                      <span>
+                    <li key={n} className="group relative flex gap-4">
+                      <span className="tabular relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-white bg-peppermint text-[0.7rem] font-extrabold text-[#5f8a0f] ring-1 ring-brand-green/30 transition-colors duration-300 group-hover:bg-brand-green group-hover:text-white">
+                        {n}
+                      </span>
+                      <span className="pt-0.5">
                         <span className="block text-[1rem] font-extrabold text-jet">{title}</span>
                         <span className="mt-1 block text-[0.92rem] leading-relaxed text-ink-soft">{body}</span>
                       </span>
@@ -341,13 +400,27 @@ export default function Partner() {
               </div>
             </Reveal>
 
+            {/* Why partners stay: proof, not adjectives */}
             <Reveal from="right" delay={0.12}>
-              <div className="rounded-[2rem] bg-jet p-7 text-white">
-                <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-green">Why partners stay</p>
-                <ul className="mt-5 grid gap-2">
+              <div className="rounded-[2rem] border border-hairline bg-white p-7">
+                <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Why partners stay</p>
+                <div className="mt-5 grid grid-cols-2 gap-2.5">
+                  {PROOF.map(([value, suffix, label]) => (
+                    <div
+                      key={label}
+                      className="rounded-2xl bg-floral px-4 py-4 transition-[transform,background-color] duration-500 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 hover:bg-peppermint/70"
+                    >
+                      <p className="bg-gradient-to-r from-brand-blue to-brand-green bg-clip-text text-[1.8rem] font-extrabold leading-none tracking-tight text-transparent">
+                        <CountUp value={value} suffix={suffix} />
+                      </p>
+                      <p className="mt-1.5 text-[0.82rem] font-semibold text-ink-soft">{label}</p>
+                    </div>
+                  ))}
+                </div>
+                <ul className="mt-4 flex flex-wrap gap-1.5">
                   {COMPLIANCE.map((item) => (
-                    <li key={item.title} className="flex items-center gap-3 text-[0.94rem] font-semibold text-white/85">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-green/15 text-brand-green">
+                    <li key={item.title} className="flex items-center gap-1.5 rounded-full border border-hairline px-2.5 py-1 text-[0.75rem] font-semibold text-jet">
+                      <span className="text-[#5f8a0f] [&_svg]:h-3.5 [&_svg]:w-3.5">
                         <ComplianceIcon name={item.icon} />
                       </span>
                       {item.title}
@@ -357,33 +430,47 @@ export default function Partner() {
               </div>
             </Reveal>
 
+            {/* Reach us: each way in is one clickable row */}
             <Reveal from="right" delay={0.18}>
-              <div className="rounded-[2rem] border border-hairline bg-white p-7">
-                <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Reach us</p>
-                <a href={CONTACT.phoneHref} className="mt-4 block text-[1.05rem] font-extrabold text-jet transition-colors hover:text-brand-blue">
-                  {CONTACT.phone}
-                </a>
-                <a
-                  href={`mailto:${CONTACT.email}`}
-                  className="mt-1 block text-[0.95rem] font-semibold text-ink-soft transition-colors hover:text-brand-blue"
-                >
-                  {CONTACT.email}
-                </a>
-                <address className="mt-4 text-[0.94rem] not-italic leading-relaxed text-ink-soft">
-                  {OFFICE.lines.map((line) => (
-                    <span key={line} className="block">
-                      {line}
+              <div className="rounded-[2rem] border border-hairline bg-white p-3">
+                <p className="px-4 pb-1 pt-4 text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Reach us</p>
+                {[
+                  { icon: "phone", label: "Call", value: CONTACT.phone, href: CONTACT.phoneHref },
+                  { icon: "mail", label: "Email", value: CONTACT.email, href: `mailto:${CONTACT.email}` },
+                  {
+                    icon: "pin",
+                    label: "Office",
+                    value: OFFICE.lines.slice(0, 2).join(", "),
+                    href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(OFFICE.lines.join(", "))}`,
+                    external: true,
+                  },
+                ].map((row) => (
+                  <a
+                    key={row.label}
+                    href={row.href}
+                    {...(row.external ? { target: "_blank", rel: "noreferrer" } : {})}
+                    className="group flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-colors duration-300 hover:bg-floral"
+                  >
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-viking text-brand-blue transition-colors duration-300 group-hover:bg-brand-blue group-hover:text-white">
+                      <ContactIcon name={row.icon} />
                     </span>
-                  ))}
-                </address>
-                <div className="mt-5 flex gap-2">
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[0.72rem] font-bold uppercase tracking-[0.12em] text-ink-faint">{row.label}</span>
+                      <span className="block truncate text-[0.95rem] font-bold text-jet">{row.value}</span>
+                    </span>
+                    <span aria-hidden className="-translate-x-1 text-brand-blue opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
+                      →
+                    </span>
+                  </a>
+                ))}
+                <div className="flex gap-2 px-4 pb-4 pt-2">
                   {SOCIAL.map((s) => (
                     <a
                       key={s.name}
                       href={s.href}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-full border border-hairline px-4 py-2 text-[0.85rem] font-semibold text-ink-soft transition-colors hover:border-brand-blue hover:text-jet"
+                      className="rounded-full border border-hairline px-4 py-2 text-[0.82rem] font-semibold text-ink-soft transition-colors hover:border-brand-blue hover:text-jet"
                     >
                       {s.name} ↗
                     </a>

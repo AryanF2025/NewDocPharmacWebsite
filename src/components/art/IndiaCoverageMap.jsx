@@ -140,6 +140,14 @@ export function IndiaCoverageMap({ active, className }) {
   }, []);
 
   const { cities, dots, reach } = model;
+  // The wave is trimmed to the dots themselves (as one shape), so passing
+  // over the map it lights the dots up rather than tinting the ground.
+  const landShape = useMemo(() => {
+    const r = 2.6;
+    return dots
+      .map((d) => `M${(d.x - r).toFixed(1)} ${d.y.toFixed(1)}a${r} ${r} 0 1 0 ${r * 2} 0a${r} ${r} 0 1 0 -${r * 2} 0`)
+      .join("");
+  }, [dots]);
   const dim = (city) => (active && active !== city ? 0.1 : 1);
 
   return (
@@ -151,15 +159,18 @@ export function IndiaCoverageMap({ active, className }) {
       aria-label="Map of India showing DocPharma's darkstore cities and delivery reaching 19,000+ pincodes across the country"
     >
       <defs>
+        {/* India as the dot grid itself: one square per dot, merged into a
+            single shape. (The outline data is not a closed shape, so it
+            can't trim the wave.) */}
         <clipPath id="cov-india">
-          <path d={INDIA_OUTLINE} />
+          <path d={landShape} />
         </clipPath>
         {/* A soft band near the rim: the crest of the wave. */}
         <radialGradient id="cov-wave-band">
           <stop offset="0%" stopColor="#0296d9" stopOpacity="0" />
-          <stop offset="62%" stopColor="#0296d9" stopOpacity="0" />
-          <stop offset="86%" stopColor="#0296d9" stopOpacity="0.32" />
-          <stop offset="96%" stopColor="#62b8de" stopOpacity="0.12" />
+          <stop offset="68%" stopColor="#0296d9" stopOpacity="0" />
+          <stop offset="88%" stopColor="#0296d9" stopOpacity="0.55" />
+          <stop offset="95%" stopColor="#0296d9" stopOpacity="0.95" />
           <stop offset="100%" stopColor="#0296d9" stopOpacity="0" />
         </radialGradient>
       </defs>
@@ -171,15 +182,9 @@ export function IndiaCoverageMap({ active, className }) {
           thousand animated dots, so the section stays smooth to scroll. */}
       <g clipPath="url(#cov-india)" className="cov-waves" aria-hidden>
         {cities.map((c, i) => (
-          <circle
-            key={c.name}
-            cx={c.x}
-            cy={c.y}
-            r={WAVE_RADIUS}
-            fill="url(#cov-wave-band)"
-            className="cov-wave"
-            style={{ animationDelay: `${1.6 + (i % 3) * 0.12}s` }}
-          />
+          <g key={c.name} className="cov-wave" style={{ animationDelay: `${1.6 + (i % 3) * 0.12}s` }}>
+            <circle cx={c.x} cy={c.y} r={WAVE_RADIUS} fill="url(#cov-wave-band)" />
+          </g>
         ))}
       </g>
 
