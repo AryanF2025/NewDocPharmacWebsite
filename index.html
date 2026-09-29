@@ -22,8 +22,46 @@
       href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
       rel="stylesheet"
     />
+    <!-- Boot loader: painted before any script arrives, then handed over to
+         the app's own loader (RouteLoader), which removes it. -->
+    <style>
+      #boot-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 71;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #f7f8fa;
+        font-family: "Open Sans", system-ui, sans-serif;
+      }
+      #boot-loader .bm { width: 60px; height: 60px; animation: bbeat 1.8s ease-out infinite; }
+      #boot-loader .bl { margin-top: 28px; width: 260px; height: 40px; overflow: visible; }
+      #boot-loader .bt { stroke-dasharray: 1; stroke-dashoffset: 1; animation: btrace 1.8s linear infinite; }
+      #boot-loader .bw { margin-top: 24px; font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }
+      #boot-loader .bs { margin-top: 4px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #6b7280; }
+      @keyframes btrace { 0% { stroke-dashoffset: 1; opacity: 1 } 70% { stroke-dashoffset: 0; opacity: 1 } 100% { stroke-dashoffset: 0; opacity: 0 } }
+      @keyframes bbeat { 0%, 26% { transform: scale(1) } 32% { transform: scale(1.16) } 37% { transform: scale(.98) } 42% { transform: scale(1.07) } 52%, 100% { transform: scale(1) } }
+      @media (prefers-reduced-motion: reduce) { #boot-loader { display: none } }
+    </style>
   </head>
   <body>
+    <div id="boot-loader" role="status" aria-label="Loading">
+      <svg class="bm" viewBox="0 0 48 44" aria-hidden="true">
+        <path fill="#A1E666" fill-rule="evenodd" d="M36.1311 17.1057C39.7095 17.1057 40.9131 18.7629 40.8946 20.3785C40.8436 23.8736 37.6402 23.8366 35.1358 22.8876C32.8722 22.0265 30.1039 20.3924 27.0949 18.6611C23.6091 16.6613 18.2115 13.4903 13.0823 12.2265C8.3698 11.0646 3.67116 11.4766 1.25472 16.1752C-0.504378 19.6008 -0.286805 23.9615 1.12047 27.0492C0.791799 21.6747 2.05094 16.8789 5.23583 15.0226C8.43461 13.1662 11.564 14.018 14.7257 15.4623C20.9612 18.3047 31.7797 27.0492 37.1171 27.0492C46.5653 27.3455 47.0884 13.1246 36.1311 13.1246H32.7888V9.77767C32.7888 4.94015 28.8355 0.986816 24.0072 0.986816C19.179 0.986816 15.221 4.94015 15.221 9.77767V11.6293C16.5681 12.0599 17.8967 12.583 19.2114 13.1709V9.77767C19.2114 7.14828 21.3779 4.97719 24.0119 4.97719C26.6459 4.97719 28.8077 7.14365 28.8077 9.77767V17.115H36.1404L36.1311 17.1057Z" />
+        <path fill="#0291D7" fill-rule="evenodd" d="M11.8687 27.0999C8.29035 27.0999 7.08676 25.4427 7.10527 23.8271C7.15619 20.3321 10.3596 20.3691 12.864 21.3181C15.1277 22.1791 17.8959 23.8132 20.9049 25.5445C24.3907 27.5443 29.7884 30.7153 34.9175 31.9791C39.63 33.141 44.3287 32.729 46.7451 28.0304C48.5042 24.6048 48.2867 20.2441 46.8794 17.1564C47.208 22.5309 45.9489 27.3268 42.764 29.1831C39.5652 31.0394 36.4359 30.1876 33.2741 28.7433C27.0386 25.901 16.2202 17.1564 10.8827 17.1564C1.4345 16.8602 0.911401 31.0811 11.8687 31.0811H15.211V34.428C15.211 39.2655 19.1643 43.2188 23.9926 43.2188C28.8209 43.2188 32.7788 39.2655 32.7788 34.428V32.5763C31.4317 32.1458 30.1031 31.6227 28.7885 31.0348V34.428C28.7885 37.0574 26.622 39.2284 23.988 39.2284C21.354 39.2284 19.1921 37.062 19.1921 34.428V27.0907H11.8595L11.8687 27.0999Z" />
+      </svg>
+      <svg class="bl" viewBox="0 0 240 40" aria-hidden="true">
+        <defs>
+          <linearGradient id="boot-ink" x1="0" x2="1"><stop offset="0" stop-color="#0291d7" /><stop offset="1" stop-color="#8fc124" /></linearGradient>
+        </defs>
+        <path d="M0 20 H72 L80 20 L86 13 L92 20 L104 20 L109 25 L116 3 L123 36 L129 20 L142 20 L150 12 L160 20 H240" fill="none" stroke="#052439" stroke-opacity=".08" stroke-width="2" stroke-linejoin="round" />
+        <path class="bt" pathLength="1" d="M0 20 H72 L80 20 L86 13 L92 20 L104 20 L109 25 L116 3 L123 36 L129 20 L142 20 L150 12 L160 20 H240" fill="none" stroke="url(#boot-ink)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <p class="bw"><span style="color: #0291d7">Doc</span><span style="color: #8fc124">Pharma</span></p>
+      <p class="bs">Loading…</p>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

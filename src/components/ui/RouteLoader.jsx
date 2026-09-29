@@ -12,16 +12,27 @@ const MAX_MS = 4000; // a slow image never traps the visitor here
  * covers, the page's entrance animations are held (see `.is-route-loading` in
  * the stylesheet), so the headline plays as the loader lifts.
  *
- * The first visit is left alone: it opens straight onto the page. Same-page
- * anchor jumps don't count as a page change.
+ * It covers the first load and every refresh too: index.html paints the same
+ * loader before any script arrives, and this takes over from it seamlessly.
+ * Same-page anchor jumps don't count as a page change.
  */
 export function RouteLoader() {
   const { pathname } = useLocation();
   const first = useRef(true);
-  const [phase, setPhase] = useState("hidden"); // hidden | shown | leaving
+  const [phase, setPhase] = useState(() => {
+    // Also up on the very first load, continuing index.html's loader.
+    if (typeof window === "undefined" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return "hidden";
+    document.documentElement.classList.add("is-route-loading");
+    return "shown";
+  }); // hidden | shown | leaving
   // The page a clicked link is heading to; the loader waits for that page,
   // not the old one still on screen while the new code downloads.
   const target = useRef(null);
+
+  // Take over from index.html's boot loader: this one is now on screen.
+  useEffect(() => {
+    document.getElementById("boot-loader")?.remove();
+  }, []);
 
   // Come up the moment an internal link to another page is clicked.
   useEffect(() => {
