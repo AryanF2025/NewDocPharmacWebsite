@@ -297,19 +297,6 @@
   }
 }
 
-/* Home numbers tile: a rate's bar fills to the rate once the tile arrives. */
-.stat-bar[style*="--to"] {
-  transform: scaleX(0);
-}
-.reveal-up .stat-bar[style*="--to"] {
-  animation: stat-fill 1.4s var(--ease-brand) 0.5s forwards;
-}
-@keyframes stat-fill {
-  to {
-    transform: scaleX(var(--to));
-  }
-}
-
 /* The wave: each city's ring grows from nothing to its full reach and fades,
    every 5.2s. */
 .cov-wave {
