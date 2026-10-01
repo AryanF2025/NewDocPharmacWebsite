@@ -4,9 +4,11 @@
  * enquiry form, which posts to the wrapper service at VITE_API_BASE_URL.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import clsx from "clsx";
-import { Reveal, PageHero } from "@/components/ui/Reveal";
+import { Reveal } from "@/components/ui/Reveal";
+import { LogoMark } from "@/components/ui/Logo";
+import { HeroBackdrop, HeroHeading, Enter } from "@/components/motion/Hero";
 import { COMPLIANCE, ComplianceIcon } from "@/components/experience/compliance";
 import { CONTACT, OFFICE, SOCIAL } from "@/components/experience/siteInfo";
 import { submitContactEnquiry } from "@/api/contact.api";
@@ -23,7 +25,7 @@ import { scrollToTarget } from "@/components/motion/smoothScroll";
 import { CountUp } from "@/components/experience/HeroParts";
 import { Select } from "@/components/ui/Select";
 import { SectionHeader } from "@/components/motion/Text";
-import { CtaButton } from "@/components/motion/CtaButton";
+import { CtaButton, GhostButton } from "@/components/motion/CtaButton";
 
 /** The figures partners actually stay for. */
 const PROOF = [
@@ -74,16 +76,53 @@ function validate(form) {
   return errors;
 }
 
+/** How far through the required fields the visitor is: name, a valid email,
+ *  and a business type. Fills as they type. */
+function FormProgress({ form }) {
+  const steps = [
+    ["Name", Boolean(form.name.trim())],
+    // The same email rule the form submits with.
+    ["Email", Boolean(form.email.trim()) && !validate(form).email],
+    ["Business", Boolean(form.businessType)],
+  ];
+  const done = steps.filter(([, ok]) => ok).length;
+  return (
+    <div className="mt-6" aria-live="polite">
+      <div className="flex items-center justify-between text-[0.8rem] font-semibold">
+        <span className={done === steps.length ? "text-[#5c7a15]" : "text-ink-faint"}>
+          {done === steps.length ? "Ready to send" : `${done} of ${steps.length} required`}
+        </span>
+        <span className="flex gap-3 text-ink-faint">
+          {steps.map(([label, ok]) => (
+            <span key={label} className={clsx("transition-colors duration-300", ok && "text-jet")}>
+              {ok ? "✓ " : ""}
+              {label}
+            </span>
+          ))}
+        </span>
+      </div>
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-floral">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-brand-blue to-brand-green transition-[width] duration-500 ease-[cubic-bezier(.22,1,.36,1)]"
+          style={{ width: `${(done / steps.length) * 100}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 const FIELD =
-  "w-full rounded-xl border border-hairline bg-white px-4 py-3 text-[0.95rem] text-jet outline-none transition-colors placeholder:text-ink-faint focus:border-brand-blue";
+  "w-full rounded-xl border border-hairline bg-white px-4 py-3 text-[0.95rem] text-jet outline-none transition-[border-color,box-shadow,background-color] duration-200 placeholder:text-ink-faint hover:border-[#cfd4da] focus:border-brand-blue focus:bg-white focus:shadow-[0_0_0_3px_rgba(2,150,217,.15)]";
 
 /** A form field. Pass `labelId` for custom controls: they are named by the
  *  label text instead of being wrapped in a <label>. */
 function Field({ label, error, children, hint, labelId }) {
   const Tag = labelId ? "div" : "label";
   return (
-    <Tag className="block">
-      <span id={labelId} className="mb-1.5 block text-[0.8rem] font-bold text-jet">{label}</span>
+    <Tag className="field group block">
+      <span id={labelId} className="mb-1.5 block text-[0.8rem] font-bold text-jet transition-colors duration-200 group-focus-within:text-brand-blue">
+        {label}
+      </span>
       {children}
       {error ? (
         <span className="mt-1.5 block text-[0.78rem] font-semibold text-[#c2410c]">{error}</span>
@@ -166,6 +205,149 @@ function BusinessTypePicker({ value, onPick }) {
   );
 }
 
+/** What the partnerships team works through after an enquiry — the same
+ *  steps as "What happens next", shown as a plan being put together. */
+const PLAN = [
+  "Enquiry received",
+  "Nearest licensed darkstores mapped",
+  "Delivery SLA agreed",
+  "Plugged into your order stack",
+  "Live in your cities",
+];
+
+/** Ticks through the plan one step at a time, holds, then starts over. */
+function NetworkPlanCard() {
+  const [done, setDone] = useState(0);
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setDone(PLAN.length);
+      return undefined;
+    }
+    const id = window.setTimeout(
+      () => setDone((d) => (d >= PLAN.length ? 0 : d + 1)),
+      done === 0 ? 900 : done >= PLAN.length ? 2600 : 1100
+    );
+    return () => window.clearTimeout(id);
+  }, [done]);
+
+  const live = done >= PLAN.length;
+
+  return (
+    <div className="relative mx-auto w-full max-w-md">
+      {/* A soft brand halo behind the card */}
+      <div aria-hidden className="absolute -inset-6 rounded-[2.5rem] bg-gradient-to-br from-brand-blue/15 via-transparent to-brand-green/20 blur-2xl" />
+      <div className="relative overflow-hidden rounded-[2rem] border border-hairline bg-white shadow-[0_40px_80px_-40px_rgba(5,36,57,.45)]">
+        <div className="flex items-center justify-between gap-3 border-b border-hairline bg-floral px-5 py-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white shadow-sm">
+              <LogoMark className="h-5 w-5" />
+            </span>
+            <span>
+              <span className="block text-[0.9rem] font-extrabold text-jet">Your network plan</span>
+              <span className="block text-[0.75rem] text-ink-faint">DocPharma partnerships</span>
+            </span>
+          </div>
+          <span
+            className={clsx(
+              "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.72rem] font-bold transition-colors duration-500",
+              live ? "bg-brand-green/15 text-[#5c7a15]" : "bg-viking text-brand-blue"
+            )}
+          >
+            <span className={clsx("h-1.5 w-1.5 rounded-full", live ? "bg-brand-green" : "animate-pulse bg-brand-blue")} />
+            {live ? "Ready" : "In progress"}
+          </span>
+        </div>
+
+        <ol className="relative space-y-1 p-4">
+          {/* The thread the steps hang on, filling as they complete */}
+          <span aria-hidden className="absolute bottom-8 left-[2.15rem] top-8 w-px bg-hairline" />
+          <span
+            aria-hidden
+            className="absolute left-[2.15rem] top-8 w-px origin-top bg-gradient-to-b from-brand-blue to-brand-green transition-[height] duration-700 ease-[cubic-bezier(.22,1,.36,1)]"
+            style={{ height: `calc((100% - 4rem) * ${Math.min(1, Math.max(0, done - 1) / (PLAN.length - 1))})` }}
+          />
+          {PLAN.map((step, i) => {
+            const isDone = i < done;
+            const isNext = i === done;
+            return (
+              <li
+                key={step}
+                className={clsx(
+                  "relative flex items-center gap-3.5 rounded-2xl px-3 py-2.5 transition-colors duration-500",
+                  isNext ? "bg-viking/60" : ""
+                )}
+              >
+                <span
+                  className={clsx(
+                    "relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-500",
+                    isDone ? "border-brand-green bg-brand-green text-white" : isNext ? "border-brand-blue bg-white" : "border-hairline bg-white"
+                  )}
+                >
+                  {isDone ? (
+                    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden className="plan-tick">
+                      <path d="m2.5 6.3 2.3 2.2L9.5 3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" pathLength="1" />
+                    </svg>
+                  ) : isNext ? (
+                    <span className="h-2 w-2 animate-pulse rounded-full bg-brand-blue" />
+                  ) : null}
+                </span>
+                <span
+                  className={clsx(
+                    "text-[0.95rem] font-semibold transition-colors duration-500",
+                    isDone ? "text-jet" : isNext ? "text-brand-blue-deep" : "text-ink-faint"
+                  )}
+                >
+                  {step}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    </div>
+  );
+}
+
+/** The contact page's opening: the promise on the left, the plan on the right. */
+function PartnerHero() {
+  return (
+    <section className="relative overflow-hidden bg-white">
+      <HeroBackdrop focus="40% 40%" />
+      <div className="relative mx-auto grid max-w-[84rem] items-center gap-14 px-5 pb-20 pt-28 md:px-10 md:pt-36 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:pb-24">
+        <div>
+          <HeroHeading eyebrow={CONTACT_HERO.eyebrow} lines={CONTACT_HERO.title} className="max-w-2xl text-[clamp(2.2rem,4.6vw,3.8rem)]" />
+          <Enter as="p" delay={0.3} className="mt-5 max-w-xl text-[clamp(1.02rem,1.4vw,1.15rem)] leading-relaxed text-ink-soft">
+            {CONTACT_HERO.subtitle}
+          </Enter>
+          <ul className="mt-8 space-y-3">
+            {PARTNER_ASSURANCES.map((point, i) => (
+              <Enter as="li" key={point} delay={0.4 + i * 0.08} className="flex items-center gap-3 text-[0.98rem] font-semibold text-jet">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-peppermint text-[0.7rem] text-[#5f8a0f]">✓</span>
+                {point}
+              </Enter>
+            ))}
+          </ul>
+          <Enter delay={0.7} className="mt-9 flex flex-wrap items-center gap-3">
+            <CtaButton
+              onClick={() => {
+                const form = document.getElementById("enquiry");
+                if (form) scrollToTarget(form);
+              }}
+            >
+              Start your enquiry
+            </CtaButton>
+            <GhostButton href={CONTACT.phoneHref}>Call {CONTACT.phone}</GhostButton>
+          </Enter>
+        </div>
+
+        <Enter delay={0.35}>
+          <NetworkPlanCard />
+        </Enter>
+      </div>
+    </section>
+  );
+}
+
 export default function Partner() {
   usePageMeta({
     title: "Partner with us — DocPharma",
@@ -206,19 +388,7 @@ export default function Partner() {
 
   return (
     <>
-      <PageHero eyebrow={CONTACT_HERO.eyebrow} headline={CONTACT_HERO.title} sub={CONTACT_HERO.subtitle}>
-        <ul className="flex flex-wrap gap-2.5">
-          {PARTNER_ASSURANCES.map((point) => (
-            <li
-              key={point}
-              className="flex items-center gap-2 rounded-full border border-hairline bg-white px-4 py-2 text-[0.88rem] font-semibold text-ink-soft"
-            >
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-green text-[0.6rem] text-white">✓</span>
-              {point}
-            </li>
-          ))}
-        </ul>
-      </PageHero>
+      <PartnerHero />
 
       {/* --------------------------------------- who we build for --- */}
       <section className="bg-floral pt-20 md:pt-28">
@@ -237,9 +407,11 @@ export default function Partner() {
           <Reveal from="left">
             <div className="rounded-[2rem] border border-hairline bg-white p-6 md:p-10">
               {status === "sent" ? (
-                <div className="flex min-h-[26rem] flex-col items-start justify-center">
-                  <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-green text-[1.4rem] font-extrabold text-white">
-                    ✓
+                <div className="sent flex min-h-[26rem] flex-col items-start justify-center">
+                  <span className="sent-badge flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-green text-white">
+                    <svg width="30" height="30" viewBox="0 0 24 24" aria-hidden>
+                      <path className="sent-tick" d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" pathLength="1" />
+                    </svg>
                   </span>
                   <h2 className="mt-6 text-[clamp(1.6rem,2.6vw,2.2rem)] font-extrabold tracking-[-0.03em] text-jet">
                     Thanks — we've got it.
@@ -262,6 +434,7 @@ export default function Partner() {
                     Tell us about your business
                   </h2>
                   <p className="mt-2 text-[0.98rem] text-ink-soft">Fields marked with an asterisk are required.</p>
+                  <FormProgress form={form} />
 
                   <div className="mt-7 grid gap-5 sm:grid-cols-2">
                     <Field label="Your name *" error={errors.name}>

@@ -1272,3 +1272,39 @@
     opacity: 1;
   }
 }
+
+/* Contact page */
+.plan-tick path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: dash-draw 0.45s var(--ease-brand) 0.1s forwards;
+}
+/* Fields rise into place one after another when the form arrives. */
+.reveal-left .field {
+  animation: rise-in 0.7s var(--ease-brand) both;
+}
+.reveal-left .field:nth-child(1) { animation-delay: 0.15s; }
+.reveal-left .field:nth-child(2) { animation-delay: 0.2s; }
+.reveal-left .field:nth-child(3) { animation-delay: 0.25s; }
+.reveal-left .field:nth-child(4) { animation-delay: 0.3s; }
+/* Sent: the badge pops, the tick draws, the words follow. */
+.sent-badge {
+  animation: seal-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.sent-tick {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: dash-draw 0.5s var(--ease-brand) 0.4s forwards;
+}
+.sent > :not(.sent-badge) {
+  animation: rise-in 0.7s var(--ease-brand) both;
+}
+.sent > :nth-child(2) { animation-delay: 0.5s; }
+.sent > :nth-child(3) { animation-delay: 0.6s; }
+.sent > :nth-child(4) { animation-delay: 0.7s; }
+@media (prefers-reduced-motion: reduce) {
+  .plan-tick path,
+  .sent-tick {
+    stroke-dashoffset: 0;
+  }
+}

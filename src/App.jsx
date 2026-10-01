@@ -77,6 +77,20 @@ function ScrollManager() {
 /** Same-page `#anchor` links glide through the smooth scroller. */
 function useAnchorScroll() {
   useEffect(() => {
+    // A link to the page already open (header, logo, footer): glide back to
+    // the top instead of doing nothing. Capture phase, so it runs before the
+    // router's own link handler marks the click as handled.
+    const onSamePage = (event) => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey) return;
+      const link = event.target.closest?.("a[href]");
+      if (!link || link.getAttribute("href").startsWith("#") || link.target === "_blank") return;
+      const url = new URL(link.href, window.location.href);
+      if (url.origin !== window.location.origin || url.pathname !== window.location.pathname || url.hash) return;
+      event.preventDefault();
+      scrollToTarget(0);
+    };
+    document.addEventListener("click", onSamePage, true);
+
     const onClick = (event) => {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey) return;
       const a = event.target.closest?.('a[href^="#"]');
@@ -88,7 +102,10 @@ function useAnchorScroll() {
       scrollToTarget(target);
     };
     document.addEventListener("click", onClick);
-    return () => document.removeEventListener("click", onClick);
+    return () => {
+      document.removeEventListener("click", onClick);
+      document.removeEventListener("click", onSamePage, true);
+    };
   }, []);
 }
 
