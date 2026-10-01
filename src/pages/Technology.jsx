@@ -76,7 +76,7 @@ function TechHero() {
 
         <Enter delay={0.25} className="console-rise">
           <ConsoleMock className="w-full" />
-          <p className="mt-4 text-center text-[0.75rem] font-bold uppercase tracking-[0.16em] text-ink-faint">
+          <p className="mt-4 text-center label text-ink-faint">
             DocPharma One · illustrative console
           </p>
         </Enter>
@@ -236,7 +236,7 @@ function TraceHorizontal() {
               <article
                 key={step}
                 className={clsx(
-                  "relative flex w-[min(24rem,78vw)] shrink-0 flex-col rounded-[1.75rem] border p-7 transition-[border-color,background-color] duration-700",
+                  "relative flex w-[min(24rem,78vw)] shrink-0 flex-col rounded-[2rem] border p-7 transition-[border-color,background-color] duration-700",
                   on ? "border-brand-green/40 bg-white/[0.07]" : "border-white/10 bg-white/[0.02]"
                 )}
               >
@@ -336,7 +336,7 @@ function Seals() {
           {COMPLIANCE.seals.map((seal, i) => (
             <div
               key={seal.key}
-              className="seal group flex flex-col items-center rounded-[1.75rem] border border-hairline bg-white px-5 pb-7 pt-8 text-center transition-[transform,box-shadow,border-color] duration-500 hover:-translate-y-1.5 hover:border-brand-green/40 hover:shadow-[0_30px_60px_-35px_rgba(5,36,57,.45)]"
+              className="seal group flex flex-col items-center rounded-[2rem] border border-hairline bg-white px-5 pb-7 pt-8 text-center transition-[transform,box-shadow,border-color] duration-500 hover:-translate-y-1.5 hover:border-brand-green/40 hover:shadow-[0_30px_60px_-35px_rgba(5,36,57,.45)]"
               style={{ "--i": i }}
             >
               <div className="relative h-32 w-32">

@@ -34,7 +34,7 @@ function Hero() {
     <section className="relative flex flex-col overflow-hidden bg-white lg:h-[100svh] lg:min-h-[46rem]">
       <HeroBackdrop focus="60% 40%" />
 
-      <div className="relative mx-auto grid w-full max-w-[100rem] flex-1 items-center gap-12 px-5 pb-10 pt-28 md:px-10 lg:grid-cols-[1fr_1.12fr] lg:gap-16 lg:pb-6 lg:pt-24 xl:px-16">
+      <div className="relative mx-auto grid w-full max-w-[88rem] flex-1 items-center gap-12 px-5 pb-10 pt-28 md:px-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.12fr)] lg:gap-16 lg:pb-6 lg:pt-24 xl:px-16">
         <div>
           <Enter>
             <NewsTicker />
@@ -83,7 +83,7 @@ function Hero() {
         <Enter delay={0.2} className="hero-film relative">
           <HeroVideo
             ratio={1.45}
-            className="shadow-[0_50px_100px_-45px_rgba(5,36,57,.65)] lg:max-h-[calc(100svh-15rem)] lg:rounded-[2.25rem]"
+            className="shadow-[0_50px_100px_-45px_rgba(5,36,57,.65)] lg:max-h-[calc(100svh-15rem)] lg:rounded-[2rem]"
           />
         </Enter>
       </div>
@@ -108,7 +108,7 @@ function PlatformBand() {
           WebkitMaskImage: "radial-gradient(ellipse 60% 70% at 75% 50%, #000 20%, transparent 75%)",
         }}
       />
-      <div className="relative mx-auto max-w-[88rem] px-5 md:px-10">
+      <div className="relative mx-auto max-w-[84rem] px-5 md:px-10">
         <NetworkHub modules={TECH_SECTION.modules}>
           <SectionHeader
             tone="dark"
@@ -143,7 +143,7 @@ function CoverageTile() {
   const [active, setActive] = useState(null);
   return (
     <Tile delay={0.1} className="flex flex-col bg-white md:col-span-2 md:row-span-2">
-      <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Coverage</p>
+      <p className="label text-brand-blue">Coverage</p>
       <h3 className="mt-2 text-[1.5rem] font-extrabold leading-tight tracking-tight text-jet">
         <CountUp value={12} suffix="+" /> cities.
         <br />
@@ -161,14 +161,14 @@ function CoverageTile() {
             onFocus={() => setActive(c.name)}
             onBlur={() => setActive(null)}
             className={clsx(
-              "rounded-full px-2.5 py-1 text-[0.75rem] font-semibold transition-colors",
+              "inline-flex min-h-9 items-center rounded-full px-3 text-[0.78rem] font-semibold transition-colors",
               active === c.name ? "bg-brand-blue text-white" : "bg-floral text-ink-soft hover:bg-viking"
             )}
           >
             {c.name}
           </button>
         ))}
-        <span className="rounded-full bg-floral px-2.5 py-1 text-[0.75rem] font-semibold text-ink-faint">+5 more</span>
+        <span className="inline-flex min-h-9 items-center rounded-full bg-floral px-3 text-[0.78rem] font-semibold text-ink-faint">+5 more</span>
       </div>
     </Tile>
   );
@@ -183,10 +183,10 @@ function SpeedClock() {
 function Bento() {
   return (
     <section id="bento" className="bg-floral">
-      <div className="mx-auto max-w-[88rem] px-5 py-24 md:px-10 lg:py-32">
+      <div className="mx-auto max-w-[84rem] px-5 py-24 md:px-10 md:py-32">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <SectionHeader eyebrow="Why DocPharma" title="Everything between the order and the door." />
-          <Link to="/solutions" className="link-underline text-[0.95rem] font-bold text-brand-blue">
+          <Link to="/solutions" className="link-underline inline-flex min-h-10 items-center text-[0.95rem] font-bold text-brand-blue">
             Explore solutions →
           </Link>
         </div>
@@ -197,7 +197,7 @@ function Bento() {
             <img src={rider} alt="DocPharma rider on a delivery" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-r from-jet via-jet/80 to-transparent" />
             <div className="relative p-8">
-              <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-green">Speed</p>
+              <p className="label text-brand-green">Speed</p>
               <SpeedClock />
               <p className="mt-4 max-w-xs text-[1.05rem] leading-relaxed text-white/70">
                 Inventory sits inside the catchment, so the 30-minute promise holds.
@@ -209,7 +209,7 @@ function Bento() {
 
           {/* Compliance */}
           <Tile delay={0.05} className="bg-white md:col-span-2">
-            <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Compliance</p>
+            <p className="label text-brand-blue">Compliance</p>
             <h3 className="mt-2 text-[1.25rem] font-extrabold tracking-tight text-jet">Built in, not bolted on</h3>
             <ul className="mt-5 grid grid-cols-2 gap-2">
               {COMPLIANCE.map((item) => (
@@ -263,7 +263,7 @@ function Bento() {
 
           {/* Integrations */}
           <Tile delay={0.08} className="bg-white md:col-span-3">
-            <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Integrations</p>
+            <p className="label text-brand-blue">Integrations</p>
             <h3 className="mt-2 text-[1.25rem] font-extrabold tracking-tight text-jet">No rebuild required</h3>
             <div className="mt-5 grid grid-cols-3 gap-2">
               {INTEGRATION_LOGOS.slice(0, 6).map((l) => (
@@ -292,7 +292,7 @@ export default function Home() {
     <div className="bg-floral">
       <Hero />
 
-      <section id="trusted" className="scroll-mt-4 border-y border-hairline bg-white py-16">
+      <section id="trusted" className="scroll-mt-4 border-y border-hairline bg-white py-20 md:py-24">
         <SectionHeader align="center" eyebrow="Trusted by" title="Leaders across healthcare & wellness." className="px-5" />
         <div className="mt-10">
           <LogoMarquee items={CLIENT_LOGOS} rows={2} duration={65} logoArea={5600} slot={250} />

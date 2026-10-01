@@ -67,7 +67,7 @@ export function HowItWorksPinned() {
           </p>
 
           {/* The photo takes all remaining height, never more. */}
-          <div className="relative mt-6 aspect-[4/3] overflow-hidden rounded-[1.75rem] bg-jet lg:aspect-auto lg:min-h-0 lg:flex-1">
+          <div className="relative mt-6 aspect-[4/3] overflow-hidden rounded-[2rem] bg-jet lg:aspect-auto lg:min-h-0 lg:flex-1">
             {/* Filmstrip: all six frames in a row. Moving forward slides the
                 strip right-to-left; scrolling back slides it the other way.
                 The arriving frame settles from a slight zoom, the leaving one
@@ -95,7 +95,7 @@ export function HowItWorksPinned() {
             {/* Checkpoint badge with a progress ring */}
             <div className="absolute inset-x-4 bottom-4 flex items-center justify-between gap-4 rounded-2xl bg-white/92 px-4 py-3 backdrop-blur">
               <div className="min-w-0">
-                <p className="text-[0.7rem] font-bold uppercase tracking-[0.14em] text-ink-faint">
+                <p className="label text-ink-faint">
                   Checkpoint {active + 1} of {STEPS.length}
                 </p>
                 <AnimatePresence mode="wait">
@@ -200,8 +200,8 @@ function OrderReceivedMobile({ active, wide = false }) {
     >
       <div key={active ? "on" : "off"} className={clsx("rounded-2xl bg-white p-4 shadow-xl", active && "how-pop")}>
         <div className="flex items-center justify-between">
-          <span className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-ink-faint">New order</span>
-          <span className="flex items-center gap-1.5 rounded-full bg-peppermint px-2 py-0.5 text-[0.62rem] font-bold text-[#5f8a0f]">
+          <span className="text-[0.72rem] font-bold uppercase tracking-[0.14em] text-ink-faint">New order</span>
+          <span className="flex items-center gap-1.5 rounded-full bg-peppermint px-2 py-0.5 text-[0.72rem] font-bold text-[#5f8a0f]">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand-green" /> Live
           </span>
         </div>
@@ -265,7 +265,7 @@ function HowItWorksMobile() {
     <div ref={hostRef} className="relative lg:hidden" style={{ height: `${100 + (count - 1) * 70}svh` }}>
       <div className="sticky top-0 flex h-[100svh] flex-col overflow-hidden pb-5 pt-[4.5rem]">
         <div className="px-5">
-          <p className="text-[0.75rem] font-bold uppercase tracking-[0.16em] text-brand-blue">How it works</p>
+          <p className="label text-brand-blue">How it works</p>
           <h2 className="mt-1 text-[clamp(1.6rem,4.2svh,2.1rem)] font-extrabold leading-[1.04] tracking-[-0.04em] text-jet">
             Every order, on the clock.
           </h2>
@@ -287,7 +287,7 @@ function HowItWorksMobile() {
                   key={s.title}
                   aria-label={`Checkpoint ${i + 1} of ${count}: ${s.title}`}
                   className={clsx(
-                    "flex max-h-full shrink-0 flex-col overflow-hidden rounded-[1.75rem] border bg-white transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)]",
+                    "flex max-h-full shrink-0 flex-col overflow-hidden rounded-[2rem] border bg-white transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)]",
                     isActive
                       ? "scale-100 border-brand-blue/25 opacity-100 shadow-[0_24px_50px_-28px_rgba(5,36,57,.45)]"
                       : "scale-[.93] border-hairline opacity-50"
@@ -326,7 +326,7 @@ function HowItWorksMobile() {
         <div className="mt-3 px-5">
           <div className="relative flex gap-1.5">
             {STEPS.map((s, i) => (
-              <button key={s.title} type="button" onClick={() => goTo(i)} aria-label={`Go to ${s.title}`} className="h-6 flex-1">
+              <button key={s.title} type="button" onClick={() => goTo(i)} aria-label={`Go to ${s.title}`} className="h-10 flex-1">
                 <span className="block h-1 rounded-full bg-jet/10" />
               </button>
             ))}

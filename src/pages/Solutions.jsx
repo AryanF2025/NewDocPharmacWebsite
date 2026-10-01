@@ -103,7 +103,7 @@ function SolutionsHero({ open }) {
               <button
                 type="button"
                 onClick={() => open(i)}
-                className="group relative h-full w-full overflow-hidden rounded-[1.5rem] bg-jet text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2"
+                className="group relative h-full w-full overflow-hidden rounded-3xl bg-jet text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2"
               >
                 <img
                   src={ART[item.art]}
@@ -258,7 +258,7 @@ function SolutionTabs({ picked, setPicked }) {
                     transition={{ duration: 0.6, ease: EASE, delay: 0.5 }}
                     className="absolute inset-x-6 bottom-6 text-white md:inset-x-8 md:bottom-8"
                   >
-                    <p className="text-[0.72rem] font-bold uppercase tracking-[0.16em] text-brand-green">What you get</p>
+                    <p className="label text-brand-green">What you get</p>
                     <p className="mt-2 max-w-md text-[clamp(1.15rem,2vw,1.55rem)] font-extrabold leading-snug tracking-[-0.02em]">{OUTCOME[item.id]}</p>
                   </motion.div>
                 </div>
@@ -327,7 +327,7 @@ function PoweredBy() {
                 <div className="absolute inset-0 bg-gradient-to-t from-jet via-jet/70 to-jet/5" />
 
                 <div className="relative p-7 transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:-translate-y-1.5 md:p-9">
-                  <p className="text-[0.75rem] font-bold uppercase tracking-[0.16em] text-brand-green">{card.eyebrow}</p>
+                  <p className="label text-brand-green">{card.eyebrow}</p>
                   <p className="mt-3 flex items-baseline gap-3">
                     <span className="text-[clamp(3rem,5vw,4.4rem)] font-extrabold leading-none tracking-[-0.05em]">{card.stat}</span>
                     <span className="text-[0.95rem] font-semibold text-white/70">{card.statLabel}</span>
@@ -362,7 +362,7 @@ function PoweredBy() {
 
 function Impact() {
   return (
-    <section className="bg-white py-24 md:py-28">
+    <section className="bg-white py-24 md:py-32">
       <div className="mx-auto max-w-[84rem] px-5 md:px-10">
         <SectionHeader eyebrow={SOLUTIONS_IMPACT.eyebrow} title={SOLUTIONS_IMPACT.headline} />
 

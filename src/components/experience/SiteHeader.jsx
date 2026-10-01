@@ -171,7 +171,7 @@ export function SiteHeader() {
                   <img src={riderStill} alt="" className="absolute inset-0 h-full w-full object-cover opacity-55 transition-transform duration-700 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-t from-jet via-jet/40 to-transparent" />
                   <div className="relative flex h-full flex-col justify-end">
-                    <p className="text-[0.75rem] font-bold uppercase tracking-[0.14em] text-brand-green">One network</p>
+                    <p className="label text-brand-green">One network</p>
                     <p className="mt-2 text-[1.35rem] font-extrabold leading-tight">Every solution runs on the same 30-minute network.</p>
                     <p className="mt-3 text-[0.85rem] font-bold">All solutions →</p>
                   </div>

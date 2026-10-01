@@ -76,7 +76,7 @@ export function SiteFooter() {
 
           {COLUMNS.map((col) => (
             <div key={col.title}>
-              <p className="text-[0.75rem] font-bold uppercase tracking-[0.16em] text-white/40">{col.title}</p>
+              <p className="label text-white/40">{col.title}</p>
               <ul className="mt-4 flex flex-col">
                 {col.links.map(([label, href]) => (
                   <li key={label}>
@@ -88,7 +88,7 @@ export function SiteFooter() {
           ))}
 
           <div>
-            <p className="text-[0.75rem] font-bold uppercase tracking-[0.16em] text-white/40">Registered office</p>
+            <p className="label text-white/40">Registered office</p>
             <address className="mt-5 text-[0.95rem] not-italic leading-relaxed text-white/65">
               {OFFICE.lines.map((line) => (
                 <span key={line} className="block">
@@ -103,8 +103,8 @@ export function SiteFooter() {
         <div className="flex flex-col gap-4 border-t border-white/10 py-6 text-[0.85rem] text-white/45 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} DocPharma. All rights reserved.</p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-            <Link to="/privacy" className="transition-colors hover:text-white">Privacy policy</Link>
-            <Link to="/terms" className="transition-colors hover:text-white">Terms of use</Link>
+            <Link to="/privacy" className="inline-flex min-h-10 items-center transition-colors hover:text-white">Privacy policy</Link>
+            <Link to="/terms" className="inline-flex min-h-10 items-center transition-colors hover:text-white">Terms of use</Link>
             <button
               type="button"
               onClick={() => scrollToTarget(0)}

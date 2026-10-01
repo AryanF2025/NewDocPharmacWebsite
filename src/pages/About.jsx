@@ -24,7 +24,7 @@ function AboutHero() {
     <section className="relative flex flex-col overflow-hidden bg-white lg:h-[100svh] lg:min-h-[44rem]">
       <HeroBackdrop focus="35% 40%" />
 
-      <div className="relative mx-auto grid w-full max-w-[100rem] flex-1 items-center gap-12 px-5 pb-12 pt-28 md:px-10 lg:grid-cols-[1fr_1.05fr] lg:gap-16 lg:pb-6 lg:pt-24 xl:px-16">
+      <div className="relative mx-auto grid w-full max-w-[88rem] flex-1 items-center gap-12 px-5 pb-12 pt-28 md:px-10 lg:grid-cols-[1fr_1.05fr] lg:gap-16 lg:pb-6 lg:pt-24 xl:px-16">
         <div>
           <HeroHeading
             eyebrow={ABOUT_HERO.eyebrow}
@@ -45,11 +45,11 @@ function AboutHero() {
 
         {/* The team, filling the right-hand side */}
         <Enter delay={0.2} className="hero-film relative">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-[2.25rem] bg-jet shadow-[0_50px_100px_-45px_rgba(5,36,57,.65)] lg:aspect-auto lg:h-[min(68svh,34rem)]">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] bg-jet shadow-[0_50px_100px_-45px_rgba(5,36,57,.65)] lg:aspect-auto lg:h-[min(68svh,34rem)]">
             <img src={JOIN_TEAM.groupImage} alt="The DocPharma team" className="hero-film-img h-full w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-jet/80 via-jet/10 to-transparent" />
             <div className="absolute inset-x-6 bottom-6 text-white">
-              <p className="text-[0.75rem] font-bold uppercase tracking-[0.16em] text-brand-green">The team behind the network</p>
+              <p className="label text-brand-green">The team behind the network</p>
               <p className="mt-2 max-w-md text-[clamp(1.05rem,2vw,1.5rem)] font-extrabold leading-snug tracking-[-0.02em]">
                 Darkstores, pharmacists, technology and our own fleet, in one connected network.
               </p>
@@ -123,7 +123,7 @@ function ValueCard({ slide, i, count, progress }) {
             <span className="tabular text-[0.8rem] font-extrabold text-brand-blue">
               {String(i + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
             </span>
-            <span className="text-[0.72rem] font-bold uppercase tracking-[0.16em] text-ink-faint">{VALUES.title}</span>
+            <span className="label text-ink-faint">{VALUES.title}</span>
           </div>
           <div>
             <h3 className="text-[clamp(1.6rem,3vw,2.6rem)] font-extrabold leading-[1.06] tracking-[-0.04em] text-jet">{slide.title}</h3>
@@ -238,7 +238,7 @@ function MissionVision() {
               <div className="relative -mt-[0.38em]">
                 <Reveal>
                   <div className={clsx("flex items-center gap-3", row.align && "lg:justify-end")}>
-                    <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-white/80 backdrop-blur">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-white/80 backdrop-blur">
                       <span className={clsx("h-1.5 w-1.5 rounded-full", row.dot)} />
                       {row.label}
                     </span>
@@ -254,7 +254,7 @@ function MissionVision() {
                   <p className={clsx("mt-3 max-w-xl text-[clamp(0.95rem,1.9vh,1.05rem)] leading-relaxed text-white/65", row.align && "lg:ml-auto")}>
                     {row.body}
                   </p>
-                  <p className="mt-3 text-[0.7rem] font-bold uppercase tracking-[0.16em] text-white/45">{row.stamp}</p>
+                  <p className="mt-3 label text-white/45">{row.stamp}</p>
                 </Reveal>
               </div>
             </div>
@@ -295,7 +295,7 @@ function Leadership() {
         <div className="mt-12 grid gap-5 md:grid-cols-3">
           {LEADERSHIP.members.map((person, i) => (
             <Reveal key={person.name} from="up" delay={i * 0.1}>
-              <article className="group flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-hairline bg-white transition-shadow duration-500 hover:shadow-[0_30px_60px_-35px_rgba(5,36,57,.45)]">
+              <article className="group flex h-full flex-col overflow-hidden rounded-[2rem] border border-hairline bg-white transition-shadow duration-500 hover:shadow-[0_30px_60px_-35px_rgba(5,36,57,.45)]">
                 <div className="relative aspect-[4/3] overflow-hidden bg-jet lg:aspect-auto lg:h-[min(34svh,20rem)]">
                   <img
                     src={person.image}
@@ -306,7 +306,7 @@ function Leadership() {
                   <div className="absolute inset-0 bg-gradient-to-t from-jet/85 via-jet/10 to-transparent" />
                   <div className="absolute inset-x-5 bottom-4 text-white">
                     <h3 className="text-[1.15rem] font-extrabold tracking-tight">{person.name}</h3>
-                    <p className="mt-0.5 text-[0.75rem] font-bold uppercase tracking-[0.12em] text-brand-green">{person.designation}</p>
+                    <p className="mt-0.5 label text-brand-green">{person.designation}</p>
                   </div>
                 </div>
 
@@ -315,7 +315,7 @@ function Leadership() {
                   <button
                     type="button"
                     onClick={() => setOpen(i)}
-                    className="link-underline mt-3 self-start text-[0.85rem] font-bold text-brand-blue"
+                    className="link-underline mt-1 self-start py-2.5 text-[0.85rem] font-bold text-brand-blue"
                   >
                     Read full profile →
                   </button>
@@ -335,14 +335,14 @@ function Leadership() {
           onClick={() => setOpen(null)}
         >
           <div
-            className="reveal-up max-h-[85svh] w-full max-w-2xl overflow-y-auto rounded-[1.75rem] bg-white p-6 md:p-9"
+            className="reveal-up max-h-[85svh] w-full max-w-2xl overflow-y-auto rounded-[2rem] bg-white p-6 md:p-9"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start gap-4">
               <img src={member.image} alt="" className="h-20 w-20 shrink-0 rounded-2xl object-cover object-top" />
               <div className="min-w-0 flex-1">
                 <h3 className="text-[1.35rem] font-extrabold tracking-tight text-jet">{member.name}</h3>
-                <p className="mt-1 text-[0.78rem] font-bold uppercase tracking-[0.12em] text-brand-blue">{member.designation}</p>
+                <p className="mt-1 label text-brand-blue">{member.designation}</p>
               </div>
               <button
                 type="button"
@@ -379,7 +379,7 @@ export default function About() {
       <Leadership />
 
       {/* --------------------------------------------------- investors --- */}
-      <section id="investors" className="scroll-mt-24 bg-white py-24 md:py-28">
+      <section id="investors" className="scroll-mt-24 bg-white py-24 md:py-32">
         <div className="mx-auto max-w-[84rem] px-5 text-center md:px-10">
           <SectionHeader align="center" eyebrow={INVESTORS.title} title="Backed to build the network." />
 

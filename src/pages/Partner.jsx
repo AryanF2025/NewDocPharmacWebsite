@@ -126,7 +126,7 @@ function BusinessTypePanels({ value, onPick }) {
             aria-pressed={active}
             aria-label={type.label}
             className={clsx(
-              "panel group relative min-h-0 min-w-0 overflow-hidden rounded-[1.5rem] bg-jet text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-green focus-visible:ring-offset-2 focus-visible:ring-offset-floral",
+              "panel group relative min-h-0 min-w-0 overflow-hidden rounded-3xl bg-jet text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-green focus-visible:ring-offset-2 focus-visible:ring-offset-floral",
               active ? "is-active" : ""
             )}
             style={{ flexGrow: active ? 5 : 1 }}
@@ -260,7 +260,7 @@ export default function Partner() {
       </PageHero>
 
       {/* --------------------------------------- who we build for --- */}
-      <section className="bg-floral pt-14 md:pt-20">
+      <section className="bg-floral pt-20 md:pt-28">
         <div className="mx-auto max-w-[84rem] px-5 md:px-10">
           <SectionHeader eyebrow="Who we build for" title="Pick what fits you. We'll shape the network around it." />
           <Reveal from="up" delay={0.08} className="mt-8">
@@ -270,8 +270,9 @@ export default function Partner() {
       </section>
 
       {/* ------------------------------------------------ form + aside --- */}
-      <section className="bg-floral py-14 md:py-20">
-        <div className="mx-auto grid max-w-[84rem] gap-6 px-5 md:px-10 lg:grid-cols-[1.15fr_1fr] lg:gap-10">
+      <section className="bg-floral pb-24 pt-16 md:pb-32 md:pt-20">
+        {/* min-w-0 on the columns: a long address row may truncate, never widen the page. */}
+        <div className="mx-auto grid max-w-[84rem] gap-6 px-5 md:px-10 lg:grid-cols-[1.15fr_1fr] lg:gap-10 [&>*]:min-w-0">
           <Reveal from="left">
             <div className="rounded-[2rem] border border-hairline bg-white p-6 md:p-10">
               {status === "sent" ? (
@@ -382,7 +383,7 @@ export default function Partner() {
             {/* What happens next: a timeline whose line draws down on arrival */}
             <Reveal from="right" delay={0.06}>
               <div className="rounded-[2rem] border border-hairline bg-white p-7">
-                <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">What happens next</p>
+                <p className="label text-brand-blue">What happens next</p>
                 <ol className="relative mt-6 space-y-6">
                   <span aria-hidden className="timeline-line absolute bottom-3 left-[0.95rem] top-3 w-px bg-gradient-to-b from-brand-blue to-brand-green" />
                   {NEXT_STEPS.map(([n, title, body]) => (
@@ -403,7 +404,7 @@ export default function Partner() {
             {/* Why partners stay: proof, not adjectives */}
             <Reveal from="right" delay={0.12}>
               <div className="rounded-[2rem] border border-hairline bg-white p-7">
-                <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Why partners stay</p>
+                <p className="label text-brand-blue">Why partners stay</p>
                 <div className="mt-5 grid grid-cols-2 gap-2.5">
                   {PROOF.map(([value, suffix, label]) => (
                     <div
@@ -433,7 +434,7 @@ export default function Partner() {
             {/* Reach us: each way in is one clickable row */}
             <Reveal from="right" delay={0.18}>
               <div className="rounded-[2rem] border border-hairline bg-white p-3">
-                <p className="px-4 pb-1 pt-4 text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Reach us</p>
+                <p className="px-4 pb-1 pt-4 label text-brand-blue">Reach us</p>
                 {[
                   { icon: "phone", label: "Call", value: CONTACT.phone, href: CONTACT.phoneHref },
                   { icon: "mail", label: "Email", value: CONTACT.email, href: `mailto:${CONTACT.email}` },
@@ -455,7 +456,7 @@ export default function Partner() {
                       <ContactIcon name={row.icon} />
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-[0.72rem] font-bold uppercase tracking-[0.12em] text-ink-faint">{row.label}</span>
+                      <span className="block label text-ink-faint">{row.label}</span>
                       <span className="block truncate text-[0.95rem] font-bold text-jet">{row.value}</span>
                     </span>
                     <span aria-hidden className="-translate-x-1 text-brand-blue opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">

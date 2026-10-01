@@ -61,18 +61,3 @@ export function Enter({ as: Tag = "div", delay = 0, className, children, ...rest
     </Tag>
   );
 }
-
-/** "Scroll to explore" — only where a hero fills the screen. */
-export function ScrollCue({ href }) {
-  return (
-    <a
-      href={href}
-      className="group relative mx-auto mb-5 hidden flex-col items-center gap-2 text-[0.72rem] font-bold uppercase tracking-[0.18em] text-ink-faint transition-colors hover:text-brand-blue lg:flex"
-    >
-      Scroll to explore
-      <span className="relative flex h-11 w-7 justify-center rounded-full border border-hairline bg-white pt-2 transition-colors group-hover:border-brand-blue">
-        <span className="scroll-cue-dot h-2 w-1 rounded-full bg-current" />
-      </span>
-    </a>
-  );
-}

@@ -24,7 +24,7 @@ const WIDE_SCALE = 1920 / (1920 - 405); // video width relative to the frame
 
 const STAGES = ["Picked from the shelf", "Prescription verified", "Packed & sealed", "Rider assigned", "Delivered at the door"];
 
-export function useIsWide() {
+function useIsWide() {
   const [wide, setWide] = useState(true);
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
@@ -63,7 +63,7 @@ export function HeroVideo({ className, showCard = true, rounded = true, ratio })
 
   return (
     <div
-      className={clsx("relative w-full overflow-hidden bg-jet", rounded && "rounded-[1.75rem]", className)}
+      className={clsx("relative w-full overflow-hidden bg-jet", rounded && "rounded-[2rem]", className)}
       style={{ aspectRatio: wide ? ratio ?? WIDE_CONTENT_RATIO : 428 / 510 }}
       data-cursor="media"
       data-cursor-label={muted ? "Sound on" : "Sound off"}
@@ -89,14 +89,14 @@ export function HeroVideo({ className, showCard = true, rounded = true, ratio })
       {showCard ? (
         <div className="absolute bottom-4 left-4 w-[15.5rem] rounded-2xl border border-white/60 bg-white/88 p-3.5 shadow-[0_24px_50px_-24px_rgba(5,36,57,.55)] backdrop-blur-xl sm:bottom-5 sm:left-5">
           <div className="flex items-center justify-between">
-            <span className="text-[0.64rem] font-bold uppercase tracking-[0.14em] text-ink-faint">Order DP-48216</span>
-            <span className="flex items-center gap-1.5 rounded-full bg-peppermint px-2 py-0.5 text-[0.62rem] font-bold text-[#5f8a0f]">
+            <span className="text-[0.72rem] font-bold uppercase tracking-[0.14em] text-ink-faint">Order DP-48216</span>
+            <span className="flex items-center gap-1.5 rounded-full bg-peppermint px-2 py-0.5 text-[0.72rem] font-bold text-[#5f8a0f]">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand-green" /> Live
             </span>
           </div>
           <div className="mt-2 flex items-end justify-between">
             <span className="tabular text-[1.75rem] font-extrabold leading-none tracking-tight text-jet">{fmt(clock)}</span>
-            <span className="text-[0.68rem] text-ink-faint">of 30:00</span>
+            <span className="text-[0.75rem] text-ink-faint">of 30:00</span>
           </div>
           <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-jet/8">
             <div className="h-full rounded-full bg-gradient-to-r from-brand-blue to-brand-green" style={{ width: `${progress * 100}%` }} />

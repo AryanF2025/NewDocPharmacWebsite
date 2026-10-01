@@ -129,8 +129,8 @@ export function MobileMenu({ solutions, onClose }) {
 
       {/* The partner call, waiting at the bottom */}
       <motion.div {...rise(ITEMS.length + 1)} className="mt-auto p-5 pt-8">
-        <div className="rounded-[1.75rem] bg-jet p-6 text-white">
-          <p className="text-[0.72rem] font-bold uppercase tracking-[0.16em] text-brand-green">Partner with us</p>
+        <div className="rounded-[2rem] bg-jet p-6 text-white">
+          <p className="label text-brand-green">Partner with us</p>
           <p className="mt-2 text-[1.3rem] font-extrabold leading-tight tracking-[-0.03em]">Put your products 30 minutes from your customers.</p>
           <Link
             to="/partner"

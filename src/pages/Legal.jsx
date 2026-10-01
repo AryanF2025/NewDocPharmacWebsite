@@ -112,7 +112,7 @@ function LegalDocument({ doc, description }) {
         <div className="mx-auto grid max-w-[84rem] gap-10 px-5 md:px-10 lg:grid-cols-[16rem_1fr] lg:gap-16">
           {/* Contents */}
           <aside className="lg:sticky lg:top-28 lg:self-start">
-            <p className="text-[0.75rem] font-bold uppercase tracking-[0.16em] text-ink-faint">Contents</p>
+            <p className="label text-ink-faint">Contents</p>
             <nav ref={railRef} className="mt-4 max-h-[60svh] overflow-y-auto pr-2 [scrollbar-width:thin]">
               <ol className="space-y-1">
                 {doc.sections.map((section) => (
@@ -168,15 +168,15 @@ function LegalDocument({ doc, description }) {
             </div>
 
             {/* Who to contact about this document */}
-            <div className="mt-14 rounded-[1.75rem] border border-hairline bg-floral p-7 md:p-9">
-              <p className="text-[0.75rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Questions about this document</p>
+            <div className="mt-14 rounded-[2rem] border border-hairline bg-floral p-7 md:p-9">
+              <p className="label text-brand-blue">Questions about this document</p>
               <p className="mt-4 text-[1.05rem] font-extrabold text-jet">{LEGAL_CONTACT.company}</p>
               <p className="mt-1 text-[0.95rem] text-ink-soft">{LEGAL_CONTACT.name}</p>
               <div className="mt-4 flex flex-wrap gap-x-8 gap-y-2 text-[0.95rem]">
-                <a href={`tel:${LEGAL_CONTACT.phone.replace(/\s/g, "")}`} className="font-bold text-jet transition-colors hover:text-brand-blue">
+                <a href={`tel:${LEGAL_CONTACT.phone.replace(/\s/g, "")}`} className="inline-flex min-h-10 items-center font-bold text-jet transition-colors hover:text-brand-blue">
                   {LEGAL_CONTACT.phone}
                 </a>
-                <a href={`mailto:${LEGAL_CONTACT.email}`} className="font-semibold text-ink-soft transition-colors hover:text-brand-blue">
+                <a href={`mailto:${LEGAL_CONTACT.email}`} className="inline-flex min-h-10 items-center font-semibold text-ink-soft transition-colors hover:text-brand-blue">
                   {LEGAL_CONTACT.email}
                 </a>
               </div>

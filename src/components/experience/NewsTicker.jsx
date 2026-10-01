@@ -59,7 +59,7 @@ export function NewsTicker({ className = "" }) {
     >
       <span
         key={`tag-${index}`}
-        className={`news-pop hidden w-[5.4rem] shrink-0 rounded-full sm:inline-block py-1 text-center text-[0.68rem] font-bold uppercase tracking-[0.08em] ${item.tone}`}
+        className={`news-pop hidden w-[5.4rem] shrink-0 rounded-full sm:inline-block py-1 text-center text-[0.72rem] font-bold uppercase tracking-[0.08em] ${item.tone}`}
       >
         {item.tag}
       </span>
@@ -105,7 +105,7 @@ export function NewsTicker({ className = "" }) {
         type="button"
         onClick={() => goTo((index + 1) % NEWS.length)}
         aria-label="Next news"
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-floral text-jet transition-colors hover:bg-brand-blue hover:text-white"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-floral text-jet transition-colors hover:bg-brand-blue hover:text-white"
       >
         <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
           <path d="M4.5 2.5 8 6l-3.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />

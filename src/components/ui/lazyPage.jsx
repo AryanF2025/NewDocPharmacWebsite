@@ -126,7 +126,7 @@ export class PageErrorBoundary extends Component {
     if (!this.state.failed) return this.props.children;
     return (
       <div className="flex min-h-[100svh] flex-col items-center justify-center px-5 text-center">
-        <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-brand-blue">Just a moment</p>
+        <p className="label text-brand-blue">Just a moment</p>
         <h1 className="mt-3 text-[clamp(1.8rem,4vw,2.6rem)] font-extrabold tracking-[-0.04em] text-jet">This page needs a refresh.</h1>
         <p className="mt-3 max-w-md text-ink-soft">We&apos;ve just updated the site. Reload to get the latest version.</p>
         <button

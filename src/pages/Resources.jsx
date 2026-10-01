@@ -33,7 +33,7 @@ function PressCard({ item, lead = false, index = 0 }) {
       rel="noreferrer"
       transition={{ duration: 0.8, ease: EASE, delay: seen ? (index % 2) * 0.1 : 0, layout: { duration: 0.5, ease: EASE } }}
       className={clsx(
-        "group flex flex-col overflow-hidden rounded-[1.75rem] border border-hairline bg-white transition-all duration-300 hover:-translate-y-1 hover:border-brand-blue/30 hover:shadow-[0_24px_50px_-30px_rgba(5,36,57,.4)]",
+        "group flex flex-col overflow-hidden rounded-[2rem] border border-hairline bg-white transition-all duration-300 hover:-translate-y-1 hover:border-brand-blue/30 hover:shadow-[0_24px_50px_-30px_rgba(5,36,57,.4)]",
         lead && "lg:col-span-2 lg:flex-row"
       )}
     >
@@ -48,7 +48,7 @@ function PressCard({ item, lead = false, index = 0 }) {
 
       <div className={clsx("flex flex-1 flex-col p-6 md:p-7", lead && "lg:justify-center lg:p-9")}>
         <div className="flex items-center gap-3">
-          <span className="rounded-full bg-floral px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.12em] text-ink-soft">
+          <span className="rounded-full bg-floral px-3 py-1 label text-ink-soft">
             {item.topic}
           </span>
           <span className="text-[0.82rem] text-ink-faint">{item.date}</span>
@@ -123,6 +123,7 @@ export default function Resources() {
       {/* ------------------------------------------------------ grid --- */}
       <section className="bg-white pb-20 md:pb-28">
         <div className="mx-auto max-w-[84rem] px-5 md:px-10">
+          <h2 className="sr-only">Press coverage</h2>
           <motion.div layout className="grid gap-5 md:grid-cols-2">
             {shown.map((item, i) => (
               <PressCard key={item.id} item={item} index={i} lead={topic === "All" && i === 0} />
