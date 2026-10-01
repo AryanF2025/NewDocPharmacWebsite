@@ -1165,3 +1165,21 @@
     mask-image: none;
   }
 }
+
+/* Footer heartbeat: a short glowing segment travels the ECG line. */
+.wm-pulse {
+  stroke-dasharray: 0.16 0.84;
+  stroke-dashoffset: 0.16;
+  animation: wm-pulse 4.5s linear infinite;
+  filter: drop-shadow(0 0 6px rgba(143, 193, 36, 0.7));
+}
+@keyframes wm-pulse {
+  to {
+    stroke-dashoffset: -0.84;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wm-pulse {
+    display: none;
+  }
+}

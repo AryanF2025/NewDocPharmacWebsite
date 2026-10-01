@@ -4,7 +4,7 @@
  * enquiry form, which posts to the wrapper service at VITE_API_BASE_URL.
  */
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import clsx from "clsx";
 import { Reveal, PageHero } from "@/components/ui/Reveal";
 import { COMPLIANCE, ComplianceIcon } from "@/components/experience/compliance";
@@ -13,13 +13,13 @@ import { submitContactEnquiry } from "@/api/contact.api";
 import {
   BUSINESS_TYPES,
   SLIDER_TYPES,
-  SLIDE_INTERVAL_MS,
   MONTHLY_ORDERS,
   CONTACT_INITIAL,
   CONTACT_HERO,
   PARTNER_ASSURANCES,
 } from "@/data/contact";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { scrollToTarget } from "@/components/motion/smoothScroll";
 import { CountUp } from "@/components/experience/HeroParts";
 import { SectionHeader } from "@/components/motion/Text";
 import { CtaButton } from "@/components/motion/CtaButton";
@@ -91,112 +91,69 @@ function Field({ label, error, children, hint }) {
 }
 
 /**
- * The five audiences as expanding panels: the chosen one opens wide, the rest
- * fold into slim labelled strips. Picking one sets the enquiry form's
- * business type, so the panels and the form always agree.
+ * The five audiences as selectable cards. Picking one sets the enquiry form's
+ * business type and takes the visitor to the form. Nothing changes on its own:
+ * the choice is always the visitor's.
  */
-function BusinessTypePanels({ value, onPick }) {
-  const [paused, setPaused] = useState(false);
-  const shown = Math.max(0, SLIDER_TYPES.findIndex((type) => type.value === value));
-
-  useEffect(() => {
-    if (paused) return undefined;
-    const id = window.setTimeout(() => {
-      onPick(SLIDER_TYPES[(shown + 1) % SLIDER_TYPES.length].value);
-    }, SLIDE_INTERVAL_MS);
-    return () => window.clearTimeout(id);
-  }, [shown, paused, onPick]);
+function BusinessTypePicker({ value, onPick }) {
+  const choose = (type) => {
+    onPick(type);
+    const form = document.getElementById("enquiry");
+    if (!form) return;
+    scrollToTarget(form);
+    // Put the cursor in the first field once the page has arrived.
+    window.setTimeout(() => form.querySelector("input")?.focus({ preventScroll: true }), 700);
+  };
 
   return (
-    <div
-      className="flex h-[34rem] flex-col gap-2 md:h-[26rem] md:flex-row md:gap-3"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-    >
+    <div role="radiogroup" aria-label="Type of business" className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
       {SLIDER_TYPES.map((type, i) => {
-        const active = i === shown;
+        const active = type.value === value;
         return (
           <button
             key={type.value}
             type="button"
-            onClick={() => onPick(type.value)}
-            onFocus={() => onPick(type.value)}
-            // Hovering a folded panel opens it — the pointer leads, no click needed.
-            onMouseEnter={() => onPick(type.value)}
-            aria-pressed={active}
-            aria-label={type.label}
+            role="radio"
+            aria-checked={active}
+            onClick={() => choose(type.value)}
             className={clsx(
-              "panel group relative min-h-0 min-w-0 overflow-hidden rounded-3xl bg-jet text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-green focus-visible:ring-offset-2 focus-visible:ring-offset-floral",
-              active ? "is-active" : ""
+              "group relative flex flex-col overflow-hidden rounded-3xl border bg-white text-left outline-none transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 hover:shadow-[0_24px_50px_-28px_rgba(5,36,57,.45)] focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-floral",
+              active ? "border-brand-blue shadow-[0_0_0_1px_var(--color-brand-blue)]" : "border-hairline",
+              // The fifth card spans both columns on phones, so the grid stays even.
+              i === SLIDER_TYPES.length - 1 && "col-span-2 md:col-span-1"
             )}
-            style={{ flexGrow: active ? 5 : 1 }}
           >
-            <img
-              src={type.image}
-              alt=""
-              loading="lazy"
-              className={clsx(
-                "absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(.22,1,.36,1)]",
-                active ? "scale-100 group-hover:scale-[1.04]" : "scale-125"
-              )}
-            />
-            {/* Folded panels read as solid brand navy with the photo just
-                showing through; the open one keeps its photo, darkened only
-                where the words sit. */}
-            <div
-              className={clsx(
-                "absolute inset-0 transition-[background-color,opacity] duration-700",
-                active ? "opacity-0" : "bg-jet/85 group-hover:bg-jet/70"
-              )}
-            />
-            <div
-              className={clsx(
-                "absolute inset-0 bg-gradient-to-t from-jet via-jet/45 via-35% to-transparent to-70% transition-opacity duration-700",
-                active ? "opacity-100" : "opacity-0"
-              )}
-            />
-
-            {/* Folded: number at the top, label reading up from the bottom */}
-            <span
-              className={clsx(
-                "pointer-events-none absolute inset-0 flex items-center gap-4 px-5 transition-opacity duration-500 md:flex-col md:items-center md:justify-between md:px-0 md:py-6",
-                active ? "opacity-0" : "opacity-100"
-              )}
-            >
-              <span className="tabular text-[0.75rem] font-extrabold text-brand-green">{String(i + 1).padStart(2, "0")}</span>
-              <span className="text-[0.85rem] font-extrabold uppercase tracking-[0.14em] text-white transition-colors duration-500 group-hover:text-brand-green md:rotate-180 md:[writing-mode:vertical-rl]">
+            <span className="relative block aspect-[16/10] overflow-hidden bg-jet">
+              <img
+                src={type.image}
+                alt=""
+                loading="lazy"
+                className={clsx(
+                  "h-full w-full object-cover transition-[transform,filter,opacity] duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-105",
+                  active ? "opacity-100" : "opacity-75 grayscale-[40%] group-hover:opacity-100 group-hover:grayscale-0"
+                )}
+              />
+              <span className="tabular absolute left-3 top-3 rounded-full bg-white/90 px-2 py-0.5 text-[0.72rem] font-extrabold text-jet">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <span
+                className={clsx(
+                  "absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full border-2 text-[0.7rem] font-extrabold transition-all duration-300",
+                  active ? "scale-100 border-brand-blue bg-brand-blue text-white" : "scale-90 border-white/80 bg-jet/30 text-transparent"
+                )}
+              >
+                ✓
+              </span>
+            </span>
+            <span className="flex flex-1 flex-col p-4">
+              <span className={clsx("text-[1rem] font-extrabold tracking-tight transition-colors", active ? "text-brand-blue" : "text-jet")}>
                 {type.tab}
               </span>
-            </span>
-
-            {/* Open: the choice marked top-right, the heading bottom-left */}
-            <span
-              className={clsx(
-                "absolute right-5 top-5 inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[0.78rem] font-bold text-jet shadow-[0_8px_24px_-10px_rgba(5,36,57,.5)] transition-[opacity,transform] duration-500",
-                active ? "translate-y-0 opacity-100 delay-300" : "pointer-events-none -translate-y-2 opacity-0"
-              )}
-            >
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand-green text-[0.55rem] text-white">✓</span>
-              Selected below
-            </span>
-            <span className={clsx("absolute inset-x-6 bottom-7 md:inset-x-8", active ? "panel-copy" : "pointer-events-none opacity-0")}>
-              <span className="tabular block text-[0.75rem] font-extrabold uppercase tracking-[0.16em] text-brand-green">
-                {String(i + 1).padStart(2, "0")} · {type.tab}
+              <span className="mt-1 text-[0.85rem] leading-snug text-ink-soft">{type.heading}</span>
+              <span className="mt-auto flex items-center gap-1.5 pt-3 text-[0.8rem] font-bold text-brand-blue">
+                {active ? "Selected" : "Choose"}
+                <span aria-hidden className="transition-transform duration-300 group-hover:translate-y-0.5">↓</span>
               </span>
-              <span className="mt-2 block max-w-lg text-[clamp(1.3rem,2.4vw,2rem)] font-extrabold leading-[1.1] tracking-[-0.03em] text-white">
-                {type.heading}
-              </span>
-            </span>
-
-            {/* Time until the next business: a thin line along the bottom edge */}
-            <span className="absolute inset-x-0 bottom-0 h-[3px] bg-white/10">
-              {active ? (
-                <span
-                  key={`${shown}-${paused}`}
-                  className={clsx("block h-full origin-left bg-brand-green", paused ? "scale-x-100" : "how-fill")}
-                  style={paused ? undefined : { animationDuration: `${SLIDE_INTERVAL_MS}ms` }}
-                />
-              ) : null}
             </span>
           </button>
         );
@@ -264,7 +221,7 @@ export default function Partner() {
         <div className="mx-auto max-w-[84rem] px-5 md:px-10">
           <SectionHeader eyebrow="Who we build for" title="Pick what fits you. We'll shape the network around it." />
           <Reveal from="up" delay={0.08} className="mt-8">
-            <BusinessTypePanels value={form.businessType} onPick={pickType} />
+            <BusinessTypePicker value={form.businessType} onPick={pickType} />
           </Reveal>
         </div>
       </section>
@@ -296,7 +253,7 @@ export default function Partner() {
                   </button>
                 </div>
               ) : (
-                <form onSubmit={onSubmit} noValidate>
+                <form id="enquiry" onSubmit={onSubmit} noValidate className="scroll-mt-28">
                   <h2 className="text-[clamp(1.5rem,2.4vw,2rem)] font-extrabold tracking-[-0.03em] text-jet">
                     Tell us about your business
                   </h2>
