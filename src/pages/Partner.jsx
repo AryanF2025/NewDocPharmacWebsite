@@ -436,7 +436,7 @@ export default function Partner() {
                       rel="noreferrer"
                       className="pill-fill rounded-full border border-hairline px-4 py-2 text-[0.82rem] font-semibold text-ink-soft"
                     >
-                      {s.name} ↗
+                      {s.name} <span aria-hidden className="pill-arrow">↗</span>
                     </a>
                   ))}
                 </div>

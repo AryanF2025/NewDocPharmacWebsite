@@ -1242,3 +1242,33 @@
 .rail-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* External-link arrow in a pill: on hover it flies out to the top-right and
+   slides back in from the bottom-left. */
+.pill-arrow {
+  display: inline-block;
+  margin-left: 0.3em;
+  font-size: 0.85em;
+}
+.pill-fill:hover .pill-arrow,
+.pill-fill:focus-visible .pill-arrow {
+  animation: arrow-out-in 0.55s var(--ease-brand);
+}
+@keyframes arrow-out-in {
+  0% {
+    transform: none;
+    opacity: 1;
+  }
+  45% {
+    transform: translate(70%, -70%);
+    opacity: 0;
+  }
+  46% {
+    transform: translate(-70%, 70%);
+    opacity: 0;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}

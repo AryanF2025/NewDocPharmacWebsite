@@ -135,7 +135,7 @@ export function SiteFooter() {
                 >
                   <Icon name={s.name} size={16} />
                   {s.name}
-                  <span aria-hidden className="text-[0.8rem]">↗</span>
+                  <span aria-hidden className="pill-arrow">↗</span>
                 </a>
               ))}
             </div>

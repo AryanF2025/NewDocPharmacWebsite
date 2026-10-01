@@ -146,7 +146,7 @@ export function MobileMenu({ solutions, onClose }) {
             </a>
             {SOCIAL.map((s) => (
               <a key={s.name} href={s.href} target="_blank" rel="noreferrer" className="pill-fill pill-fill--dark rounded-full border border-white/20 px-3 py-1.5 font-semibold">
-                {s.name} ↗
+                {s.name} <span aria-hidden className="pill-arrow">↗</span>
               </a>
             ))}
           </div>
