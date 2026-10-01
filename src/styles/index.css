@@ -1142,3 +1142,26 @@
     animation-duration: 0.2s;
   }
 }
+
+/* Footer wordmark: a spotlight that follows the cursor reveals the logo
+   colours; it grows in on hover and fades out when the cursor leaves. */
+.wordmark-colour {
+  --r: 0px;
+  -webkit-mask-image: radial-gradient(circle var(--r) at var(--mx, 50%) var(--my, 50%), #000 35%, transparent 100%);
+  mask-image: radial-gradient(circle var(--r) at var(--mx, 50%) var(--my, 50%), #000 35%, transparent 100%);
+  transition: --r 0.6s var(--ease-brand);
+}
+.wordmark:hover .wordmark-colour {
+  --r: 260px;
+}
+@property --r {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+@media (hover: none) {
+  .wordmark-colour {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}

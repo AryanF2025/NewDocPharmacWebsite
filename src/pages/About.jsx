@@ -99,6 +99,9 @@ function ValueCard({ slide, i, count, progress }) {
   const target = 1 - (count - 1 - i) * 0.05;
   const scale = useTransform(progress, [i / count, 1], [1, target]);
   const dim = useTransform(progress, [i / count, 1], [0, (count - 1 - i) * 0.12]);
+  // Cards underneath fade out as the finished stack leaves, so only the top
+  // card scrolls away — nothing peeks out below it.
+  const fade = useTransform(progress, [0.94, 1], [1, i < count - 1 ? 0 : 1]);
 
   return (
     // Every card is pinned, so the stack leaves as one piece with the last card
@@ -112,13 +115,14 @@ function ValueCard({ slide, i, count, progress }) {
       style={{ "--offset": `${i * 1.6}rem` }}
     >
       <motion.article
-        style={reduce ? undefined : { scale, transformOrigin: "50% 0%" }}
+        style={reduce ? undefined : { scale, opacity: fade, transformOrigin: "50% 0%" }}
         className={clsx(
-          "relative grid w-full overflow-hidden rounded-[2rem] border border-hairline shadow-[0_-20px_60px_-40px_rgba(5,36,57,.45)] lg:h-[min(64svh,34rem)] lg:grid-cols-[1fr_1.05fr]",
+          // One height for every card at every size, so the stack lines up exactly.
+          "relative grid h-[min(72svh,38rem)] w-full grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-[2rem] border border-hairline shadow-[0_-20px_60px_-40px_rgba(5,36,57,.45)] lg:h-[min(64svh,34rem)] lg:grid-cols-[1fr_1.05fr] lg:grid-rows-1",
           "bg-floral"
         )}
       >
-        <div className="flex flex-col justify-between gap-8 p-7 md:p-11">
+        <div className="flex flex-col justify-between gap-5 p-6 md:gap-8 md:p-11">
           <div className="flex items-center justify-between">
             <span className="tabular text-[0.8rem] font-extrabold text-brand-blue">
               {String(i + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
@@ -126,14 +130,14 @@ function ValueCard({ slide, i, count, progress }) {
             <span className="label text-ink-faint">{VALUES.title}</span>
           </div>
           <div>
-            <h3 className="text-[clamp(1.6rem,3vw,2.6rem)] font-extrabold leading-[1.06] tracking-[-0.04em] text-jet">{slide.title}</h3>
-            <p className="mt-4 line-clamp-5 max-w-lg text-[clamp(0.92rem,1.9vh,1.02rem)] leading-relaxed text-ink-soft lg:line-clamp-none">
+            <h3 className="text-[clamp(1.4rem,3vw,2.6rem)] font-extrabold leading-[1.06] tracking-[-0.04em] text-jet">{slide.title}</h3>
+            <p className="mt-3 line-clamp-3 max-w-lg md:line-clamp-5 text-[clamp(0.92rem,1.9vh,1.02rem)] leading-relaxed text-ink-soft lg:line-clamp-none">
               {slide.description}
             </p>
             <p className="mt-4 text-[1.08rem] font-extrabold text-brand-blue">{slide.bold}</p>
           </div>
         </div>
-        <div className="relative min-h-[14rem] overflow-hidden">
+        <div className="relative min-h-0 overflow-hidden">
           <img src={slide.image} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
         </div>
         {/* Receding cards dim under the one arriving on top. */}
@@ -334,26 +338,41 @@ function Leadership() {
           aria-label={`${member.name}, ${member.designation}`}
           onClick={() => setOpen(null)}
         >
+          {/* The portrait leads: full height beside the bio on larger screens,
+              across the top on phones. */}
           <div
-            className="reveal-up max-h-[85svh] w-full max-w-2xl overflow-y-auto rounded-[2rem] bg-white p-6 md:p-9"
+            className="reveal-up relative grid max-h-[88svh] w-full max-w-4xl overflow-hidden rounded-[2rem] bg-white md:grid-cols-[0.85fr_1fr]"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex items-start gap-4">
-              <img src={member.image} alt="" className="h-20 w-20 shrink-0 rounded-2xl object-cover object-top" />
-              <div className="min-w-0 flex-1">
-                <h3 className="text-[1.35rem] font-extrabold tracking-tight text-jet">{member.name}</h3>
-                <p className="mt-1 label text-brand-blue">{member.designation}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setOpen(null)}
-                aria-label="Close"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-floral text-[1.2rem] text-jet transition-[background-color,transform] duration-300 hover:rotate-90 hover:bg-viking"
-              >
-                ×
-              </button>
+            <div className="relative h-[15rem] shrink-0 overflow-hidden bg-gradient-to-br from-viking via-white to-peppermint md:h-auto md:min-h-[30rem]">
+              <img
+                src={member.image}
+                alt={`${member.name}, ${member.designation}`}
+                className="absolute inset-x-0 bottom-0 mx-auto h-[94%] w-auto max-w-none object-contain object-bottom mix-blend-multiply"
+              />
+              <span className="absolute left-5 top-5 rounded-full bg-white/85 px-3 py-1.5 label text-brand-blue backdrop-blur">
+                Leadership
+              </span>
             </div>
-            <p className="mt-6 text-[1rem] leading-relaxed text-ink-soft">{member.description}</p>
+
+            <div className="flex min-h-0 flex-col overflow-y-auto p-6 md:p-10">
+              <div className="flex items-start gap-4">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-[clamp(1.5rem,2.6vw,2rem)] font-extrabold leading-tight tracking-[-0.03em] text-jet">{member.name}</h3>
+                  <p className="mt-1.5 label text-brand-blue">{member.designation}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setOpen(null)}
+                  aria-label="Close"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-floral text-[1.2rem] text-jet transition-[background-color,transform] duration-300 hover:rotate-90 hover:bg-viking"
+                >
+                  ×
+                </button>
+              </div>
+              <span aria-hidden className="mt-5 block h-0.5 w-12 rounded-full bg-gradient-to-r from-brand-blue to-brand-green" />
+              <p className="mt-5 text-[1rem] leading-relaxed text-ink-soft">{member.description}</p>
+            </div>
           </div>
         </div>
       ) : null}
