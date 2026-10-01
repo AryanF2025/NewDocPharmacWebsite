@@ -2,8 +2,6 @@ import { Link } from "react-router-dom";
 import { Logo } from "@/components/ui/Logo";
 import { COVERAGE_CITIES } from "@/components/art/IndiaCoverageMap";
 import { FooterWordmark } from "./FooterWordmark";
-import { CtaButton } from "@/components/motion/CtaButton";
-import { Reveal } from "@/components/ui/Reveal";
 import { scrollToTarget } from "@/components/motion/smoothScroll";
 import { SOCIAL, CAREERS_URL, OFFICE, CONTACT } from "./siteInfo";
 
@@ -93,33 +91,7 @@ export function SiteFooter() {
         <div className="absolute -right-40 top-20 h-[26rem] w-[26rem] rounded-full bg-brand-green/10 blur-[140px]" />
       </div>
 
-      <div className="relative mx-auto max-w-[84rem] px-6 pt-16 md:px-10 md:pt-20">
-        {/* The closing call */}
-        <Reveal>
-          <div className="flex flex-col gap-8 border-b border-white/10 pb-14 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="label text-brand-green">Partner with DocPharma</p>
-              <h2 className="mt-4 max-w-2xl text-balance text-[clamp(2rem,4vw,3.4rem)] font-extrabold leading-[1.04] tracking-[-0.04em]">
-                Let&apos;s put medicine <span className="text-brand-green">30 minutes</span> from your customers.
-              </h2>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <CtaButton to="/partner" variant="white">
-                Partner with us
-              </CtaButton>
-              <a
-                href={CONTACT.phoneHref}
-                className="group inline-flex min-h-[3.5rem] items-center gap-3 rounded-full border border-white/20 px-6 font-bold text-white transition-colors duration-300 hover:border-brand-green"
-              >
-                <span className="text-brand-green transition-transform duration-300 group-hover:rotate-12">
-                  <Icon name="phone" />
-                </span>
-                {CONTACT.phone}
-              </a>
-            </div>
-          </div>
-        </Reveal>
-
+      <div className="relative mx-auto max-w-[84rem] px-6 pt-6 md:px-10 md:pt-8">
         {/* Live network: the cities, drifting past */}
         <div className="flex items-center gap-5 border-b border-white/10 py-5">
           <span className="flex shrink-0 items-center gap-2 label text-white/70">
@@ -152,17 +124,18 @@ export function SiteFooter() {
             <p className="mt-5 max-w-xs text-[1rem] leading-relaxed text-white/60">
               India&apos;s first healthcare quick-commerce supply chain. Elevating healthcare together.
             </p>
-            <div className="mt-6 flex gap-2">
+            <div className="mt-6 flex flex-wrap gap-2">
               {SOCIAL.map((s) => (
                 <a
                   key={s.name}
                   href={s.href}
                   target="_blank"
                   rel="noreferrer"
-                  aria-label={`DocPharma on ${s.name}`}
-                  className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 text-white/80 transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-green hover:bg-brand-green hover:text-jet"
+                  className="pill-fill pill-fill--dark inline-flex min-h-11 items-center gap-2 rounded-full border border-white/15 px-4 text-[0.88rem] font-semibold text-white/85"
                 >
-                  <Icon name={s.name} />
+                  <Icon name={s.name} size={16} />
+                  {s.name}
+                  <span aria-hidden className="text-[0.8rem]">↗</span>
                 </a>
               ))}
             </div>

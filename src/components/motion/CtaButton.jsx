@@ -67,8 +67,8 @@ export function CtaButton({ to, href, children, variant = "blue", className, typ
 /** The quieter partner to the CTA: an outlined pill. */
 export function GhostButton({ to, href, children, tone = "light", className }) {
   const cls = clsx(
-    "ghost-btn relative inline-flex items-center overflow-hidden rounded-full border px-7 py-3.5 text-[0.98rem] font-bold transition-colors duration-500",
-    tone === "dark" ? "border-white/25 text-white hover:border-white/60" : "border-hairline bg-white text-jet hover:border-brand-blue",
+    "pill-fill inline-flex items-center rounded-full border px-7 py-3.5 text-[0.98rem] font-bold",
+    tone === "dark" ? "pill-fill--dark border-white/25 text-white" : "border-hairline bg-white text-jet",
     className
   );
   return to ? (

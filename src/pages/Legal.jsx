@@ -13,12 +13,19 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 import { HeroHeading, Enter } from "@/components/motion/Hero";
 import { LEGAL_CONTACT, PRIVACY_POLICY, TERMS_AND_CONDITIONS } from "@/data/legal";
 
-/** One block of legal copy: paragraph, labelled bullet, or plain list item. */
+const LIST_TYPES = new Set(["bullet", "item", "sub"]);
+
+/** One block of legal copy: a paragraph, or a list point ("bullet" and
+ *  "item" are top-level points; "sub" is a point nested under the one above). */
 function Block({ block }) {
-  if (block.type === "bullet") {
+  if (LIST_TYPES.has(block.type)) {
+    const sub = block.type === "sub";
     return (
-      <li className="flex gap-3 text-[1rem] leading-relaxed text-ink-soft">
-        <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-green" />
+      <li className={sub ? "ml-6 flex gap-3 text-[0.97rem] leading-relaxed text-ink-soft" : "flex gap-3 text-[1rem] leading-relaxed text-ink-soft"}>
+        <span
+          aria-hidden
+          className={sub ? "mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full border border-brand-green" : "mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-green"}
+        />
         <span>
           {block.label ? <strong className="font-bold text-jet">{block.label}: </strong> : null}
           {block.text}
@@ -29,7 +36,7 @@ function Block({ block }) {
   return <p className="text-[1rem] leading-relaxed text-ink-soft">{block.text}</p>;
 }
 
-/** Bullets need a list around them; paragraphs don't. */
+/** List points need a list around them; paragraphs don't. */
 function Body({ body }) {
   const out = [];
   let bullets = [];
@@ -45,7 +52,7 @@ function Body({ body }) {
   };
 
   body.forEach((block, i) => {
-    if (block.type === "bullet") {
+    if (LIST_TYPES.has(block.type)) {
       bullets.push(<Block key={i} block={block} />);
       return;
     }
@@ -113,7 +120,7 @@ function LegalDocument({ doc, description }) {
           {/* Contents */}
           <aside className="lg:sticky lg:top-28 lg:self-start">
             <p className="label text-ink-faint">Contents</p>
-            <nav ref={railRef} className="mt-4 max-h-[60svh] overflow-y-auto pr-2 [scrollbar-width:thin]">
+            <nav ref={railRef} className="rail-scroll mt-4 max-h-[60svh] overflow-y-auto pr-2">
               <ol className="space-y-1">
                 {doc.sections.map((section) => (
                   <li key={section.id}>
@@ -121,12 +128,19 @@ function LegalDocument({ doc, description }) {
                       href={`#${section.id}`}
                       data-rail={section.id}
                       className={clsx(
-                        "flex gap-3 rounded-xl px-3 py-2 text-[0.88rem] transition-colors duration-300",
+                        "group flex items-start gap-3 rounded-xl px-3 py-2 text-[0.88rem] transition-colors duration-300",
                         active === section.id ? "bg-floral font-bold text-jet" : "text-ink-soft hover:bg-floral/70"
                       )}
                     >
-                      <span className="tabular shrink-0 text-ink-faint">{String(section.number).padStart(2, "0")}</span>
-                      <span className="min-w-0">{section.heading}</span>
+                      <span
+                        className={clsx(
+                          "tabular flex h-6 w-7 shrink-0 items-center justify-center rounded-md text-[0.72rem] font-extrabold transition-colors duration-300",
+                          active === section.id ? "bg-brand-blue text-white" : "bg-floral text-ink-faint group-hover:text-jet"
+                        )}
+                      >
+                        {String(section.number).padStart(2, "0")}
+                      </span>
+                      <span className="min-w-0 pt-0.5 leading-snug">{section.heading}</span>
                     </a>
                   </li>
                 ))}
@@ -152,9 +166,12 @@ function LegalDocument({ doc, description }) {
                   ref={(el) => (sectionRefs.current[section.id] = el)}
                   className="scroll-mt-28"
                 >
-                  <div className="flex items-baseline gap-3">
-                    <span className="tabular text-[0.8rem] font-extrabold text-brand-green">
-                      {String(section.number).padStart(2, "0")}
+                  <div className="flex items-start gap-4">
+                    {/* Number badge, centred on the heading first line. */}
+                    <span className="flex h-[1.25em] shrink-0 items-center text-[clamp(1.25rem,2.2vw,1.7rem)]">
+                      <span className="tabular flex h-9 w-9 items-center justify-center rounded-xl bg-peppermint text-[0.82rem] font-extrabold text-[#5f8a0f]">
+                        {String(section.number).padStart(2, "0")}
+                      </span>
                     </span>
                     <h2 className="text-[clamp(1.25rem,2.2vw,1.7rem)] font-extrabold leading-tight tracking-[-0.03em] text-jet">
                       {section.heading}

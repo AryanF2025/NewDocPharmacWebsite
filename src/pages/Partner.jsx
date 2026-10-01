@@ -21,6 +21,7 @@ import {
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { scrollToTarget } from "@/components/motion/smoothScroll";
 import { CountUp } from "@/components/experience/HeroParts";
+import { Select } from "@/components/ui/Select";
 import { SectionHeader } from "@/components/motion/Text";
 import { CtaButton } from "@/components/motion/CtaButton";
 
@@ -76,17 +77,20 @@ function validate(form) {
 const FIELD =
   "w-full rounded-xl border border-hairline bg-white px-4 py-3 text-[0.95rem] text-jet outline-none transition-colors placeholder:text-ink-faint focus:border-brand-blue";
 
-function Field({ label, error, children, hint }) {
+/** A form field. Pass `labelId` for custom controls: they are named by the
+ *  label text instead of being wrapped in a <label>. */
+function Field({ label, error, children, hint, labelId }) {
+  const Tag = labelId ? "div" : "label";
   return (
-    <label className="block">
-      <span className="mb-1.5 block text-[0.8rem] font-bold text-jet">{label}</span>
+    <Tag className="block">
+      <span id={labelId} className="mb-1.5 block text-[0.8rem] font-bold text-jet">{label}</span>
       {children}
       {error ? (
         <span className="mt-1.5 block text-[0.78rem] font-semibold text-[#c2410c]">{error}</span>
       ) : hint ? (
         <span className="mt-1.5 block text-[0.78rem] text-ink-faint">{hint}</span>
       ) : null}
-    </label>
+    </Tag>
   );
 }
 
@@ -247,7 +251,7 @@ export default function Partner() {
                   <button
                     type="button"
                     onClick={() => setStatus("idle")}
-                    className="mt-8 rounded-full border border-hairline px-6 py-3 text-[0.92rem] font-bold text-jet transition-colors hover:border-brand-blue"
+                    className="pill-fill mt-8 rounded-full border border-hairline px-6 py-3 text-[0.92rem] font-bold text-jet"
                   >
                     Send another enquiry
                   </button>
@@ -276,24 +280,26 @@ export default function Partner() {
                       <input id="phone" name="phone" type="tel" value={form.phone} onChange={set("phone")} placeholder="+91 98765 43210" autoComplete="tel" className={FIELD} />
                     </Field>
 
-                    <Field label="Type of business *">
-                      <select id="businessType" name="businessType" value={form.businessType} onChange={set("businessType")} className={FIELD}>
-                        {BUSINESS_TYPES.map((type) => (
-                          <option key={type.value} value={type.value}>
-                            {type.label}
-                          </option>
-                        ))}
-                      </select>
+                    <Field label="Type of business *" labelId="businessType-label">
+                      <Select
+                        id="businessType"
+                        name="businessType"
+                        labelledBy="businessType-label"
+                        value={form.businessType}
+                        onChange={set("businessType")}
+                        options={BUSINESS_TYPES.map((type) => ({ value: type.value, label: type.label }))}
+                      />
                     </Field>
 
-                    <Field label="Monthly orders">
-                      <select id="monthlyOrders" name="monthlyOrders" value={form.monthlyOrders} onChange={set("monthlyOrders")} className={FIELD}>
-                        {MONTHLY_ORDERS.map((range) => (
-                          <option key={range} value={range}>
-                            {range}
-                          </option>
-                        ))}
-                      </select>
+                    <Field label="Monthly orders" labelId="monthlyOrders-label">
+                      <Select
+                        id="monthlyOrders"
+                        name="monthlyOrders"
+                        labelledBy="monthlyOrders-label"
+                        value={form.monthlyOrders}
+                        onChange={set("monthlyOrders")}
+                        options={MONTHLY_ORDERS.map((range) => ({ value: range, label: range }))}
+                      />
                     </Field>
 
                     <div className="sm:col-span-2">
@@ -428,7 +434,7 @@ export default function Partner() {
                       href={s.href}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-full border border-hairline px-4 py-2 text-[0.82rem] font-semibold text-ink-soft transition-colors hover:border-brand-blue hover:text-jet"
+                      className="pill-fill rounded-full border border-hairline px-4 py-2 text-[0.82rem] font-semibold text-ink-soft"
                     >
                       {s.name} ↗
                     </a>
