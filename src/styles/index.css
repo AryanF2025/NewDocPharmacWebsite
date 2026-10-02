@@ -1775,3 +1775,14 @@
     animation: none;
   }
 }
+
+/* Solutions going live: the current step's line fills while it is up. */
+.golive-fill {
+  transform: scaleX(0);
+  animation: golive-fill linear forwards;
+}
+@keyframes golive-fill {
+  to {
+    transform: scaleX(1);
+  }
+}

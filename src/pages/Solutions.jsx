@@ -30,6 +30,7 @@ import stillVerify from "@/assets/images/still-verify.jpg";
 import stillPack from "@/assets/images/still-pack.jpg";
 import stillRider from "@/assets/images/still-rider.jpg";
 import stillHandover from "@/assets/images/still-handover.jpg";
+import teamWarehouse from "@/assets/images/team-warehouse.webp";
 
 const EASE = [0.22, 1, 0.36, 1];
 
@@ -195,150 +196,111 @@ const STACK = INTEGRATION_LOGOS.filter((l) => ["Shopify", "Unicommerce", "EasyEc
 
 /** From first call to first delivery: what partnering actually involves. */
 const GO_LIVE = [
-  {
-    title: "Tell us what you sell",
-    body: "Your categories, cities and order volumes. The partnerships team replies within two working days.",
-    icon: "M4 6h16v10H8l-4 4zM8 10h8M8 13h5",
-  },
-  {
-    title: "We map your network",
-    body: "The licensed darkstores, delivery SLA and compliance your orders need, city by city.",
-    icon: "M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z",
-  },
-  {
-    title: "Plug in your stack",
-    body: "Shopify, Unicommerce, EasyEcom or our order API, with status sent back by webhook. No rebuild.",
-    icon: "M8 6l-5 6 5 6M16 6l5 6-5 6M14 4l-4 16",
-    stack: true,
-  },
-  {
-    title: "Go live",
-    body: "Stock sits in the darkstores and orders reach your customers' doors in about 30 minutes.",
-    icon: "M5 13l4 4L19 7",
-    live: true,
-  },
+  ["Tell us what you sell", "Your categories, cities and order volumes. The partnerships team replies within two working days."],
+  ["We map your network", "The licensed darkstores, delivery SLA and compliance your orders need, city by city."],
+  ["Plug in your stack", "Shopify, Unicommerce, EasyEcom or our order API, with status sent back by webhook. No rebuild."],
+  ["Go live", "Stock sits in the darkstores and orders reach your customers' doors in about 30 minutes."],
 ];
 
-const STEP_MS = 2400;
+const STEP_MS = 3200;
 
 /**
- * Going live, in four steps on one track. A parcel rides the track on a
- * loop; each step lights as it arrives and stays lit until the loop resets.
- * Hovering a step holds the parcel there.
+ * Going live, in the site's own language: the heading and a photo of the
+ * team in a darkstore on the left, four numbered points on the right. The
+ * points play through in turn, each one's line filling while it is current,
+ * and a small checklist on the photo keeps count. Hovering a point takes over.
  */
 function GoingLive() {
   const ref = useRef(null);
   const seen = useInViewOnce(ref, { margin: "0px 0px -25% 0px" });
-  const [step, setStep] = useState(-1);
+  const [step, setStep] = useState(0);
   const [hold, setHold] = useState(null);
+  const reduce = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const at = hold ?? step;
 
   useEffect(() => {
-    if (!seen) return undefined;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setStep(GO_LIVE.length - 1);
-      return undefined;
-    }
-    setStep(0);
-    const id = window.setInterval(() => setStep((s) => (s + 1) % (GO_LIVE.length + 1)), STEP_MS);
-    return () => window.clearInterval(id);
-  }, [seen]);
-
-  // The parcel's place on the track: the middle of the current step.
-  const shown = Math.min(at, GO_LIVE.length - 1);
-  const parcel = shown < 0 ? 0 : ((shown + 0.5) / GO_LIVE.length) * 100;
+    if (!seen || hold !== null || reduce) return undefined;
+    const id = window.setTimeout(() => setStep((s) => (s + 1) % GO_LIVE.length), STEP_MS);
+    return () => window.clearTimeout(id);
+  }, [seen, hold, step, reduce]);
 
   return (
-    <section className="bg-white py-24 lg:flex lg:h-[100svh] lg:min-h-[44rem] lg:flex-col lg:justify-center lg:py-28">
-      <div ref={ref} className="mx-auto w-full max-w-[84rem] px-5 md:px-10">
-        <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
-          <SectionHeader eyebrow="Going live" title="From first call to first delivery." />
-          <Reveal from="up" delay={0.15}>
-            <p className="max-w-sm text-[1rem] leading-relaxed text-ink-soft">
-              No warehouse to lease, no fleet to hire. Four steps, and your orders run on the network above.
-            </p>
+    <section className="bg-white py-24 lg:flex lg:h-[100svh] lg:min-h-[44rem] lg:items-center lg:py-28">
+      <div ref={ref} className="mx-auto grid w-full max-w-[84rem] items-center gap-12 px-5 md:px-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
+        {/* Heading and the team */}
+        <div>
+          <SectionHeader
+            eyebrow="Going live"
+            title="From first call to first delivery."
+            sub="No warehouse to lease, no fleet to hire. Four steps, and your orders run on the network above."
+          />
+          <Reveal from="up" delay={0.1}>
+            <div className="relative mt-8 aspect-[16/10] overflow-hidden rounded-[2rem] bg-jet">
+              <img src={teamWarehouse} alt="The DocPharma team in one of its darkstores" loading="lazy" className="h-full w-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(.22,1,.36,1)] hover:scale-[1.04]" />
+              <div className="absolute inset-0 bg-gradient-to-t from-jet/50 via-transparent to-transparent" />
+
+              {/* The checklist, keeping count */}
+              <div className="absolute bottom-4 left-4 right-4 flex items-center gap-4 rounded-2xl bg-white/95 px-4 py-3 shadow-[0_18px_40px_-18px_rgba(5,36,57,.55)] backdrop-blur sm:right-auto">
+                <div className="flex gap-1.5">
+                  {GO_LIVE.map(([title], i) => (
+                    <span
+                      key={title}
+                      className={clsx(
+                        "flex h-6 w-6 items-center justify-center rounded-full text-[0.62rem] font-extrabold transition-colors duration-500",
+                        i < at ? "bg-brand-green text-white" : i === at ? "bg-brand-blue text-white" : "bg-floral text-ink-faint"
+                      )}
+                    >
+                      {i < at ? "✓" : i + 1}
+                    </span>
+                  ))}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[0.7rem] font-bold uppercase tracking-[0.14em] text-ink-faint">Going live · Step {at + 1} of 4</p>
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.p
+                      key={at}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.3 }}
+                      className="truncate text-[0.9rem] font-extrabold text-jet"
+                    >
+                      {GO_LIVE[at][0]}
+                    </motion.p>
+                  </AnimatePresence>
+                </div>
+              </div>
+            </div>
           </Reveal>
         </div>
 
-        {/* The track, with the parcel riding it */}
-        <div aria-hidden className="relative mt-14 hidden h-10 lg:block">
-          <span className="absolute inset-x-[12.5%] top-1/2 h-0 -translate-y-1/2 border-t-2 border-dashed border-hairline" />
-          <span
-            className="absolute left-[12.5%] top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-gradient-to-r from-brand-blue to-brand-green transition-[width] duration-700 ease-[cubic-bezier(.22,1,.36,1)]"
-            style={{ width: `${Math.max(0, parcel - 12.5)}%` }}
-          />
-          {GO_LIVE.map((s, i) => (
-            <span
-              key={s.title}
-              className={clsx(
-                "absolute top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 text-[0.8rem] font-extrabold transition-colors duration-500",
-                i <= at ? "border-brand-blue bg-brand-blue text-white" : "border-hairline bg-white text-ink-faint"
-              )}
-              style={{ left: `${((i + 0.5) / GO_LIVE.length) * 100}%` }}
-            >
-              {i < at ? "✓" : String(i + 1).padStart(2, "0")}
-            </span>
-          ))}
-          <span
-            className="absolute top-1/2 h-14 w-14 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-brand-green/60 transition-[left,opacity] duration-700 ease-[cubic-bezier(.22,1,.36,1)]"
-            style={{ left: `${parcel}%`, opacity: at >= 0 ? 1 : 0 }}
-          >
-            <span className="absolute inset-0 animate-ping rounded-full border border-brand-green/40" />
-          </span>
-        </div>
-
-        {/* The steps */}
-        <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:mt-8 lg:grid-cols-4" onPointerLeave={() => setHold(null)}>
-          {GO_LIVE.map((s, i) => {
-            const on = i === Math.min(at, GO_LIVE.length - 1) && at >= 0;
-            const done = i < at;
+        {/* The four points */}
+        <ol className="grid gap-x-10 gap-y-10 sm:grid-cols-2" onPointerLeave={() => setHold(null)}>
+          {GO_LIVE.map(([title, body], i) => {
+            const on = i === at;
             return (
-              <Reveal as="li" key={s.title} from="up" delay={i * 0.08}>
-                <div
-                  onPointerEnter={() => setHold(i)}
-                  className={clsx(
-                    "group relative flex h-full flex-col rounded-[1.75rem] border p-7 transition-[border-color,box-shadow,transform,background-color] duration-500",
-                    on
-                      ? "-translate-y-1.5 border-brand-blue/40 bg-white shadow-[0_30px_60px_-36px_rgba(2,150,217,.55)]"
-                      : "border-hairline bg-floral"
-                  )}
-                >
-                  <div className="flex items-center justify-between">
-                    <span
-                      className={clsx(
-                        "flex h-11 w-11 items-center justify-center rounded-2xl transition-colors duration-500",
-                        on ? "bg-brand-blue text-white" : done ? "bg-peppermint text-[#5f8a0f]" : "bg-white text-brand-blue"
-                      )}
-                    >
-                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                        <path d={s.icon} />
-                      </svg>
-                    </span>
-                    <span className="tabular text-[0.75rem] font-extrabold text-ink-faint lg:hidden">{String(i + 1).padStart(2, "0")}</span>
-                  </div>
-                  <h3 className="mt-6 text-[1.2rem] font-extrabold tracking-tight text-jet">{s.title}</h3>
-                  <p className="mt-2 text-[0.95rem] leading-relaxed text-ink-soft">{s.body}</p>
-
-                  {s.stack ? (
-                    <div className="mt-auto flex items-center gap-2 pt-6">
+              <Reveal as="li" key={title} from="up" delay={i * 0.07}>
+                <div onPointerEnter={() => setHold(i)} className="relative h-full pt-5">
+                  <span aria-hidden className="absolute inset-x-0 top-0 h-0.5 bg-hairline" />
+                  <span
+                    aria-hidden
+                    key={`${i}-${on}-${hold}`}
+                    className={clsx(
+                      "absolute left-0 top-0 h-0.5 w-full origin-left bg-gradient-to-r from-brand-blue to-brand-green",
+                      on ? (hold === null && !reduce ? "golive-fill" : "scale-x-100") : i < at ? "scale-x-100 opacity-40" : "scale-x-0"
+                    )}
+                    style={on && hold === null ? { animationDuration: `${STEP_MS}ms` } : undefined}
+                  />
+                  <span className={clsx("tabular text-[0.75rem] font-extrabold transition-colors duration-300", on ? "text-brand-blue" : "text-ink-faint")}>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <h3 className={clsx("mt-1 text-[1.15rem] font-extrabold tracking-tight text-jet transition-transform duration-300", on && "translate-x-1")}>{title}</h3>
+                  <p className={clsx("mt-2 text-[0.95rem] leading-relaxed transition-colors duration-300", on ? "text-ink-soft" : "text-ink-faint")}>{body}</p>
+                  {i === 2 ? (
+                    <div className={clsx("mt-4 flex items-center gap-5 transition-opacity duration-300", on ? "opacity-100" : "opacity-50 grayscale")}>
                       {STACK.map((l) => (
-                        <span key={l.name} className="flex h-10 flex-1 items-center justify-center rounded-xl border border-hairline bg-white px-2">
-                          <LogoImg src={l.src} alt={l.name} area={1500} maxWidth={84} maxHeight={26} />
-                        </span>
+                        <LogoImg key={l.name} src={l.src} alt={l.name} area={1300} maxWidth={84} maxHeight={22} />
                       ))}
-                    </div>
-                  ) : null}
-                  {s.live ? (
-                    <div className="mt-auto pt-6">
-                      <span
-                        className={clsx(
-                          "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[0.8rem] font-bold transition-colors duration-500",
-                          on ? "bg-brand-green/15 text-[#5c7a15]" : "bg-white text-ink-faint"
-                        )}
-                      >
-                        <span className={clsx("h-2 w-2 rounded-full", on ? "animate-pulse bg-brand-green" : "bg-hairline")} />
-                        {on ? "Orders flowing" : "Ready when you are"}
-                      </span>
                     </div>
                   ) : null}
                 </div>
