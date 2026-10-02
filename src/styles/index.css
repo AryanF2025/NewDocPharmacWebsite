@@ -1525,3 +1525,99 @@
   display: inline-block;
   animation: seal-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
+
+/* Solutions "Powered by": the catchment wave, doors that light up on
+   delivery, slow background light and the pulse where the engines meet. */
+.pb-wave {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pb-wave 3.6s var(--ease-brand) infinite;
+}
+@keyframes pb-wave {
+  from {
+    transform: scale(0.12);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+.pb-door-dot {
+  fill: #0296d9;
+  stroke: #052439;
+  stroke-width: 2;
+  transition: fill 0.3s;
+}
+.pb-door-ring {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.pb-door[data-done="1"] .pb-door-dot {
+  fill: #a1e666;
+}
+.pb-door[data-done="1"] .pb-door-ring {
+  animation: pb-door 1.2s var(--ease-brand) both;
+}
+@keyframes pb-door {
+  from {
+    transform: scale(0.4);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+.pb-glow {
+  animation: pb-drift 16s ease-in-out infinite alternate;
+}
+.pb-glow-2 {
+  animation-duration: 20s;
+  animation-direction: alternate-reverse;
+}
+@keyframes pb-drift {
+  to {
+    transform: translate(12rem, -6rem) scale(1.15);
+  }
+}
+.pb-join::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 9999px;
+  border: 1.5px solid #a1e666;
+  animation: pb-join 2.4s var(--ease-brand) infinite;
+}
+@keyframes pb-join {
+  from {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pb-wave,
+  .pb-glow,
+  .pb-join::before,
+  .pb-door[data-done="1"] .pb-door-ring {
+    animation: none;
+  }
+}
+
+/* Home FAQ: the heartbeat line traces on a loop, like the loader. */
+.faq-beat {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: hb-trace 2.4s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .faq-beat {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}

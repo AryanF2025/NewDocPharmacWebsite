@@ -8,8 +8,8 @@
  * closing call.
  */
 
-import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import clsx from "clsx";
 import { AnimatePresence, motion } from "motion/react";
 import { Reveal } from "@/components/ui/Reveal";
@@ -18,7 +18,9 @@ import { HeroBackdrop, HeroHeading, Enter, HIGHLIGHT } from "@/components/motion
 import { SectionHeader } from "@/components/motion/Text";
 import { CtaButton, GhostButton } from "@/components/motion/CtaButton";
 import { scrollToTarget } from "@/components/motion/smoothScroll";
+import { useInViewOnce } from "@/components/motion/useInViewOnce";
 import { usePageSeo } from "@/seo/usePageSeo";
+import { PoweredBy } from "@/components/solutions/PoweredBy";
 import { SOLUTIONS_HERO, SOLUTION_TABS, SOLUTIONS_IMPACT } from "@/data/site";
 import stillPick from "@/assets/images/still-pick.jpg";
 import stillVerify from "@/assets/images/still-verify.jpg";
@@ -291,94 +293,103 @@ function SolutionTabs({ picked, setPicked }) {
   );
 }
 
-/* ------------------------------------------------------------- powered by --- */
+/* ----------------------------------------------------------------- impact --- */
 
-const POWER = [
-  {
-    key: "fleet",
-    eyebrow: "Our own fleet",
-    stat: "500+",
-    statLabel: "in-house riders",
-    title: "Riders who work for us, not a marketplace.",
-    points: ["OTP-verified handover", "Live tracking", "30-minute SLA"],
-    image: stillHandover,
-    link: { to: "/about", label: "Meet the team" },
-  },
-  {
-    key: "one",
-    eyebrow: "DocPharma One",
-    stat: "6",
-    statLabel: "apps, one platform",
-    title: "One system from shelf to doorstep.",
-    points: ["IMS · OMS · WMS", "Picking & rider apps", "Plugs into your stack"],
-    image: stillVerify,
-    link: { to: "/technology", label: "See the technology" },
-  },
-];
-
-/**
- * What every solution runs on, as two full-photo panels on one navy screen.
- * The photo zooms and the copy lifts on hover; the stat leads each panel.
- */
-function PoweredBy() {
-  return (
-    <section className="relative overflow-hidden bg-jet py-20 text-white lg:flex lg:min-h-[100svh] lg:flex-col lg:pb-12 lg:pt-24">
-      <div className="mx-auto w-full max-w-[84rem] px-5 md:px-10 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
-        <SectionHeader
-          tone="dark"
-          eyebrow="Powered by"
-          title="Every solution runs on the same two things."
-          titleClassName="!mt-3 !text-[clamp(1.8rem,2.6vw,2.5rem)]"
+/** A small picture for each figure: a ring for a rate, a clock for time, bars for depth. */
+function StatArt({ i, value, on }) {
+  const draw = { transition: "stroke-dashoffset 1.8s cubic-bezier(.22,1,.36,1) .2s" };
+  if (i < 2) {
+    return (
+      <svg viewBox="0 0 64 64" className="h-16 w-16 -rotate-90" aria-hidden>
+        <circle cx="32" cy="32" r="26" fill="none" stroke="#052439" strokeOpacity=".08" strokeWidth="6" />
+        <circle
+          cx="32"
+          cy="32"
+          r="26"
+          fill="none"
+          stroke={i === 0 ? "#0296d9" : "#8fc124"}
+          strokeWidth="6"
+          strokeLinecap="round"
+          pathLength="100"
+          strokeDasharray="100"
+          strokeDashoffset={on ? 100 - value : 100}
+          style={draw}
         />
-
-        <div className="mt-10 grid gap-4 lg:min-h-0 lg:flex-1 lg:grid-cols-2">
-          {POWER.map((card, i) => (
-            <Reveal key={card.key} from="up" delay={i * 0.12} className="lg:min-h-0">
-              <Link
-                to={card.link.to}
-                className="group relative flex h-[30rem] flex-col justify-end overflow-hidden rounded-[2rem] bg-[#0a2d45] lg:h-full lg:min-h-[26rem]"
-              >
-                <img
-                  src={card.image}
-                  alt=""
-                  loading="lazy"
-                  className="absolute inset-0 h-full w-full object-cover opacity-80 transition-[transform,opacity] duration-[1400ms] ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.06] group-hover:opacity-95"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-jet via-jet/70 to-jet/5" />
-
-                <div className="relative p-7 transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:-translate-y-1.5 md:p-9">
-                  <p className="label text-brand-green">{card.eyebrow}</p>
-                  <p className="mt-3 flex items-baseline gap-3">
-                    <span className="text-[clamp(3rem,5vw,4.4rem)] font-extrabold leading-none tracking-[-0.05em]">{card.stat}</span>
-                    <span className="text-[0.95rem] font-semibold text-white/70">{card.statLabel}</span>
-                  </p>
-                  <h3 className="mt-3 max-w-md text-[clamp(1.25rem,1.8vw,1.6rem)] font-extrabold leading-[1.15] tracking-[-0.03em]">{card.title}</h3>
-                  <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
-                    <ul className="flex flex-wrap gap-2">
-                      {card.points.map((point) => (
-                        <li key={point} className="rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-[0.8rem] font-semibold text-white/90">
-                          {point}
-                        </li>
-                      ))}
-                    </ul>
-                    <span className="flex items-center gap-2 text-[0.9rem] font-bold">
-                      {card.link.label}
-                      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-jet transition-transform duration-500 group-hover:rotate-[-45deg]">
-                        →
-                      </span>
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            </Reveal>
-          ))}
-        </div>
-      </div>
-    </section>
+      </svg>
+    );
+  }
+  if (i === 2) {
+    // Half the dial: thirty minutes of the hour.
+    return (
+      <svg viewBox="0 0 64 64" className="h-16 w-16" aria-hidden>
+        <circle cx="32" cy="32" r="26" fill="#fff" stroke="#052439" strokeOpacity=".08" strokeWidth="6" />
+        <circle
+          cx="32"
+          cy="32"
+          r="26"
+          fill="none"
+          stroke="#0296d9"
+          strokeWidth="6"
+          strokeLinecap="round"
+          pathLength="100"
+          strokeDasharray="100"
+          strokeDashoffset={on ? 50 : 100}
+          transform="rotate(-90 32 32)"
+          style={draw}
+        />
+        <line
+          x1="32"
+          y1="32"
+          x2="32"
+          y2="14"
+          stroke="#052439"
+          strokeWidth="3"
+          strokeLinecap="round"
+          style={{ transformOrigin: "32px 32px", transform: `rotate(${on ? 180 : 0}deg)`, transition: "transform 1.8s cubic-bezier(.22,1,.36,1) .2s" }}
+        />
+        <circle cx="32" cy="32" r="3.5" fill="#052439" />
+      </svg>
+    );
+  }
+  return (
+    <span className="flex h-16 items-end gap-1.5" aria-hidden>
+      {[0.45, 0.7, 0.55, 0.9, 1].map((h, j) => (
+        <span
+          key={j}
+          className="w-2.5 rounded-full bg-gradient-to-t from-brand-blue to-brand-green transition-[height] duration-[1200ms] ease-[cubic-bezier(.22,1,.36,1)]"
+          style={{ height: on ? `${h * 100}%` : "8%", transitionDelay: `${0.2 + j * 0.09}s` }}
+        />
+      ))}
+    </span>
   );
 }
 
-/* ----------------------------------------------------------------- impact --- */
+function ImpactCard({ stat, i }) {
+  const ref = useRef(null);
+  const on = useInViewOnce(ref);
+  return (
+    <Reveal from="up" delay={i * 0.08} className="h-full">
+      <div
+        ref={ref}
+        onPointerMove={(e) => {
+          const r = e.currentTarget.getBoundingClientRect();
+          e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
+          e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
+        }}
+        className="spotlight group relative flex h-full flex-col rounded-3xl border border-hairline bg-floral p-7 transition-[transform,background-color,box-shadow] duration-500 hover:-translate-y-1 hover:bg-white hover:shadow-[0_24px_50px_-32px_rgba(5,36,57,.4)]"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <p className="tabular text-[clamp(2.4rem,3.6vw,3.2rem)] font-extrabold leading-none tracking-[-0.05em] text-jet">
+            <CountUp value={stat.value} suffix={stat.suffix} delay={i * 100} />
+          </p>
+          <StatArt i={i} value={stat.value} on={on} />
+        </div>
+        <p className="mt-auto pt-8 text-[1.02rem] font-extrabold tracking-tight text-jet">{stat.label}</p>
+        <p className="mt-1 text-[0.9rem] text-ink-soft">{stat.note}</p>
+      </div>
+    </Reveal>
+  );
+}
 
 function Impact() {
   return (
@@ -386,35 +397,39 @@ function Impact() {
       <div className="mx-auto max-w-[84rem] px-5 md:px-10">
         <SectionHeader eyebrow={SOLUTIONS_IMPACT.eyebrow} title={SOLUTIONS_IMPACT.headline} />
 
-        <div className="mt-12 grid border-y border-hairline sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {SOLUTIONS_IMPACT.stats.map((stat, i) => (
-            <Reveal
-              key={stat.label}
-              from="up"
-              delay={i * 0.08}
-              className={clsx("py-8 sm:px-6 lg:py-10", i > 0 && "max-sm:border-t sm:border-l border-hairline", i === 2 && "sm:max-lg:border-l-0 sm:max-lg:border-t")}
-            >
-              <p className="text-[clamp(2.4rem,4vw,3.4rem)] font-extrabold leading-none tracking-[-0.05em] text-jet">
-                <CountUp value={stat.value} suffix={stat.suffix} delay={i * 100} />
-              </p>
-              <p className="mt-4 text-[1rem] font-bold text-jet">{stat.label}</p>
-              <p className="mt-1 text-[0.9rem] text-ink-faint">{stat.note}</p>
-            </Reveal>
+            <ImpactCard key={stat.label} stat={stat} i={i} />
           ))}
         </div>
 
-        {/* Closing call */}
+        {/* Closing call, with a delivery route flowing along its foot. */}
         <Reveal from="up" className="mt-20">
-          <div className="flex flex-col items-start justify-between gap-6 rounded-[2rem] border border-hairline bg-floral px-8 py-10 md:flex-row md:items-center md:px-12">
-            <div>
-              <h2 className="text-[clamp(1.5rem,2.6vw,2.1rem)] font-extrabold leading-tight tracking-[-0.03em] text-jet">Not sure where you fit?</h2>
-              <p className="mt-2 max-w-xl text-[1.02rem] leading-relaxed text-ink-soft">
-                Tell us what you sell and where. We&apos;ll map the darkstores, licences and SLA your orders need.
-              </p>
+          <div className="relative overflow-hidden rounded-[2rem] bg-jet px-7 py-12 text-white md:px-12 md:py-14">
+            <div aria-hidden className="pointer-events-none absolute inset-0">
+              <div className="pb-glow absolute -right-24 -top-24 h-80 w-80 rounded-full bg-brand-blue/30 blur-[100px]" />
+              <svg viewBox="0 0 600 200" preserveAspectRatio="none" className="absolute inset-x-0 bottom-0 h-1/2 w-full opacity-45">
+                <path d="M20 185 C 160 190, 240 120, 340 150 S 500 175, 585 70" fill="none" stroke="#fff" strokeOpacity=".12" strokeWidth="2" />
+                <path className="route-flow" d="M20 185 C 160 190, 240 120, 340 150 S 500 175, 585 70" fill="none" stroke="#a1e666" strokeWidth="2.5" strokeDasharray="6 8" strokeLinecap="round" />
+              </svg>
             </div>
-            <CtaButton to="/partner" className="shrink-0">
-              Talk to our team
-            </CtaButton>
+            <div className="relative flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
+              <div>
+                <p className="label text-brand-green">Not sure where you fit?</p>
+                <h2 className="mt-3 max-w-xl text-[clamp(1.6rem,2.8vw,2.4rem)] font-extrabold leading-[1.1] tracking-[-0.035em]">
+                  Tell us what you sell and where. We&apos;ll map the route.
+                </h2>
+                <p className="mt-3 max-w-lg text-[1.02rem] leading-relaxed text-white/65">
+                  The darkstores, licences and delivery SLA your orders need, back to you within two working days.
+                </p>
+              </div>
+              <div className="flex shrink-0 flex-wrap gap-3">
+                <CtaButton to="/partner">Talk to our team</CtaButton>
+                <GhostButton to="/technology" tone="dark">
+                  See the technology
+                </GhostButton>
+              </div>
+            </div>
           </div>
         </Reveal>
       </div>

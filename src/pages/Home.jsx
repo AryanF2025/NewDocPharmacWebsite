@@ -21,6 +21,7 @@ import { HeroBackdrop, Enter, HIGHLIGHT } from "@/components/motion/Hero";
 import { SplitText, SectionHeader, Eyebrow } from "@/components/motion/Text";
 import { CtaButton, GhostButton } from "@/components/motion/CtaButton";
 import { useInViewOnce } from "@/components/motion/useInViewOnce";
+import { Reveal } from "@/components/ui/Reveal";
 import { usePageSeo } from "@/seo/usePageSeo";
 import { FAQ } from "@/seo/config";
 import { CLIENT_LOGOS, INTEGRATION_LOGOS } from "@/data/logos";
@@ -282,37 +283,137 @@ function Bento() {
 
 /* -------------------------------------------------------------------- faq --- */
 
+/** One question. The answer stays in the page for search and screen readers, and opens smoothly. */
+function FaqItem({ q, a, i, open, onToggle }) {
+  const id = `faq-${i}`;
+  return (
+    <Reveal from="up" delay={i * 0.05}>
+      <div
+        className={clsx(
+          "group rounded-2xl border bg-white transition-[border-color,box-shadow] duration-500",
+          open ? "border-brand-blue/30 shadow-[0_24px_50px_-34px_rgba(2,150,217,.55)]" : "border-hairline hover:border-jet/15"
+        )}
+      >
+        <h3>
+          <button
+            type="button"
+            aria-expanded={open}
+            aria-controls={id}
+            onClick={onToggle}
+            className="flex w-full items-center gap-4 rounded-2xl px-5 py-5 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-blue md:px-6"
+          >
+            <span
+              className={clsx(
+                "tabular flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[0.75rem] font-extrabold transition-colors duration-500",
+                open ? "bg-brand-blue text-white" : "bg-floral text-ink-faint group-hover:text-brand-blue"
+              )}
+            >
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <span className={clsx("flex-1 text-[1.04rem] font-extrabold tracking-tight text-jet transition-colors duration-300 md:text-[1.1rem]", !open && "group-hover:text-brand-blue")}>
+              {q}
+            </span>
+            <span
+              aria-hidden
+              className={clsx(
+                "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-[transform,background-color,color] duration-500 ease-[cubic-bezier(.22,1,.36,1)]",
+                open ? "rotate-45 bg-jet text-white" : "bg-floral text-brand-blue group-hover:bg-viking"
+              )}
+            >
+              <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                <path d="M8 3v10M3 8h10" />
+              </svg>
+            </span>
+          </button>
+        </h3>
+        <div
+          id={id}
+          role="region"
+          className={clsx(
+            "grid transition-[grid-template-rows] duration-500 ease-[cubic-bezier(.22,1,.36,1)]",
+            open ? "[grid-template-rows:1fr]" : "[grid-template-rows:0fr]"
+          )}
+        >
+          <div className="overflow-hidden">
+            <p
+              className={clsx(
+                "px-5 pb-6 text-[0.98rem] leading-relaxed text-ink-soft transition-[opacity,transform] duration-500 md:pl-[4.75rem] md:pr-16",
+                open ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
+              )}
+            >
+              {a}
+            </p>
+          </div>
+        </div>
+      </div>
+    </Reveal>
+  );
+}
+
+const BEAT = "M0 20 H72 L80 20 L86 13 L92 20 L104 20 L109 25 L116 3 L123 36 L129 20 L142 20 L150 12 L160 20 H240";
+
 /** Common questions, answered in plain text. Same answers as the FAQPage schema (src/seo/config.js). */
 function Faq() {
-  return (
-    <section id="faq" aria-label="Frequently asked questions" className="border-t border-hairline bg-white">
-      <div className="mx-auto grid max-w-[84rem] gap-12 px-5 py-24 md:px-10 md:py-32 lg:grid-cols-[1fr_1.5fr]">
-        <div className="lg:sticky lg:top-28 lg:self-start">
-          <SectionHeader eyebrow="FAQ" title="Questions, answered." />
-          <p className="mt-5 max-w-sm text-[1.05rem] leading-relaxed text-ink-soft">
-            See what we do for your business on{" "}
-            <Link to="/solutions" className="link-underline font-semibold text-brand-blue">Solutions</Link>, how orders move on{" "}
-            <Link to="/technology" className="link-underline font-semibold text-brand-blue">Technology</Link>, or{" "}
-            <Link to="/partner" className="link-underline font-semibold text-brand-blue">talk to our team</Link>.
-          </p>
-        </div>
+  const [open, setOpen] = useState(0);
 
-        <div className="divide-y divide-hairline border-y border-hairline">
-          {FAQ.map(({ q, a }) => (
-            <details key={q} className="faq-item group">
-              <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-6 py-5 text-left text-[1.08rem] font-bold text-jet transition-colors duration-300 hover:text-brand-blue [&::-webkit-details-marker]:hidden">
-                <h3 className="text-[inherit] font-[inherit]">{q}</h3>
-                <span
-                  aria-hidden
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-floral text-brand-blue transition-transform duration-300 group-open:rotate-45"
+  return (
+    <section id="faq" aria-label="Frequently asked questions" className="bg-floral">
+      <div className="mx-auto grid max-w-[84rem] gap-10 px-5 py-24 md:px-10 md:py-32 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.3fr)] lg:gap-14">
+        {/* What this is, where to go next, and someone to ask */}
+        <Reveal from="up" className="lg:sticky lg:top-28 lg:self-start">
+          <div className="relative overflow-hidden rounded-[2rem] bg-jet p-8 text-white md:p-10">
+            <div aria-hidden className="pb-glow pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-blue/30 blur-[90px]" />
+            <svg aria-hidden viewBox="0 0 240 40" className="relative h-9 w-48 overflow-visible">
+              <defs>
+                <linearGradient id="faq-ink" x1="0" x2="1">
+                  <stop offset="0" stopColor="#0291d7" />
+                  <stop offset="1" stopColor="#a1e666" />
+                </linearGradient>
+              </defs>
+              <path d={BEAT} fill="none" stroke="#fff" strokeOpacity=".12" strokeWidth="2" strokeLinejoin="round" />
+              <path className="faq-beat" pathLength="1" d={BEAT} fill="none" stroke="url(#faq-ink)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+
+            <SectionHeader tone="dark" eyebrow="FAQ" title="Questions, answered." className="relative mt-6" titleClassName="!mt-3" />
+            <p className="relative mt-4 max-w-sm text-[1rem] leading-relaxed text-white/65">
+              The short version of how DocPharma works. Go deeper on any of these:
+            </p>
+            <div className="relative mt-5 flex flex-wrap gap-2">
+              {[
+                ["/solutions", "Solutions"],
+                ["/technology", "Technology"],
+                ["/about", "About us"],
+              ].map(([to, label]) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className="group/chip inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-[0.86rem] font-bold text-white transition-colors duration-300 hover:border-brand-green hover:bg-brand-green hover:text-jet"
                 >
-                  <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <path d="M8 3v10M3 8h10" />
-                  </svg>
-                </span>
-              </summary>
-              <p className="max-w-2xl pb-6 text-[1rem] leading-relaxed text-ink-soft">{a}</p>
-            </details>
+                  {label}
+                  <span className="transition-transform duration-300 group-hover/chip:translate-x-0.5">→</span>
+                </Link>
+              ))}
+            </div>
+
+            <div className="relative mt-8 border-t border-white/10 pt-7">
+              <p className="text-[0.95rem] font-bold">Still have a question?</p>
+              <p className="mt-1 text-[0.92rem] text-white/60">
+                Call{" "}
+                <a href="tel:+917542021525" className="link-underline font-bold text-white">
+                  +91 75420 21525
+                </a>{" "}
+                or write to the partnerships team.
+              </p>
+              <CtaButton to="/partner" className="mt-5">
+                Talk to our team
+              </CtaButton>
+            </div>
+          </div>
+        </Reveal>
+
+        <div className="grid content-start gap-3">
+          {FAQ.map(({ q, a }, i) => (
+            <FaqItem key={q} q={q} a={a} i={i} open={open === i} onToggle={() => setOpen(open === i ? -1 : i)} />
           ))}
         </div>
       </div>

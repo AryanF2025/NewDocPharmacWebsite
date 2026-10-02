@@ -240,8 +240,8 @@ function LogisticsDemo() {
         <path d={INBOUND} fill="none" stroke="rgba(255,255,255,.3)" strokeWidth="2.5" strokeDasharray="4 6" className="flow-dash" />
         <path d={OWN} fill="none" stroke="#8fc124" strokeWidth="2.5" strokeDasharray="4 6" className="flow-dash" />
         <path d={COURIER} fill="none" stroke="#0296d9" strokeWidth="2.5" strokeDasharray="4 6" className="flow-dash" />
-        {/* stock coming in */}
-        <rect r="2" width="9" height="7" rx="1.5" fill="#fff" opacity=".85">
+        {/* stock coming in: drawn around its own centre so it rides on the line */}
+        <rect x="-4.5" y="-3.5" width="9" height="7" rx="1.5" fill="#fff" opacity=".85">
           <animateMotion dur={dur} repeatCount="indefinite" path={INBOUND} />
         </rect>
         {/* orders going out */}
