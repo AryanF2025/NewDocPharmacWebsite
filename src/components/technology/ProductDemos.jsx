@@ -246,11 +246,14 @@ function LogisticsDemo() {
         </rect>
         {/* orders going out */}
         {[0, 0.36].map((b) => (
-          <circle key={b} r="4" fill="#8fc124">
+          // Hidden until its run begins, so it never waits at the corner.
+          <circle key={b} r="4" fill="#8fc124" opacity="0">
+            <set attributeName="opacity" to="1" begin={`${b * parseFloat(dur)}s`} />
             <animateMotion dur={dur} begin={`${b * parseFloat(dur)}s`} repeatCount="indefinite" path={OWN} />
           </circle>
         ))}
-        <circle r="4" fill="#0296d9">
+        <circle r="4" fill="#0296d9" opacity="0">
+          <set attributeName="opacity" to="1" begin={`${0.7 * parseFloat(dur)}s`} />
           <animateMotion dur={dur} begin={`${0.7 * parseFloat(dur)}s`} repeatCount="indefinite" path={COURIER} />
         </circle>
 

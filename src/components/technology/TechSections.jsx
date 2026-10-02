@@ -269,6 +269,7 @@ function TrackingPhone() {
   const [phase, setPhase] = useState("ride"); // ride | otp | done
   const [eta, setEta] = useState(12);
   const [loop, setLoop] = useState(0);
+  const [typed, setTyped] = useState(0);
   const pathRef = useRef(null);
   const riderRef = useRef(null);
 
@@ -294,16 +295,19 @@ function TrackingPhone() {
     };
     frame = requestAnimationFrame(ride);
     const tick = window.setInterval(() => setEta((m) => Math.max(1, m - 2)), (RIDE_S * 1000) / 6);
+    setTyped(0);
     const toOtp = window.setTimeout(() => {
       window.clearInterval(tick);
       setPhase("otp");
     }, RIDE_S * 1000);
-    const toDone = window.setTimeout(() => setPhase("done"), RIDE_S * 1000 + 2600);
-    const again = window.setTimeout(() => setLoop((l) => l + 1), RIDE_S * 1000 + 4400);
+    // The code is entered one digit at a time.
+    const digits = [1, 2, 3, 4].map((d) => window.setTimeout(() => setTyped(d), RIDE_S * 1000 + 250 + d * 380));
+    const toDone = window.setTimeout(() => setPhase("done"), RIDE_S * 1000 + 2900);
+    const again = window.setTimeout(() => setLoop((l) => l + 1), RIDE_S * 1000 + 4700);
     return () => {
       window.clearInterval(tick);
       cancelAnimationFrame(frame);
-      [toOtp, toDone, again].forEach(window.clearTimeout);
+      [toOtp, toDone, again, ...digits].forEach(window.clearTimeout);
     };
   }, [loop, reduce]);
 
@@ -363,15 +367,24 @@ function TrackingPhone() {
             <div className={clsx("absolute inset-0 transition-[opacity,transform] duration-500", phase === "otp" ? "opacity-100" : "pointer-events-none translate-y-2 opacity-0")}>
               <p className="label text-brand-blue">Rider has arrived · share OTP</p>
               <div className="mt-2 flex gap-1.5">
-                {"4821".split("").map((d, i) => (
-                  <span
-                    key={`${loop}-${i}`}
-                    className="tick-pop flex h-9 w-9 items-center justify-center rounded-xl border-2 border-brand-blue bg-viking text-[1.1rem] font-extrabold text-jet"
-                    style={{ animationDelay: `${i * 0.1}s` }}
-                  >
-                    {d}
-                  </span>
-                ))}
+                {"4821".split("").map((d, i) => {
+                  const shown = reduce || i < typed;
+                  return (
+                    <span
+                      key={i}
+                      className={clsx(
+                        "flex h-10 w-10 items-center justify-center rounded-xl border-2 text-[1.15rem] font-extrabold leading-none text-jet transition-colors duration-300",
+                        shown ? "border-brand-blue bg-viking" : i === typed ? "border-brand-blue/60 bg-white" : "border-hairline bg-white"
+                      )}
+                    >
+                      {shown ? (
+                        <span key={`${loop}-${i}`} className="tick-pop">{d}</span>
+                      ) : i === typed ? (
+                        <span className="h-4 w-0.5 animate-pulse rounded-full bg-brand-blue" />
+                      ) : null}
+                    </span>
+                  );
+                })}
               </div>
             </div>
             <div className={clsx("absolute inset-0 flex items-center gap-3 transition-[opacity,transform] duration-500", phase === "done" ? "opacity-100" : "pointer-events-none translate-y-2 opacity-0")}>
