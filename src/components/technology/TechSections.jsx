@@ -3,14 +3,16 @@
  * the products, delivery, connections and automation, and the control room.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring } from "motion/react";
 import { Reveal } from "@/components/ui/Reveal";
 import { LogoImg } from "@/components/ui/LogoImg";
 import { SectionHeader } from "@/components/motion/Text";
 import { PLATFORM, AUTOMATION, CONNECT, CONTROL } from "@/data/technology";
 import { INTEGRATION_LOGOS } from "@/data/logos";
+import { scrollToTarget } from "@/components/motion/smoothScroll";
+import { DEMOS } from "./ProductDemos";
 
 const EASE = [0.22, 1, 0.36, 1];
 
@@ -43,15 +45,176 @@ const CONTROL_ICONS = ["cash", "roster", "zones", "catalogue", "approvals", "rol
 
 /* ------------------------------------------------------- platform explorer --- */
 
+function useIsDesktop() {
+  const [desktop, setDesktop] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const update = () => setDesktop(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  return desktop;
+}
+
+/** One product's panel: what it is, what it does, and its live demo. */
+function ProductPanel({ item, index, compact = false }) {
+  const Demo = DEMOS[item.key];
+  return (
+    <div className={clsx("relative grid gap-6", !compact && "md:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] md:gap-8")}>
+      <div>
+        <div className="flex items-center gap-3">
+          <span className="label text-brand-green">{item.kind}</span>
+          <span className="tabular text-[0.75rem] font-extrabold text-white/35">
+            {String(index + 1).padStart(2, "0")} / {String(PLATFORM.length).padStart(2, "0")}
+          </span>
+        </div>
+        <h3 className="mt-3 text-[clamp(1.7rem,2.6vw,2.4rem)] font-extrabold leading-[1.05] tracking-[-0.035em]">{item.name}</h3>
+        <p className="mt-3 text-[1.02rem] leading-relaxed text-white/75">{item.line}</p>
+        <p className="mt-1.5 text-[0.82rem] text-white/45">Used by: {item.who}</p>
+        <ul className="mt-6 grid gap-2.5">
+          {item.points.map((point, i) => (
+            <motion.li
+              key={point}
+              initial={{ opacity: 0, x: -10 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, ease: EASE, delay: 0.1 + i * 0.06 }}
+              className="flex items-start gap-3 text-[0.94rem] leading-snug text-white/85"
+            >
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-green/20 text-[0.6rem] text-brand-green">✓</span>
+              {point}
+            </motion.li>
+          ))}
+        </ul>
+      </div>
+      <div className="flex flex-col">
+        <Demo />
+        <p className="mt-2 text-right text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-white/30">Illustrative</p>
+      </div>
+    </div>
+  );
+}
+
 /**
- * The six products as a list you can explore: pointing at (or tabbing to) one
- * opens its panel — who uses it, what it does — with a pill sliding to it.
- * Nothing changes on its own.
+ * The six products, told by scroll on larger screens: the section pins, and
+ * scrolling steps through the products one at a time, each with a live demo,
+ * so a visitor reads every one at their own pace. A line down the list shows
+ * how far through they are; clicking a product jumps to it. Phones (and
+ * reduced motion) get the same panels stacked.
  */
 export function PlatformExplorer() {
+  const desktop = useIsDesktop();
+  const reduce = useReducedMotion();
+  return desktop && !reduce ? <PlatformPinned /> : <PlatformStacked />;
+}
+
+function PlatformPinned() {
+  const hostRef = useRef(null);
   const [active, setActive] = useState(0);
+  const count = PLATFORM.length;
+  const { scrollYProgress } = useScroll({ target: hostRef, offset: ["start start", "end end"] });
+  const rail = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.3 });
+
+  useMotionValueEvent(scrollYProgress, "change", (p) => {
+    setActive(Math.min(count - 1, Math.max(0, Math.floor(p * count * 0.999))));
+  });
+
+  const goTo = (i) => {
+    const host = hostRef.current;
+    if (!host) return;
+    const travel = host.offsetHeight - window.innerHeight;
+    const top = host.getBoundingClientRect().top + window.scrollY;
+    scrollToTarget(top + (travel * (i + 0.5)) / count);
+  };
+
   const item = PLATFORM[active];
 
+  return (
+    <section ref={hostRef} className="relative bg-floral" style={{ height: `${100 + count * 55}svh` }}>
+      <div className="sticky top-0 flex h-[100svh] flex-col justify-center overflow-hidden pb-8 pt-24">
+        <div className="mx-auto w-full max-w-[84rem] px-5 md:px-10">
+          <SectionHeader
+            eyebrow="The platform"
+            title="Six products. One system underneath."
+            titleClassName="!text-[clamp(1.9rem,3vw,2.7rem)]"
+          />
+
+          <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,0.62fr)_minmax(0,1.38fr)]">
+            {/* The list, with how far through the visitor is */}
+            <div className="relative pl-5">
+              <span aria-hidden className="absolute bottom-2 left-0 top-2 w-0.5 rounded-full bg-jet/10" />
+              <motion.span
+                aria-hidden
+                className="absolute left-0 top-2 w-0.5 origin-top rounded-full bg-gradient-to-b from-brand-blue to-brand-green"
+                style={{ scaleY: rail, height: "calc(100% - 1rem)" }}
+              />
+              <ul className="grid gap-1">
+                {PLATFORM.map((p, i) => {
+                  const on = i === active;
+                  return (
+                    <li key={p.key}>
+                      <button
+                        type="button"
+                        onClick={() => goTo(i)}
+                        aria-current={on ? "step" : undefined}
+                        className="group relative flex w-full items-center gap-3.5 rounded-2xl px-3 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-blue"
+                      >
+                        {on ? (
+                          <motion.span
+                            layoutId="platform-pill"
+                            aria-hidden
+                            className="absolute inset-0 rounded-2xl bg-white shadow-[0_18px_40px_-26px_rgba(5,36,57,.45)]"
+                            transition={{ type: "spring", stiffness: 380, damping: 34 }}
+                          />
+                        ) : null}
+                        <span
+                          className={clsx(
+                            "relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors duration-300",
+                            on ? "bg-brand-blue text-white" : i < active ? "bg-white text-brand-blue" : "bg-white text-ink-faint group-hover:text-brand-blue"
+                          )}
+                        >
+                          <Icon name={p.key} size={20} />
+                        </span>
+                        <span className="relative min-w-0">
+                          <span className={clsx("block text-[1rem] font-extrabold tracking-tight transition-colors", on ? "text-jet" : "text-ink-soft group-hover:text-jet")}>
+                            {p.name}
+                          </span>
+                          <span className="block text-[0.8rem] text-ink-faint">{p.kind}</span>
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+
+            {/* The panel: wipes to the next product as the visitor scrolls */}
+            {/* One fixed height for every product, so nothing shifts as they change. */}
+            <div className="relative flex h-[min(30rem,62svh)] items-center overflow-hidden rounded-[2rem] bg-jet p-8 text-white">
+              <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-blue/25 blur-[90px]" />
+              <div aria-hidden className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-brand-green/15 blur-[90px]" />
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={item.key}
+                  initial={{ opacity: 0, y: 28, filter: "blur(6px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, y: -18, filter: "blur(4px)" }}
+                  transition={{ duration: 0.4, ease: EASE }}
+                  className="w-full"
+                >
+                  <ProductPanel item={item} index={active} />
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PlatformStacked() {
   return (
     <section className="bg-floral py-24 md:py-32">
       <div className="mx-auto max-w-[84rem] px-5 md:px-10">
@@ -60,101 +223,15 @@ export function PlatformExplorer() {
           title="Six products. One system underneath."
           sub="Everything an order touches, from the store's shelf to the customer's door, runs on DocPharma's own software."
         />
-
-        <div className="mt-12 grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-10">
-          {/* The list */}
-          <ul role="tablist" aria-label="DocPharma products" className="grid gap-1.5 self-start">
-            {PLATFORM.map((p, i) => {
-              const on = i === active;
-              return (
-                <li key={p.key} role="presentation">
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={on}
-                    aria-controls="platform-panel"
-                    onPointerEnter={(e) => e.pointerType === "mouse" && setActive(i)}
-                    onFocus={() => setActive(i)}
-                    onClick={() => setActive(i)}
-                    className="group relative flex w-full items-center gap-4 rounded-2xl px-4 py-3.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-blue"
-                  >
-                    {on ? (
-                      <motion.span
-                        layoutId="platform-pill"
-                        aria-hidden
-                        className="absolute inset-0 rounded-2xl bg-white shadow-[0_18px_40px_-26px_rgba(5,36,57,.45)]"
-                        transition={{ type: "spring", stiffness: 380, damping: 34 }}
-                      />
-                    ) : null}
-                    <span
-                      className={clsx(
-                        "relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors duration-300",
-                        on ? "bg-brand-blue text-white" : "bg-white text-ink-soft group-hover:text-brand-blue"
-                      )}
-                    >
-                      <Icon name={p.key} />
-                    </span>
-                    <span className="relative min-w-0 flex-1">
-                      <span className={clsx("block text-[1.05rem] font-extrabold tracking-tight transition-colors", on ? "text-jet" : "text-ink-soft group-hover:text-jet")}>
-                        {p.name}
-                      </span>
-                      <span className="block text-[0.85rem] text-ink-faint">{p.kind}</span>
-                    </span>
-                    <span
-                      aria-hidden
-                      className={clsx(
-                        "relative text-brand-blue transition-all duration-300",
-                        on ? "translate-x-0 opacity-100" : "-translate-x-2 opacity-0"
-                      )}
-                    >
-                      →
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-
-          {/* The panel */}
-          <div id="platform-panel" role="tabpanel" className="relative min-h-[26rem] overflow-hidden rounded-[2rem] bg-jet p-7 text-white md:p-10">
-            <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-blue/25 blur-[90px]" />
-            <div aria-hidden className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-brand-green/15 blur-[90px]" />
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={item.key}
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.35, ease: EASE }}
-                className="relative"
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <span className="label text-brand-green">{item.kind}</span>
-                  <span className="tabular text-[0.8rem] font-extrabold text-white/40">
-                    {String(active + 1).padStart(2, "0")} / {String(PLATFORM.length).padStart(2, "0")}
-                  </span>
-                </div>
-                <h3 className="mt-4 text-[clamp(1.8rem,3vw,2.6rem)] font-extrabold leading-[1.05] tracking-[-0.035em]">{item.name}</h3>
-                <p className="mt-3 max-w-lg text-[1.08rem] leading-relaxed text-white/75">{item.line}</p>
-                <p className="mt-2 text-[0.88rem] text-white/45">Used by: {item.who}</p>
-
-                <ul className="mt-8 grid gap-3">
-                  {item.points.map((point, i) => (
-                    <motion.li
-                      key={point}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.4, ease: EASE, delay: 0.1 + i * 0.06 }}
-                      className="flex items-start gap-3 text-[0.98rem] text-white/85"
-                    >
-                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-green/20 text-[0.6rem] text-brand-green">✓</span>
-                      {point}
-                    </motion.li>
-                  ))}
-                </ul>
-              </motion.div>
-            </AnimatePresence>
-          </div>
+        <div className="mt-10 grid gap-4">
+          {PLATFORM.map((item, i) => (
+            <Reveal key={item.key} from="up">
+              <div className="relative overflow-hidden rounded-[2rem] bg-jet p-6 text-white md:p-8">
+                <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-brand-blue/20 blur-[80px]" />
+                <ProductPanel item={item} index={i} compact />
+              </div>
+            </Reveal>
+          ))}
         </div>
       </div>
     </section>
@@ -188,7 +265,7 @@ function TrackingPhone() {
             {[60, 150, 240].map((x) => (
               <path key={x} d={`M${x} 0 V290`} stroke="#fff" strokeWidth="9" />
             ))}
-            <path d={ROUTE} fill="none" stroke="#0296d9" strokeOpacity=".2" strokeWidth="7" strokeLinecap="round" />
+            <path d={ROUTE} pathLength="1" fill="none" stroke="#0296d9" strokeOpacity=".25" strokeWidth="7" strokeLinecap="round" className="route-draw" />
             <path d={ROUTE} fill="none" stroke="#0296d9" strokeWidth="4" strokeLinecap="round" strokeDasharray="6 8" className="route-flow" />
             {/* store and door */}
             <circle cx="40" cy="250" r="9" fill="#052439" />

@@ -348,11 +348,18 @@ function FinalStatement() {
         <SplitText
           as="p"
           lines={answer}
-          delay={1}
-          stagger={0.09}
+          delay={0.35}
+          stagger={0.06}
           className="font-editorial mt-2 text-[clamp(2.2rem,5.2vw,4.6rem)] italic leading-[1.08] tracking-[-0.02em] text-brand-green"
         />
-        <Reveal delay={1.2}>
+        {/* Shows as soon as any of it is on screen, right after the statement,
+            so a visitor reading at normal pace never scrolls past it first. */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.45 }}
+        >
           <p className="mt-12 text-[1.5rem] font-extrabold tracking-[-0.03em]">{FINAL_STATEMENT.brand}</p>
           <p className="mt-1 text-[0.8rem] font-bold uppercase tracking-[0.2em] text-white/55">{FINAL_STATEMENT.positioning}</p>
           <div className="mt-8 flex justify-center">
@@ -360,7 +367,7 @@ function FinalStatement() {
               {FINAL_STATEMENT.cta}
             </CtaButton>
           </div>
-        </Reveal>
+        </motion.div>
       </div>
     </section>
   );
