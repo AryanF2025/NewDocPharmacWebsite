@@ -101,7 +101,6 @@
     font-feature-settings: "tnum";
   }
 
-  /* The thin rule that sits under black-panel headlines. */
   /* Small uppercase label inside cards and panels. (Section eyebrows above
      headlines use <Eyebrow>, one step larger.) */
   .label {
@@ -907,18 +906,6 @@
 }
 
 /* Tilt cards: rotate toward the cursor; a soft light follows it. */
-.tilt-card {
-  transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
-  transition: transform 0.5s var(--ease-brand);
-  will-change: transform;
-}
-.tilt-light {
-  background: radial-gradient(
-    420px circle at var(--mx, 50%) var(--my, 50%),
-    rgba(2, 150, 217, 0.1),
-    transparent 45%
-  );
-}
 
 /* Audit-trail stamp: lands, overshoots, settles at an angle. */
 .stamp {
@@ -976,19 +963,6 @@
 }
 
 /* Category rows: a jet band sweeps in behind the row on hover. */
-.row-sweep::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--color-jet);
-  transform: scaleY(0);
-  transform-origin: bottom;
-  transition: transform 0.55s var(--ease-brand);
-}
-.row-sweep:hover::before {
-  transform: scaleY(1);
-  transform-origin: top;
-}
 
 /* ------------------------------------------------------------------ 404 */
 .lost-route-line {
@@ -1022,9 +996,6 @@
   }
   .lost-route-line {
     stroke-dashoffset: 0;
-  }
-  .tilt-card {
-    transform: none;
   }
 }
 
@@ -1147,8 +1118,16 @@
    colours; it grows in on hover and fades out when the cursor leaves. */
 .wordmark-colour {
   --r: 0px;
-  -webkit-mask-image: radial-gradient(circle var(--r) at var(--mx, 50%) var(--my, 50%), #000 35%, transparent 100%);
-  mask-image: radial-gradient(circle var(--r) at var(--mx, 50%) var(--my, 50%), #000 35%, transparent 100%);
+  -webkit-mask-image: radial-gradient(
+    circle var(--r) at var(--mx, 50%) var(--my, 50%),
+    #000 35%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    circle var(--r) at var(--mx, 50%) var(--my, 50%),
+    #000 35%,
+    transparent 100%
+  );
   transition: --r 0.6s var(--ease-brand);
 }
 .wordmark:hover .wordmark-colour {
@@ -1283,10 +1262,18 @@
 .reveal-left .field {
   animation: rise-in 0.7s var(--ease-brand) both;
 }
-.reveal-left .field:nth-child(1) { animation-delay: 0.15s; }
-.reveal-left .field:nth-child(2) { animation-delay: 0.2s; }
-.reveal-left .field:nth-child(3) { animation-delay: 0.25s; }
-.reveal-left .field:nth-child(4) { animation-delay: 0.3s; }
+.reveal-left .field:nth-child(1) {
+  animation-delay: 0.15s;
+}
+.reveal-left .field:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.reveal-left .field:nth-child(3) {
+  animation-delay: 0.25s;
+}
+.reveal-left .field:nth-child(4) {
+  animation-delay: 0.3s;
+}
 /* Sent: the badge pops, the tick draws, the words follow. */
 .sent-badge {
   animation: seal-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
@@ -1299,9 +1286,15 @@
 .sent > :not(.sent-badge) {
   animation: rise-in 0.7s var(--ease-brand) both;
 }
-.sent > :nth-child(2) { animation-delay: 0.5s; }
-.sent > :nth-child(3) { animation-delay: 0.6s; }
-.sent > :nth-child(4) { animation-delay: 0.7s; }
+.sent > :nth-child(2) {
+  animation-delay: 0.5s;
+}
+.sent > :nth-child(3) {
+  animation-delay: 0.6s;
+}
+.sent > :nth-child(4) {
+  animation-delay: 0.7s;
+}
 @media (prefers-reduced-motion: reduce) {
   .plan-tick path,
   .sent-tick {
@@ -1338,4 +1331,46 @@
 .field:focus-within {
   position: relative;
   z-index: 30;
+}
+
+/* Technology: live-tracking route flows toward the door; the door pings. */
+.route-flow {
+  animation: route-flow 1.2s linear infinite;
+}
+@keyframes route-flow {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+.door-ping {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cov-ring 2.2s ease-out infinite;
+}
+/* Scheduled jobs: each dot blinks in turn, like work being picked up. */
+.job-dot {
+  animation: job-blink 3.6s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 0.6s);
+}
+.job {
+  --i: 0;
+}
+@keyframes job-blink {
+  0%,
+  70%,
+  100% {
+    opacity: 0.35;
+    box-shadow: none;
+  }
+  80% {
+    opacity: 1;
+    box-shadow: 0 0 0 4px rgba(143, 193, 36, 0.25);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-flow,
+  .door-ping,
+  .job-dot {
+    animation: none;
+  }
 }

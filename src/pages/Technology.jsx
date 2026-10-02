@@ -1,11 +1,10 @@
 /**
  * Technology & compliance.
  *
- * Its signature moment is the audit trail: the page turns sideways and one
- * order travels scan → verify → batch & expiry → inventory → invoice →
- * dispatch, each checkpoint stamped as the trail reaches it. Compliance is
- * shown as seals being stamped, not paragraphs about licences, and the page
- * closes on the brand's black-panel statement.
+ * The platform as it is built: six products on one system, the audit trail
+ * one order leaves, last-mile delivery, how partners plug in and what runs on
+ * its own, the control room, and compliance as seals. Closes on the brand's
+ * statement.
  */
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -19,12 +18,8 @@ import { SectionHeader, SplitText } from "@/components/motion/Text";
 import { CtaButton, GhostButton } from "@/components/motion/CtaButton";
 import { useInViewOnce } from "@/components/motion/useInViewOnce";
 import { usePageMeta } from "@/hooks/usePageMeta";
-import stillVerify from "@/assets/images/still-verify.jpg";
-import stillPick from "@/assets/images/still-pick.jpg";
-import stillPack from "@/assets/images/still-pack.jpg";
-import stillRider from "@/assets/images/still-rider.jpg";
-import packing from "@/assets/images/packing.webp";
-import { TECH_HERO, TECH_ONE, TECH_STACK, TRACE, TECH_VERTICALS, FINAL_STATEMENT, COMPLIANCE } from "@/data/pages";
+import { PlatformExplorer, Delivery, ConnectAndAutomate, ControlRoom } from "@/components/technology/TechSections";
+import { TECH_HERO, TECH_ONE, TRACE, FINAL_STATEMENT, COMPLIANCE } from "@/data/pages";
 
 function useIsDesktop() {
   const [desktop, setDesktop] = useState(false);
@@ -86,63 +81,6 @@ function TechHero() {
 }
 
 /* ----------------------------------------------------------------- stack --- */
-
-/** A card that tips toward the cursor, with a light that follows it. */
-function TiltCard({ children, className }) {
-  const ref = useRef(null);
-  const reduce = useReducedMotion();
-
-  const onMove = (event) => {
-    if (reduce || event.pointerType !== "mouse") return;
-    const el = ref.current;
-    const r = el.getBoundingClientRect();
-    const px = (event.clientX - r.left) / r.width;
-    const py = (event.clientY - r.top) / r.height;
-    el.style.setProperty("--rx", `${(0.5 - py) * 7}deg`);
-    el.style.setProperty("--ry", `${(px - 0.5) * 9}deg`);
-    el.style.setProperty("--mx", `${px * 100}%`);
-    el.style.setProperty("--my", `${py * 100}%`);
-  };
-  const onLeave = () => {
-    const el = ref.current;
-    el.style.setProperty("--rx", "0deg");
-    el.style.setProperty("--ry", "0deg");
-  };
-
-  return (
-    <div ref={ref} onPointerMove={onMove} onPointerLeave={onLeave} className={clsx("tilt-card", className)}>
-      {children}
-    </div>
-  );
-}
-
-function Stack() {
-  return (
-    <section className="bg-floral py-24 md:py-32">
-      <div className="mx-auto max-w-[84rem] px-5 md:px-10">
-        <SectionHeader eyebrow={TECH_ONE.eyebrow} title={TECH_STACK.headline} sub={TECH_ONE.sub} />
-
-        <div className="mt-12 grid gap-4 [perspective:1200px] md:grid-cols-2 lg:grid-cols-3">
-          {TECH_STACK.items.map((item, i) => (
-            <Reveal key={item.key} from="up" delay={(i % 3) * 0.08}>
-              <TiltCard className="h-full">
-                <article className="group relative h-full overflow-hidden rounded-3xl border border-hairline bg-white p-7 transition-[border-color,box-shadow] duration-300 hover:border-brand-blue/30 hover:shadow-[0_24px_50px_-30px_rgba(5,36,57,.4)]">
-                  <span aria-hidden className="tilt-light pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                  <div className="relative flex items-baseline justify-between">
-                    <h3 className="text-[1.15rem] font-extrabold tracking-tight text-jet">{item.name}</h3>
-                    <span className="tabular text-[0.75rem] font-extrabold text-ink-faint">{String(i + 1).padStart(2, "0")}</span>
-                  </div>
-                  <p className="relative mt-3 text-[0.98rem] leading-relaxed text-ink-soft">{item.body}</p>
-                  <span className="relative mt-5 block h-0.5 w-8 bg-gradient-to-r from-brand-blue to-brand-green transition-all duration-500 group-hover:w-16" />
-                </article>
-              </TiltCard>
-            </Reveal>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
 
 /* ---------------------------------------------------------- audit trail --- */
 
@@ -367,84 +305,6 @@ function Seals() {
 
 /* ------------------------------------------------------------ verticals --- */
 
-const VERTICAL_ART = [stillVerify, stillPick, stillPack, packing, stillRider];
-
-/**
- * The categories as rows. Hovering one sweeps a navy band in behind it and a
- * photo of that category floats beside the cursor, following it on a spring —
- * the photo swaps as you move between rows. Touch screens get the rows alone.
- */
-function Verticals() {
-  const listRef = useRef(null);
-  const [hovered, setHovered] = useState(null);
-  const x = useSpring(0, { stiffness: 220, damping: 26, mass: 0.5 });
-  const y = useSpring(0, { stiffness: 220, damping: 26, mass: 0.5 });
-
-  const onMove = (event) => {
-    if (event.pointerType !== "mouse") return;
-    const r = listRef.current.getBoundingClientRect();
-    x.set(event.clientX - r.left);
-    y.set(event.clientY - r.top);
-  };
-
-  return (
-    <section className="bg-white py-24 md:py-32">
-      <div className="mx-auto max-w-[84rem] px-5 md:px-10">
-        <SectionHeader eyebrow="Categories" title={TECH_VERTICALS.headline} />
-
-        <div ref={listRef} className="relative mt-12 border-t border-hairline" onPointerMove={onMove} onPointerLeave={() => setHovered(null)}>
-          {TECH_VERTICALS.items.map((item, i) => (
-            <Reveal key={item.name} from="up" delay={i * 0.05}>
-              <div
-                onPointerEnter={(event) => event.pointerType === "mouse" && setHovered(i)}
-                className="row-sweep group relative grid gap-2 overflow-hidden border-b border-hairline py-7 md:grid-cols-[4rem_1fr_2fr_2rem] md:items-center md:gap-8 md:px-4"
-              >
-                <span className="tabular relative text-[0.8rem] font-extrabold text-ink-faint transition-colors duration-500 group-hover:text-brand-green">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <h3 className="relative text-[clamp(1.3rem,2.2vw,1.8rem)] font-extrabold tracking-tight text-jet transition-[color,transform] duration-500 group-hover:translate-x-2 group-hover:text-white">
-                  {item.name}
-                </h3>
-                <p className="relative text-[1rem] leading-relaxed text-ink-soft transition-colors duration-500 group-hover:text-white/75">{item.body}</p>
-                <span aria-hidden className="relative hidden -translate-x-2 text-[1.2rem] text-white opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100 md:block">
-                  →
-                </span>
-              </div>
-            </Reveal>
-          ))}
-
-          {/* The photo that follows the cursor */}
-          <motion.div
-            aria-hidden
-            style={{ x, y }}
-            className="pointer-events-none absolute left-0 top-0 z-10 hidden md:block"
-          >
-            <div
-              className={clsx(
-                "relative -translate-x-1/2 -translate-y-[115%] overflow-hidden rounded-2xl shadow-[0_30px_60px_-20px_rgba(5,36,57,.55)] transition-[opacity,transform] duration-300 ease-out",
-                hovered === null ? "scale-75 opacity-0" : "scale-100 opacity-100"
-              )}
-              style={{ width: "17rem", height: "11rem" }}
-            >
-              {VERTICAL_ART.map((src, i) => (
-                <img
-                  key={i}
-                  src={src}
-                  alt=""
-                  className={clsx(
-                    "absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-500",
-                    hovered === i ? "scale-100 opacity-100" : "scale-110 opacity-0"
-                  )}
-                />
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 /* ------------------------------------------------------- final statement --- */
 
 /**
@@ -521,10 +381,12 @@ export default function Technology() {
   return (
     <>
       <TechHero />
-      <Stack />
+      <PlatformExplorer />
       {desktop && !reduce ? <TraceHorizontal /> : <TraceStacked />}
+      <Delivery />
+      <ConnectAndAutomate />
+      <ControlRoom />
       <Seals />
-      <Verticals />
       <FinalStatement />
     </>
   );

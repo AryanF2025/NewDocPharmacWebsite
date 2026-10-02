@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
 import clsx from "clsx";
 import { Logo } from "@/components/ui/Logo";
@@ -22,6 +22,18 @@ const LINKS = [
   { label: "Resources", to: "/resources" },
 ];
 
+/** The background pill that slides between header links. */
+function NavPill() {
+  return (
+    <motion.span
+      layoutId="nav-pill"
+      aria-hidden
+      className="absolute inset-0 rounded-full bg-floral shadow-[inset_0_0_0_1px_rgba(5,36,57,.06)]"
+      transition={{ type: "spring", stiffness: 420, damping: 34, mass: 0.6 }}
+    />
+  );
+}
+
 /**
  * Floating pill header. Slides away while you scroll down and returns the
  * moment you scroll up, so it never sits on top of the content being read.
@@ -34,6 +46,11 @@ export function SiteHeader() {
   const [solutions, setSolutions] = useState(false);
   const closeTimer = useRef(null);
   const closeMenu = useCallback(() => setMenu(false), []);
+  const { pathname } = useLocation();
+  const [hovered, setHovered] = useState(null);
+  const current = ["/solutions", ...LINKS.map((l) => l.to)].find((to) => pathname.startsWith(to)) ?? null;
+  // Where the sliding pill sits: under the cursor, else on the current page.
+  const pill = hovered ?? (solutions ? "/solutions" : current);
 
   useMotionValueEvent(scrollY, "change", (current) => {
     const previous = scrollY.getPrevious() ?? 0;
@@ -74,7 +91,12 @@ export function SiteHeader() {
             <Logo markClass="h-6 w-6 sm:h-7 sm:w-7" className="[&>span:last-child]:text-[1.15rem] sm:[&>span:last-child]:text-[1.35rem]" />
           </Link>
 
-          <nav className="hidden items-center gap-1 text-[0.9rem] font-semibold text-ink-soft lg:flex">
+          {/* One soft pill slides between items under the cursor; with nothing
+              hovered it rests on the current page. */}
+          <nav
+            className="hidden items-center gap-1 text-[0.9rem] font-semibold text-ink-soft lg:flex"
+            onPointerLeave={() => setHovered(null)}
+          >
             <div onPointerEnter={openSolutions} onPointerLeave={closeSolutions} className="relative">
               {/* Clicking opens the Solutions page; hovering shows the menu. */}
               <NavLink
@@ -82,15 +104,15 @@ export function SiteHeader() {
                 aria-expanded={solutions}
                 onClick={() => setSolutions(false)}
                 onFocus={openSolutions}
-                className={({ isActive }) =>
-                  clsx(
-                    "flex items-center gap-1.5 rounded-full px-4 py-2 transition-colors",
-                    solutions || isActive ? "bg-floral text-jet" : "hover:text-jet"
-                  )
-                }
+                onPointerEnter={() => setHovered("/solutions")}
+                className={clsx(
+                  "relative flex items-center gap-1.5 rounded-full px-4 py-2 transition-colors duration-300",
+                  pill === "/solutions" || solutions ? "text-jet" : "hover:text-jet"
+                )}
               >
-                Solutions
-                <motion.svg animate={{ rotate: solutions ? 180 : 0 }} width="10" height="10" viewBox="0 0 10 10" aria-hidden>
+                {pill === "/solutions" ? <NavPill /> : null}
+                <span className="relative">Solutions</span>
+                <motion.svg className="relative" animate={{ rotate: solutions ? 180 : 0 }} width="10" height="10" viewBox="0 0 10 10" aria-hidden>
                   <path d="M1.5 3.5 5 7l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                 </motion.svg>
               </NavLink>
@@ -99,11 +121,14 @@ export function SiteHeader() {
               <NavLink
                 key={l.to}
                 to={l.to}
-                className={({ isActive }) =>
-                  clsx("rounded-full px-4 py-2 transition-colors", isActive ? "bg-floral text-jet" : "hover:text-jet")
-                }
+                onPointerEnter={() => setHovered(l.to)}
+                className={clsx(
+                  "relative rounded-full px-4 py-2 transition-colors duration-300",
+                  pill === l.to ? "text-jet" : "hover:text-jet"
+                )}
               >
-                {l.label}
+                {pill === l.to ? <NavPill /> : null}
+                <span className="relative">{l.label}</span>
               </NavLink>
             ))}
           </nav>
