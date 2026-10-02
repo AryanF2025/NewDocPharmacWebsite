@@ -10,14 +10,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
-import { motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { Reveal } from "@/components/ui/Reveal";
 import { CountUp } from "@/components/experience/HeroParts";
 import { HeroBackdrop, HeroHeading, Enter, HIGHLIGHT } from "@/components/motion/Hero";
 import { SectionHeader, SplitText } from "@/components/motion/Text";
 import { CtaButton, GhostButton } from "@/components/motion/CtaButton";
 import { scrollToTarget } from "@/components/motion/smoothScroll";
-import { useInViewOnce } from "@/components/motion/useInViewOnce";
 import { usePageSeo } from "@/seo/usePageSeo";
 import { PoweredBy } from "@/components/solutions/PoweredBy";
 import { BusinessReel } from "@/components/solutions/BusinessReel";
@@ -188,29 +187,87 @@ function SolutionsHero() {
 
 /* ----------------------------------------------------------------- impact --- */
 
-/** A picture for each figure: a ring for a rate, a dial for time, bars for depth. */
+/** A 270° arc from bottom left, round the top, to bottom right. */
+const GAUGE_ARC = "M 27.47 92.53 A 46 46 0 1 1 92.53 92.53";
+
+/**
+ * A rate as a gauge: ticks round a 270° track, a gradient that sweeps to the
+ * value with a glowing knob riding its end, a slow outer ring, and an icon
+ * for what is being measured.
+ */
+function Gauge({ i, value, on }) {
+  const [from, to] = i === 0 ? ["#0296d9", "#62c4ef"] : ["#8fc124", "#b8e86a"];
+  const sweep = "1.8s cubic-bezier(.22,1,.36,1) .2s";
+  return (
+    <svg viewBox="0 0 120 120" className="h-full w-full overflow-visible" aria-hidden>
+      <defs>
+        <linearGradient id={`gauge-${i}`} x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stopColor={from} />
+          <stop offset="1" stopColor={to} />
+        </linearGradient>
+      </defs>
+
+      {/* Slow outer ring */}
+      <circle className="gauge-spin" cx="60" cy="60" r="58" fill="none" stroke={from} strokeOpacity=".25" strokeWidth="1" strokeDasharray="1 5" />
+
+      {/* Ticks every 10% */}
+      {Array.from({ length: 11 }, (_, t) => (
+        <line
+          key={t}
+          x1="60"
+          y1="5"
+          x2="60"
+          y2={t % 5 === 0 ? "11" : "9"}
+          stroke="#052439"
+          strokeOpacity={t * 10 <= value && on ? ".45" : ".15"}
+          strokeWidth="1.4"
+          strokeLinecap="round"
+          transform={`rotate(${-135 + t * 27} 60 60)`}
+          style={{ transition: `stroke-opacity .4s ${0.2 + t * 0.12}s` }}
+        />
+      ))}
+
+      {/* Track and fill */}
+      <path d={GAUGE_ARC} fill="none" stroke="#052439" strokeOpacity=".07" strokeWidth="8" strokeLinecap="round" />
+      <path
+        d={GAUGE_ARC}
+        fill="none"
+        stroke={`url(#gauge-${i})`}
+        strokeWidth="8"
+        strokeLinecap="round"
+        pathLength="100"
+        strokeDasharray="100"
+        strokeDashoffset={on ? 100 - value : 100}
+        style={{ transition: `stroke-dashoffset ${sweep}` }}
+      />
+
+      {/* The knob rides the end of the fill */}
+      <g style={{ transformOrigin: "60px 60px", transform: `rotate(${on ? (270 * value) / 100 : 0}deg)`, transition: `transform ${sweep}` }}>
+        <g transform="translate(27.47 92.53)">
+          <circle className="gauge-glow" r="9" fill={to} opacity=".35" />
+          <circle r="5.5" fill="#fff" stroke={from} strokeWidth="3" />
+        </g>
+      </g>
+
+      {/* What it measures */}
+      <circle cx="60" cy="60" r="24" fill="#fff" />
+      <circle cx="60" cy="60" r="24" fill={from} fillOpacity=".08" />
+      {i === 0 ? (
+        <path d="M50 60.5l6.5 6.5 13.5-14" fill="none" stroke={from} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+      ) : (
+        <g fill="none" stroke={from} strokeWidth="3.2" strokeLinecap="round">
+          <circle cx="60" cy="60" r="11" />
+          <path d="M60 53.5V60l4.5 3" />
+        </g>
+      )}
+    </svg>
+  );
+}
+
+/** A picture for each figure: a gauge for a rate, a dial for time, bars for depth. */
 function StatArt({ i, value, on }) {
   const draw = { transition: "stroke-dashoffset 1.8s cubic-bezier(.22,1,.36,1) .2s" };
-  if (i < 2) {
-    return (
-      <svg viewBox="0 0 64 64" className="h-full w-full -rotate-90" aria-hidden>
-        <circle cx="32" cy="32" r="26" fill="none" stroke="#052439" strokeOpacity=".07" strokeWidth="5" />
-        <circle
-          cx="32"
-          cy="32"
-          r="26"
-          fill="none"
-          stroke={i === 0 ? "#0296d9" : "#8fc124"}
-          strokeWidth="5"
-          strokeLinecap="round"
-          pathLength="100"
-          strokeDasharray="100"
-          strokeDashoffset={on ? 100 - value : 100}
-          style={draw}
-        />
-      </svg>
-    );
-  }
+  if (i < 2) return <Gauge i={i} value={value} on={on} />;
   if (i === 2) {
     // Half the dial: thirty minutes of the hour.
     return (
@@ -264,62 +321,141 @@ function StatArt({ i, value, on }) {
   );
 }
 
-/** One figure, as a tall card: what it measures, its picture, the number, and the note. */
-function ImpactCard({ stat, i }) {
-  const ref = useRef(null);
-  const on = useInViewOnce(ref);
-  return (
-    <Reveal from="up" delay={i * 0.08} className="h-full">
-      <div
-        ref={ref}
-        onPointerMove={(e) => {
-          const r = e.currentTarget.getBoundingClientRect();
-          e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
-          e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
-        }}
-        className="spotlight group relative flex h-full flex-col rounded-[2rem] border border-hairline bg-floral p-7 transition-[transform,background-color,box-shadow] duration-500 hover:-translate-y-1.5 hover:bg-white hover:shadow-[0_30px_60px_-36px_rgba(5,36,57,.45)] xl:p-8"
-      >
-        <div className="flex items-center justify-between">
-          <p className="text-[0.95rem] font-extrabold tracking-tight text-jet">{stat.label}</p>
-          <span className="tabular text-[0.75rem] font-extrabold text-ink-faint transition-colors duration-300 group-hover:text-brand-blue">
-            {String(i + 1).padStart(2, "0")}
-          </span>
-        </div>
-
-        <div className="my-8 flex flex-1 items-center justify-center lg:my-4">
-          <div className="h-28 w-28 transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-105 lg:h-[min(11rem,22svh)] lg:w-[min(11rem,22svh)]">
-            <StatArt i={i} value={stat.value} on={on} />
-          </div>
-        </div>
-
-        <p className="tabular text-[clamp(2.6rem,4.2vw,4rem)] font-extrabold leading-none tracking-[-0.05em] text-jet">
-          <CountUp value={stat.value} suffix={stat.suffix} delay={i * 100} />
-        </p>
-        <p className="mt-2 text-[0.95rem] text-ink-soft">{stat.note}</p>
-      </div>
-    </Reveal>
-  );
+/** True while the element is well on screen. */
+function useOnScreen(ref, threshold = 0.5) {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const io = new IntersectionObserver(([entry]) => setOn(entry.isIntersecting), { threshold });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [ref, threshold]);
+  return on;
 }
 
-/** What the network delivers, as one screen of four figures. */
+/** The big picture on the stage. It mounts empty, then sweeps to its value. */
+function StageArt({ i, value }) {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    const id = window.setTimeout(() => setOn(true), 120);
+    return () => window.clearTimeout(id);
+  }, []);
+  return <StatArt i={i} value={value} on={on} />;
+}
+
+const FIGURE_MS = 5000;
+
+/**
+ * What the network delivers, as a slider. The stage shows one figure large:
+ * its picture sweeping in, the number counting up, and what it means. The
+ * four figures sit beside it; the current one is filled in and times itself.
+ */
 function Impact() {
+  const ref = useRef(null);
+  const onScreen = useOnScreen(ref, 0.4);
+  const [active, setActive] = useState(0);
+  const [hold, setHold] = useState(false);
+  const stats = SOLUTIONS_IMPACT.stats;
+  const playing = onScreen && !hold;
+  const stat = stats[active];
+
+  useEffect(() => {
+    if (!playing || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
+    const id = window.setTimeout(() => setActive((a) => (a + 1) % stats.length), FIGURE_MS);
+    return () => window.clearTimeout(id);
+  }, [playing, active, stats.length]);
+
   return (
-    <section className="bg-white py-24 lg:flex lg:h-[100svh] lg:min-h-[44rem] lg:flex-col lg:pb-12 lg:pt-28">
+    <section ref={ref} className="bg-white py-24 lg:flex lg:h-[100svh] lg:min-h-[44rem] lg:flex-col lg:pb-12 lg:pt-28">
       <div className="mx-auto w-full max-w-[84rem] px-5 md:px-10 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
         <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
           <SectionHeader eyebrow={SOLUTIONS_IMPACT.eyebrow} title={SOLUTIONS_IMPACT.headline} />
           <Reveal from="up" delay={0.15}>
             <p className="max-w-sm text-[1rem] leading-relaxed text-ink-soft">
-              Four figures from the network every solution above runs on: how often orders are fulfilled, how often they arrive on time, how fast, and how deep the shelves go.
+              Four figures from the network every solution runs on: fulfilment, punctuality, speed and depth.
             </p>
           </Reveal>
         </div>
 
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:mt-10 lg:min-h-0 lg:flex-1 lg:grid-cols-4">
-          {SOLUTIONS_IMPACT.stats.map((stat, i) => (
-            <ImpactCard key={stat.label} stat={stat} i={i} />
-          ))}
-        </div>
+        <Reveal from="up" className="mt-10 lg:flex lg:min-h-0 lg:flex-1">
+          <div
+            onPointerEnter={() => setHold(true)}
+            onPointerLeave={() => setHold(false)}
+            className="grid gap-4 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-5"
+          >
+            {/* The stage */}
+            <div className="relative min-h-[26rem] overflow-hidden rounded-[2.25rem] border border-hairline bg-floral lg:min-h-0">
+              <div aria-hidden className="absolute inset-0 bg-[radial-gradient(circle_at_70%_45%,rgba(2,150,217,.09),transparent_60%)]" />
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, x: 80 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -80 }}
+                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute inset-0 grid grid-cols-1 items-center gap-6 p-8 sm:grid-cols-[minmax(0,1fr)_auto] md:p-12"
+                >
+                  <div className="order-2 sm:order-1">
+                    <p className="tabular text-[0.8rem] font-extrabold text-brand-blue">
+                      {String(active + 1).padStart(2, "0")} / {String(stats.length).padStart(2, "0")}
+                    </p>
+                    <p className="mt-2 text-[1.15rem] font-extrabold tracking-tight text-jet">{stat.label}</p>
+                    <p className="tabular mt-4 text-[clamp(3.6rem,7vw,6.5rem)] font-extrabold leading-[0.9] tracking-[-0.06em] text-jet">
+                      <CountUp value={stat.value} suffix={stat.suffix} duration={1300} />
+                    </p>
+                    <p className="mt-4 max-w-xs text-[1.05rem] leading-relaxed text-ink-soft">{stat.note}</p>
+                  </div>
+                  <div className="order-1 mx-auto h-40 w-40 sm:order-2 lg:h-[min(19rem,36svh)] lg:w-[min(19rem,36svh)]">
+                    <StageArt i={active} value={stat.value} />
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* The four figures */}
+            <ul className="grid gap-3 lg:min-h-0 lg:grid-rows-4">
+              {stats.map((s, i) => {
+                const on = i === active;
+                return (
+                  <li key={s.label} className="lg:min-h-0">
+                    <button
+                      type="button"
+                      onClick={() => setActive(i)}
+                      aria-pressed={on}
+                      className={clsx(
+                        "group relative flex h-full w-full items-center justify-between gap-4 overflow-hidden rounded-3xl border px-6 py-5 text-left outline-none transition-[background-color,border-color,color,transform] duration-500 focus-visible:ring-2 focus-visible:ring-brand-blue",
+                        on ? "border-jet bg-jet text-white" : "border-hairline bg-white text-jet hover:-translate-y-0.5 hover:border-jet/20 hover:bg-floral"
+                      )}
+                    >
+                      <span className="min-w-0">
+                        <span className={clsx("tabular block text-[0.72rem] font-extrabold", on ? "text-brand-green" : "text-ink-faint")}>
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <span className="mt-1 block text-[1.02rem] font-extrabold tracking-tight">{s.label}</span>
+                        <span className={clsx("block truncate text-[0.85rem]", on ? "text-white/60" : "text-ink-faint")}>{s.note}</span>
+                      </span>
+                      <span className={clsx("tabular shrink-0 text-[clamp(1.5rem,2.2vw,2rem)] font-extrabold tracking-[-0.04em]", on ? "text-white" : "text-jet/80")}>
+                        {s.value}
+                        {s.suffix}
+                      </span>
+                      {/* Time left on this figure */}
+                      {on ? (
+                        <span aria-hidden className="absolute inset-x-0 bottom-0 h-1 bg-white/10">
+                          <span
+                            key={`${active}-${playing}`}
+                            className="sol-tab-fill block h-full bg-gradient-to-r from-brand-blue to-brand-green !opacity-100"
+                            style={{ animationDuration: `${FIGURE_MS}ms`, animationPlayState: playing ? "running" : "paused" }}
+                          />
+                        </span>
+                      ) : null}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -327,54 +463,129 @@ function Impact() {
 
 /* ----------------------------------------------------------- closing call --- */
 
-/** The route the finale draws: darkstore, bottom left, to the customer's door, top right. */
+/** The route the finale rides: darkstore, bottom left, to the customer's door, top right. */
 const FINALE_ROUTE = "M 120 650 C 300 650, 360 548, 520 578 S 800 705, 1010 612 S 1240 392, 1330 300";
 
+/** Checkpoints along the way: how far along the route, and which side of it the label sits so it never crosses the line. */
+const FINALE_STOPS = [
+  [0.2, "Order in", "up"],
+  [0.42, "Picked & packed", "down"],
+  [0.63, "Pharmacist check", "down"],
+  [0.82, "Out for delivery", "left"],
+];
+
+/** One delivery: ride, wait at the door, then go again. */
+const RIDE_MS = 5200;
+const LOOP_MS = 8000;
+
 /**
- * The last screen. As it scrolls in, a delivery route draws itself from a
- * darkstore to a customer's door, a rider rides it with the minutes ticking,
- * and the door lights up as the screen settles. The call sits in the middle.
+ * The last screen. Once it is on screen a delivery plays out behind the
+ * call: the dashed route flows from a darkstore toward a customer's door,
+ * a rider rides it with the minutes ticking, each checkpoint lights as it is
+ * passed, and the door turns green on arrival. Then it runs again.
  */
 function ClosingCall() {
   const ref = useRef(null);
   const path = useRef(null);
+  const reveal = useRef(null);
   const rider = useRef(null);
-  const reduce = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end end"] });
-  const draw = useTransform(scrollYProgress, [0.2, 0.92], [0, 1]);
-  const [minutes, setMinutes] = useState(0);
+  const onScreen = useOnScreen(ref, 0.55);
+  const [stops, setStops] = useState([]);
+  const [reached, setReached] = useState(0);
+  const [minutes, setMinutes] = useState(1);
   const [arrived, setArrived] = useState(false);
 
-  const place = (v) => {
+  // Where the checkpoints sit on the route.
+  useEffect(() => {
     const p = path.current;
     if (!p) return;
-    const pt = p.getPointAtLength(v * p.getTotalLength());
-    rider.current?.setAttribute("transform", `translate(${pt.x} ${pt.y})`);
-    setMinutes(Math.max(1, Math.round(v * 24)));
-    setArrived(v > 0.985);
-  };
-  useMotionValueEvent(draw, "change", (v) => !reduce && place(v));
-  useEffect(() => place(reduce ? 1 : draw.get()), [reduce, draw]);
+    const len = p.getTotalLength();
+    setStops(
+      FINALE_STOPS.map(([at, label, side]) => {
+        const pt = p.getPointAtLength(at * len);
+        return { at, label, side, x: pt.x, y: pt.y };
+      })
+    );
+  }, []);
+
+  useEffect(() => {
+    const p = path.current;
+    if (!p) return undefined;
+    const len = p.getTotalLength();
+    const paint = (v) => {
+      const pt = p.getPointAtLength(v * len);
+      rider.current?.setAttribute("transform", `translate(${pt.x} ${pt.y})`);
+      reveal.current?.setAttribute("stroke-dashoffset", String(1 - v));
+      setMinutes(Math.max(1, Math.round(v * 24)));
+      setReached(FINALE_STOPS.filter(([at]) => v >= at).length);
+      setArrived(v >= 1);
+    };
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      paint(1);
+      return undefined;
+    }
+    if (!onScreen) {
+      paint(0);
+      return undefined;
+    }
+    const start = performance.now();
+    let raf = requestAnimationFrame(function loop(now) {
+      const t = (now - start) % LOOP_MS;
+      const u = Math.min(1, t / RIDE_MS);
+      paint(u < 0.5 ? 2 * u * u : 1 - (-2 * u + 2) ** 2 / 2);
+      raf = requestAnimationFrame(loop);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [onScreen]);
 
   return (
     <section ref={ref} className="relative overflow-hidden bg-floral py-28 lg:flex lg:h-[100svh] lg:min-h-[44rem] lg:items-center">
-      {/* The route, behind everything */}
+      {/* The delivery, behind everything */}
       <svg aria-hidden viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 hidden h-full w-full md:block">
         <defs>
           <linearGradient id="finale-ink" x1="0" x2="1">
             <stop offset="0" stopColor="#0296d9" />
             <stop offset="1" stopColor="#8fc124" />
           </linearGradient>
+          {/* Only the part of the route already ridden shows */}
+          <mask id="finale-ridden" maskUnits="userSpaceOnUse" x="0" y="0" width="1440" height="800">
+            <path ref={reveal} d={FINALE_ROUTE} fill="none" stroke="#fff" strokeWidth="16" pathLength="1" strokeDasharray="1 1" strokeDashoffset="1" />
+          </mask>
         </defs>
-        <path ref={path} d={FINALE_ROUTE} fill="none" stroke="#052439" strokeOpacity=".08" strokeWidth="3" strokeDasharray="2 12" strokeLinecap="round" />
-        <motion.path
+
+        {/* The whole route, faint */}
+        <path ref={path} d={FINALE_ROUTE} fill="none" stroke="#052439" strokeOpacity=".1" strokeWidth="3" strokeDasharray="2 12" strokeLinecap="round" />
+        {/* The ridden part, flowing toward the door */}
+        <path
+          className="finale-flow"
           d={FINALE_ROUTE}
           fill="none"
           stroke="url(#finale-ink)"
-          strokeWidth="4"
+          strokeWidth="3.5"
+          strokeDasharray="10 8"
           strokeLinecap="round"
-          style={{ pathLength: reduce ? 1 : draw }}
+          mask="url(#finale-ridden)"
         />
+
+        {/* Checkpoints */}
+        {stops.map((s, k) => {
+          const done = k < reached;
+          return (
+            <g key={s.label} transform={`translate(${s.x} ${s.y})`}>
+              <circle r={done ? 8 : 6} fill={done ? "#8fc124" : "#fff"} stroke={done ? "#8fc124" : "#052439"} strokeOpacity={done ? 1 : 0.2} strokeWidth="2.5" style={{ transition: "all .35s" }} />
+              {done ? <path d="M-3.5 0l2.5 2.5 4.5-5" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /> : null}
+              <text
+                x={s.side === "left" ? -18 : 0}
+                y={s.side === "up" ? -18 : s.side === "down" ? 30 : 5}
+                textAnchor={s.side === "left" ? "end" : "middle"}
+                fill="#052439"
+                fillOpacity={done ? 0.9 : 0.35} fontSize="13" fontWeight="800" style={{ transition: "fill-opacity .35s" }}>
+                {s.label}
+              </text>
+            </g>
+          );
+        })}
 
         {/* The darkstore */}
         <g transform="translate(120 650)">
@@ -400,13 +611,13 @@ function ClosingCall() {
             style={{ transition: "stroke .4s" }}
           />
           <text y="-36" textAnchor="middle" fill="#052439" fontSize="15" fontWeight="800">
-            {arrived ? "Delivered" : "Your customer"}
+            {arrived ? `Delivered · ${minutes} min` : "Your customer"}
           </text>
         </g>
 
         {/* The rider, with the minutes so far */}
         <g ref={rider} transform="translate(120 650)" style={{ opacity: arrived ? 0 : 1, transition: "opacity .3s" }}>
-          <circle r="18" fill="#8fc124" opacity=".25" />
+          <circle className="gauge-glow" r="16" fill="#8fc124" opacity=".3" />
           <circle r="9" fill="#8fc124" stroke="#fff" strokeWidth="3" />
           <rect x="16" y="-34" width="70" height="26" rx="13" fill="#052439" />
           <text x="51" y="-16" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="800">
