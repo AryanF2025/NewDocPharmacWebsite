@@ -5,7 +5,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
-import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring } from "motion/react";
+import { AnimatePresence, motion, useInView, useMotionValueEvent, useReducedMotion, useScroll, useSpring } from "motion/react";
 import { Reveal } from "@/components/ui/Reveal";
 import { LogoImg } from "@/components/ui/LogoImg";
 import { SectionHeader } from "@/components/motion/Text";
@@ -272,10 +272,20 @@ function TrackingPhone() {
   const [typed, setTyped] = useState(0);
   const pathRef = useRef(null);
   const riderRef = useRef(null);
+  const phoneRef = useRef(null);
+  // Plays only while on screen, from the start each time it comes into view.
+  const inView = useInView(phoneRef, { amount: 0.45 });
 
   useEffect(() => {
     if (reduce) {
       setPhase("otp");
+      return undefined;
+    }
+    if (!inView) {
+      setPhase("ride");
+      setEta(12);
+      setTyped(0);
+      riderRef.current?.setAttribute("transform", "translate(52 250)");
       return undefined;
     }
     setPhase("ride");
@@ -309,12 +319,12 @@ function TrackingPhone() {
       cancelAnimationFrame(frame);
       [toOtp, toDone, again, ...digits].forEach(window.clearTimeout);
     };
-  }, [loop, reduce]);
+  }, [loop, reduce, inView]);
 
   const step = phase === "ride" ? 2 : phase === "otp" ? 3 : 4;
 
   return (
-    <div className="relative mx-auto w-full max-w-[20rem]">
+    <div ref={phoneRef} className="relative mx-auto w-full max-w-[20rem]">
       <div aria-hidden className="absolute -inset-8 rounded-[3rem] bg-gradient-to-br from-brand-blue/20 via-transparent to-brand-green/20 blur-2xl" />
       <div className="relative overflow-hidden rounded-[2.4rem] border-[6px] border-jet bg-white shadow-[0_40px_80px_-35px_rgba(5,36,57,.6)]">
         {/* Map */}
