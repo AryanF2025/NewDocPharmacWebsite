@@ -4,9 +4,10 @@
  * DocPharma One as a live hub, and the bento of proof points.
  */
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import clsx from "clsx";
+import { AnimatePresence, motion } from "motion/react";
 import { useTicker, fmt } from "@/components/directions/shared";
 import { HeroVideo } from "@/components/experience/HeroVideo";
 import { HowItWorksPinned } from "@/components/experience/HowItWorksPinned";
@@ -28,6 +29,9 @@ import { CLIENT_LOGOS, INTEGRATION_LOGOS } from "@/data/logos";
 import { TECH_SECTION } from "@/data/site";
 import rider from "@/assets/images/rider.webp";
 import packing from "@/assets/images/packing.webp";
+import shashankRai from "@/assets/team/shashank-rai.webp";
+import saquibAli from "@/assets/team/saquib-ali.webp";
+import sagarChauhan from "@/assets/team/sagar-chauhan.webp";
 
 /* ------------------------------------------------------------------ hero --- */
 
@@ -36,7 +40,7 @@ function Hero() {
     <section className="relative flex flex-col overflow-hidden bg-white lg:h-[100svh] lg:min-h-[46rem]">
       <HeroBackdrop focus="60% 40%" />
 
-      <div className="relative mx-auto grid w-full max-w-[88rem] flex-1 items-center gap-12 px-5 pb-10 pt-28 md:px-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.12fr)] lg:gap-16 lg:pb-6 lg:pt-24 xl:px-16">
+      <div className="relative mx-auto grid w-full max-w-[88rem] flex-1 items-center gap-12 px-5 pb-10 pt-28 md:px-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.12fr)] lg:gap-14 lg:pb-8 lg:pt-24 xl:px-16">
         <div>
           <Enter>
             <NewsTicker />
@@ -48,31 +52,31 @@ function Hero() {
             delay={0.1}
             stagger={0.07}
             lines={["Medicine delivered", ["in", { text: "30 minutes.", className: HIGHLIGHT }]]}
-            className="mt-[clamp(1.25rem,3vh,2rem)] text-[clamp(2.5rem,min(4vw,7.6vh),5.2rem)] font-extrabold leading-[1.02] tracking-[-0.05em] text-jet"
+            className="mt-[clamp(1.25rem,4.2vh,2.75rem)] text-[clamp(2.5rem,min(4.4vw,8.6vh),3.75rem)] font-extrabold leading-[1.02] tracking-[-0.05em] text-jet"
           />
 
           <Enter
             as="p"
             delay={0.35}
-            className="mt-[clamp(1rem,2.4vh,1.5rem)] max-w-[36rem] text-[clamp(1.02rem,2.1vh,1.25rem)] leading-relaxed text-ink-soft"
+            className="mt-[clamp(1rem,3.2vh,2rem)] max-w-[38rem] text-[clamp(1.02rem,2.3vh,1.35rem)] leading-relaxed text-ink-soft"
           >
             India&apos;s first healthcare quick-commerce supply chain. Licensed darkstores, pharmacist validation,
             AI-driven inventory and our own fleet, in one network.
           </Enter>
 
-          <Enter delay={0.45} className="mt-[clamp(1.5rem,3.6vh,2.5rem)] flex flex-wrap items-center gap-3">
+          <Enter delay={0.45} className="mt-[clamp(1.5rem,5vh,3.25rem)] flex flex-wrap items-center gap-3">
             <CtaButton to="/partner">Partner with us</CtaButton>
             <GhostButton href="#how">See how an order moves</GhostButton>
           </Enter>
 
-          <Enter as="dl" delay={0.55} className="mt-[clamp(1.75rem,4.6vh,3rem)] grid max-w-xl grid-cols-3 divide-x divide-hairline">
+          <Enter as="dl" delay={0.55} className="mt-[clamp(1.75rem,6.5vh,4.25rem)] grid max-w-xl grid-cols-3 divide-x divide-hairline">
             {[
               [50, "+", "Licensed darkstores"],
               [10, "L+", "Orders delivered"],
               [19000, "+", "Pincodes served"],
             ].map(([v, suffix, l], i) => (
               <div key={l} className={i ? "pl-3 sm:pl-6" : "pr-2"}>
-                <dd className="text-[clamp(1.6rem,3.8vh,2.4rem)] font-extrabold tracking-tight text-jet max-sm:text-[1.4rem]">
+                <dd className="text-[clamp(1.6rem,4.2vh,2.7rem)] font-extrabold tracking-tight text-jet max-sm:text-[1.4rem]">
                   <CountUp value={v} suffix={suffix} delay={500 + i * 120} />
                 </dd>
                 <dt className="mt-0.5 text-[clamp(0.82rem,1.7vh,0.95rem)] text-ink-faint">{l}</dt>
@@ -84,8 +88,8 @@ function Hero() {
         {/* Framed film — opens like a shutter as the page arrives */}
         <Enter delay={0.2} className="hero-film relative">
           <HeroVideo
-            ratio={1.45}
-            className="shadow-[0_50px_100px_-45px_rgba(5,36,57,.65)] lg:max-h-[calc(100svh-15rem)] lg:rounded-[2rem]"
+            ratio={1.15}
+            className="shadow-[0_50px_100px_-45px_rgba(5,36,57,.65)] lg:max-h-[calc(100svh-11rem)] lg:rounded-[2rem]"
           />
         </Enter>
       </div>
@@ -283,24 +287,118 @@ function Bento() {
 
 /* -------------------------------------------------------------------- faq --- */
 
+/** Where to read more after each answer, in FAQ order. */
+const FAQ_MORE = [
+  ["/about", "About DocPharma"],
+  ["/technology", "How delivery works"],
+  ["/solutions", "See the network"],
+  ["/solutions", "Find your solution"],
+  ["/technology", "How orders are checked"],
+  ["/technology", "See the integrations"],
+  ["/partner", "Partner with us"],
+];
+
+/** Short exchanges for the chat preview, each taken from an answer below. */
+const CHAT = [
+  ["Which cities are live?", "12+ cities, including Delhi NCR, Mumbai, Bengaluru and Pune."],
+  ["How fast is delivery?", "About 30 minutes for hyperlocal orders."],
+  ["Do you check prescriptions?", "Yes. A registered pharmacist signs off before dispatch."],
+  ["Do you work with Shopify?", "Yes, plus Unicommerce, EasyEcom and our order API."],
+];
+
+const FOUNDERS = [shashankRai, saquibAli, sagarChauhan];
+
+/** A question comes in, the team types, the answer lands; then the next one. */
+function ChatPreview() {
+  const ref = useRef(null);
+  const seen = useInViewOnce(ref);
+  const [n, setN] = useState(0);
+  const [typing, setTyping] = useState(true);
+
+  useEffect(() => {
+    if (!seen || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setTyping(false);
+      return undefined;
+    }
+    setTyping(true);
+    const answer = window.setTimeout(() => setTyping(false), 1300);
+    const next = window.setTimeout(() => setN((v) => (v + 1) % CHAT.length), 4600);
+    return () => {
+      window.clearTimeout(answer);
+      window.clearTimeout(next);
+    };
+  }, [n, seen]);
+
+  const [q, a] = CHAT[n];
+  return (
+    <div ref={ref} aria-hidden className="relative mt-7 h-[8.5rem] rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+      <AnimatePresence mode="wait">
+        <motion.div key={n} exit={{ opacity: 0, y: -10, transition: { duration: 0.25 } }} className="flex flex-col gap-2.5">
+          <motion.p
+            initial={{ opacity: 0, y: 10, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ type: "spring", stiffness: 320, damping: 24 }}
+            className="self-end rounded-2xl rounded-br-md bg-white/12 px-3.5 py-2 text-[0.85rem] font-semibold text-white"
+          >
+            {q}
+          </motion.p>
+          <div className="flex items-end gap-2">
+            <img src={FOUNDERS[n % FOUNDERS.length]} alt="" className="h-7 w-7 shrink-0 rounded-full object-cover ring-2 ring-jet" />
+            {typing ? (
+              <span className="faq-typing flex gap-1 rounded-2xl rounded-bl-md bg-brand-blue px-3.5 py-3">
+                <span />
+                <span />
+                <span />
+              </span>
+            ) : (
+              <motion.p
+                initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ type: "spring", stiffness: 320, damping: 24 }}
+                className="rounded-2xl rounded-bl-md bg-brand-blue px-3.5 py-2 text-[0.85rem] font-semibold leading-snug text-white"
+              >
+                {a}
+              </motion.p>
+            )}
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}
+
 /** One question. The answer stays in the page for search and screen readers, and opens smoothly. */
 function FaqItem({ q, a, i, open, onToggle }) {
   const id = `faq-${i}`;
+  const [to, label] = FAQ_MORE[i] || ["/partner", "Talk to our team"];
   return (
     <Reveal from="up" delay={i * 0.05}>
       <div
+        onPointerMove={(e) => {
+          const r = e.currentTarget.getBoundingClientRect();
+          e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
+          e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
+        }}
         className={clsx(
-          "group rounded-2xl border bg-white transition-[border-color,box-shadow] duration-500",
-          open ? "border-brand-blue/30 shadow-[0_24px_50px_-34px_rgba(2,150,217,.55)]" : "border-hairline hover:border-jet/15"
+          "spotlight group relative overflow-hidden rounded-2xl border bg-white transition-[border-color,box-shadow,transform] duration-500",
+          open ? "border-brand-blue/30 shadow-[0_28px_60px_-36px_rgba(2,150,217,.6)]" : "border-hairline hover:-translate-y-0.5 hover:border-jet/15"
         )}
       >
+        {/* A blue-to-green edge grows down the open card */}
+        <span
+          aria-hidden
+          className={clsx(
+            "absolute inset-y-0 left-0 w-1 origin-top bg-gradient-to-b from-brand-blue to-brand-green transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)]",
+            open ? "scale-y-100" : "scale-y-0"
+          )}
+        />
         <h3>
           <button
             type="button"
             aria-expanded={open}
             aria-controls={id}
             onClick={onToggle}
-            className="flex w-full items-center gap-4 rounded-2xl px-5 py-5 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-blue md:px-6"
+            className="relative flex w-full items-center gap-4 rounded-2xl px-5 py-5 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-blue md:px-6"
           >
             <span
               className={clsx(
@@ -335,14 +433,22 @@ function FaqItem({ q, a, i, open, onToggle }) {
           )}
         >
           <div className="overflow-hidden">
-            <p
+            <div
               className={clsx(
-                "px-5 pb-6 text-[0.98rem] leading-relaxed text-ink-soft transition-[opacity,transform] duration-500 md:pl-[4.75rem] md:pr-16",
+                "px-5 pb-6 transition-[opacity,transform] duration-500 md:pl-[4.75rem] md:pr-16",
                 open ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
               )}
             >
-              {a}
-            </p>
+              <p className="text-[0.98rem] leading-relaxed text-ink-soft">{a}</p>
+              <Link
+                to={to}
+                tabIndex={open ? 0 : -1}
+                className="group/more mt-4 inline-flex items-center gap-2 rounded-full bg-floral px-4 py-2 text-[0.85rem] font-bold text-brand-blue transition-colors duration-300 hover:bg-brand-blue hover:text-white"
+              >
+                {label}
+                <span className="transition-transform duration-300 group-hover/more:translate-x-0.5">→</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -357,28 +463,55 @@ function Faq() {
   const [open, setOpen] = useState(0);
 
   return (
-    <section id="faq" aria-label="Frequently asked questions" className="bg-floral">
-      <div className="mx-auto grid max-w-[84rem] gap-10 px-5 py-24 md:px-10 md:py-32 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.3fr)] lg:gap-14">
-        {/* What this is, where to go next, and someone to ask */}
+    <section id="faq" aria-label="Frequently asked questions" className="relative overflow-hidden bg-floral">
+      <div aria-hidden className="pointer-events-none absolute -right-40 top-20 h-[30rem] w-[30rem] rounded-full bg-brand-blue/[0.06] blur-[100px]" />
+      <div className="relative mx-auto grid max-w-[84rem] gap-10 px-5 py-24 md:px-10 md:py-32 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.3fr)] lg:gap-14">
+        {/* What this is, someone to ask, and where to go next */}
         <Reveal from="up" className="lg:sticky lg:top-28 lg:self-start">
-          <div className="relative overflow-hidden rounded-[2rem] bg-jet p-8 text-white md:p-10">
+          <div className="relative overflow-hidden rounded-[2rem] bg-jet p-7 text-white md:p-9">
             <div aria-hidden className="pb-glow pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-blue/30 blur-[90px]" />
-            <svg aria-hidden viewBox="0 0 240 40" className="relative h-9 w-48 overflow-visible">
-              <defs>
-                <linearGradient id="faq-ink" x1="0" x2="1">
-                  <stop offset="0" stopColor="#0291d7" />
-                  <stop offset="1" stopColor="#a1e666" />
-                </linearGradient>
-              </defs>
-              <path d={BEAT} fill="none" stroke="#fff" strokeOpacity=".12" strokeWidth="2" strokeLinejoin="round" />
-              <path className="faq-beat" pathLength="1" d={BEAT} fill="none" stroke="url(#faq-ink)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
 
-            <SectionHeader tone="dark" eyebrow="FAQ" title="Questions, answered." className="relative mt-6" titleClassName="!mt-3" />
+            <div className="relative flex items-center justify-between gap-4">
+              <svg aria-hidden viewBox="0 0 240 40" className="h-8 w-36 overflow-visible sm:w-40">
+                <defs>
+                  <linearGradient id="faq-ink" x1="0" x2="1">
+                    <stop offset="0" stopColor="#0291d7" />
+                    <stop offset="1" stopColor="#a1e666" />
+                  </linearGradient>
+                </defs>
+                <path d={BEAT} fill="none" stroke="#fff" strokeOpacity=".12" strokeWidth="2" strokeLinejoin="round" />
+                <path className="faq-beat" pathLength="1" d={BEAT} fill="none" stroke="url(#faq-ink)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+
+              {/* The people who answer */}
+              <div className="flex items-center gap-2.5">
+                <div className="flex -space-x-2.5">
+                  {FOUNDERS.map((src, i) => (
+                    <img
+                      key={src}
+                      src={src}
+                      alt=""
+                      loading="lazy"
+                      className="h-9 w-9 rounded-full object-cover ring-2 ring-jet transition-transform duration-300 hover:z-10 hover:-translate-y-1"
+                      style={{ zIndex: FOUNDERS.length - i }}
+                    />
+                  ))}
+                </div>
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="absolute inset-0 animate-ping rounded-full bg-brand-green/70" />
+                  <span className="relative h-2.5 w-2.5 rounded-full bg-brand-green" />
+                </span>
+              </div>
+            </div>
+
+            <SectionHeader tone="dark" eyebrow="FAQ" title="Questions, answered." className="relative mt-7" titleClassName="!mt-3" />
             <p className="relative mt-4 max-w-sm text-[1rem] leading-relaxed text-white/65">
-              The short version of how DocPharma works. Go deeper on any of these:
+              The short version of how DocPharma works, from the team that runs it.
             </p>
-            <div className="relative mt-5 flex flex-wrap gap-2">
+
+            <ChatPreview />
+
+            <div className="relative mt-7 flex flex-wrap gap-2">
               {[
                 ["/solutions", "Solutions"],
                 ["/technology", "Technology"],
@@ -395,18 +528,15 @@ function Faq() {
               ))}
             </div>
 
-            <div className="relative mt-8 border-t border-white/10 pt-7">
-              <p className="text-[0.95rem] font-bold">Still have a question?</p>
-              <p className="mt-1 text-[0.92rem] text-white/60">
-                Call{" "}
-                <a href="tel:+917542021525" className="link-underline font-bold text-white">
+            <div className="relative mt-7 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6">
+              <div>
+                <p className="text-[0.95rem] font-bold">Still have a question?</p>
+                <a href="tel:+917542021525" className="link-underline mt-0.5 inline-block text-[0.92rem] font-bold text-white/70 hover:text-white">
                   +91 75420 21525
-                </a>{" "}
-                or write to the partnerships team.
-              </p>
-              <CtaButton to="/partner" className="mt-5">
-                Talk to our team
-              </CtaButton>
+                </a>
+                <p className="text-[0.8rem] text-white/45">Replies within two working days</p>
+              </div>
+              <CtaButton to="/partner">Talk to our team</CtaButton>
             </div>
           </div>
         </Reveal>

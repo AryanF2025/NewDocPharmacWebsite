@@ -544,6 +544,16 @@
   padding: 0 0.04em 0.14em;
   margin: 0 -0.04em -0.14em;
 }
+/* Gradient words paint only inside their own box, so tightly kerned last
+   letters (the second 0 of "30") need room on the right that takes no space. */
+.split-mask:has(> .bg-clip-text) {
+  padding-right: 0.14em;
+  margin-right: -0.14em;
+}
+.split-word.bg-clip-text {
+  padding-right: 0.12em;
+  margin-right: -0.12em;
+}
 .split-word {
   display: inline-block;
   transform: translateY(110%);
@@ -1619,5 +1629,93 @@
   .faq-beat {
     animation: none;
     stroke-dashoffset: 0;
+  }
+}
+
+/* Solutions: the active tab fills while the section plays on its own; the
+   status cards bob gently; the photo keeps a slow drift; hero tiles take
+   turns with a light sweep and a timer line; hero ticks pop in. */
+.sol-tab-fill {
+  width: 0;
+  opacity: 0.55;
+  animation: sol-fill linear forwards;
+}
+@keyframes sol-fill {
+  to {
+    width: 100%;
+  }
+}
+.sol-float {
+  animation: sol-bob 5s ease-in-out infinite;
+}
+@keyframes sol-bob {
+  50% {
+    transform: translateY(-6px);
+  }
+}
+.sol-drift {
+  animation: sol-drift 14s ease-in-out infinite alternate;
+}
+@keyframes sol-drift {
+  to {
+    transform: scale(1.06) translate(-1.5%, -1%);
+  }
+}
+.tile-sweep {
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.16) 50%, transparent 65%) no-repeat;
+  background-size: 250% 100%;
+  transition: opacity 0.4s;
+  animation: tile-sweep 2.8s var(--ease-brand) infinite;
+}
+@keyframes tile-sweep {
+  from {
+    background-position: 130% 0;
+  }
+  to {
+    background-position: -130% 0;
+  }
+}
+.tile-timer {
+  width: 0;
+  animation: sol-fill 2.8s linear forwards;
+}
+.hero-tick {
+  animation: seal-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sol-tab-fill,
+  .sol-float,
+  .sol-drift,
+  .tile-sweep,
+  .tile-timer,
+  .hero-tick {
+    animation: none;
+  }
+}
+
+/* Home FAQ chat preview: three dots while the team types. */
+.faq-typing span {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: #fff;
+  animation: faq-dot 1s ease-in-out infinite;
+}
+.faq-typing span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.faq-typing span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes faq-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.4;
+    transform: none;
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
   }
 }
