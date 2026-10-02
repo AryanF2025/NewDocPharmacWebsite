@@ -18,30 +18,30 @@ export const CONTACT_HERO = {
 
 /** The five audiences in the slider. `value` is what the form submits. */
 export const BUSINESS_TYPES = [
-  { value: "e-pharmacy", tab: "E-Pharmacy", label: "E-Pharmacy", heading: "Expand fulfilment & delivery", image: stillPick },
+  { value: "e-pharmacy", phrase: "an e-pharmacy", tab: "E-Pharmacy", label: "E-Pharmacy", heading: "Expand fulfilment & delivery", image: stillPick },
   {
-    value: "corporate-wellness",
+    value: "corporate-wellness", phrase: "a corporate wellness platform",
     tab: "Corporate Wellness",
     label: "Corporate Wellness",
     heading: "Connect healthcare demand to supply",
     image: stillVerify,
   },
   {
-    value: "health-insurer",
+    value: "health-insurer", phrase: "a health insurer",
     tab: "Health Insurer",
     label: "Health Insurer",
     heading: "Enable medicine access for members",
     image: stillHandover,
   },
   {
-    value: "d2c-health",
+    value: "d2c-health", phrase: "a D2C health & wellness brand",
     tab: "D2C Health",
     label: "D2C Health & Wellness Brand",
     heading: "Scale fulfilment & delivery",
     image: stillPack,
   },
-  { value: "hospital", tab: "Hospital", label: "Doctor / Hospital", heading: "Extend care beyond the hospital", image: stillRider },
-  { value: "other", tab: "Other", label: "Other", heading: "Tell us what you need", image: stillPick },
+  { value: "hospital", phrase: "a doctor or hospital", tab: "Hospital", label: "Doctor / Hospital", heading: "Extend care beyond the hospital", image: stillRider },
+  { value: "other", phrase: "something else", tab: "Other", label: "Other", heading: "Tell us what you need", image: stillPick },
 ];
 
 /** The slider shows every audience except the catch-all. */
@@ -56,7 +56,7 @@ export const CONTACT_INITIAL = {
   company: "",
   email: "",
   phone: "",
-  businessType: BUSINESS_TYPES[0].value,
+  businessType: "", // chosen by the visitor; the form asks for it
   monthlyOrders: MONTHLY_ORDERS[1],
   cities: "",
   message: "",

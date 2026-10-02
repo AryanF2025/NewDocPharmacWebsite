@@ -71,6 +71,7 @@ function validate(form) {
   if (!form.name.trim()) errors.name = "Please tell us your name.";
   if (!form.email.trim()) errors.email = "Please add an email we can reply to.";
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email.trim())) errors.email = "That email doesn't look right.";
+  if (!form.businessType) errors.businessType = "Pick the option that fits your business.";
   if (form.phone.trim() && !/^[+\d][\d\s-]{7,}$/.test(form.phone.trim())) errors.phone = "That phone number doesn't look right.";
   return errors;
 }
@@ -102,25 +103,46 @@ function Field({ label, error, children, hint, labelId }) {
  * line under it saying what we'll help that business do. Arrow keys move
  * between the choices, as in any radio group.
  */
-function BusinessTypeChips({ value, onPick }) {
-  const index = Math.max(0, BUSINESS_TYPES.findIndex((type) => type.value === value));
-  const current = BUSINESS_TYPES[index];
+function BusinessTypeChips({ value, onPick, error }) {
+  const index = BUSINESS_TYPES.findIndex((type) => type.value === value);
+  const current = index >= 0 ? BUSINESS_TYPES[index] : null;
 
   const onKeyDown = (event) => {
     const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
     if (!step) return;
     event.preventDefault();
-    const next = (index + step + BUSINESS_TYPES.length) % BUSINESS_TYPES.length;
+    const from = index < 0 ? (step > 0 ? -1 : 0) : index;
+    const next = (from + step + BUSINESS_TYPES.length) % BUSINESS_TYPES.length;
     onPick(BUSINESS_TYPES[next].value);
     event.currentTarget.querySelectorAll('[role="radio"]')[next]?.focus();
   };
 
   return (
     <div className="field">
-      <p id="businessType-label" className="mb-2.5 text-[0.8rem] font-bold text-jet">
-        I&apos;m a… *
+      {/* The question as a sentence: the choice writes itself into the blank. */}
+      <p id="businessType-label" className="flex flex-wrap items-baseline gap-x-2 text-[clamp(1.25rem,2.2vw,1.6rem)] font-extrabold tracking-[-0.02em] text-jet">
+        <span>I&apos;m</span>
+        <span
+          className={clsx(
+            "relative inline-flex min-w-[9rem] justify-center border-b-2 px-1 pb-0.5 transition-colors duration-300",
+            current ? "border-brand-blue text-brand-blue" : error ? "border-dashed border-[#c2410c]" : "border-dashed border-ink-faint/50"
+          )}
+        >
+          {current ? (
+            <span key={current.value} className="blank-fill">
+              {current.phrase}
+            </span>
+          ) : (
+            <span className="text-ink-faint/50" aria-hidden>
+              &nbsp;
+            </span>
+          )}
+          {!current ? <span className="sr-only">(choose below)</span> : null}
+        </span>
+        <span className="-ml-2">.</span>
       </p>
-      <div role="radiogroup" aria-labelledby="businessType-label" onKeyDown={onKeyDown} className="flex flex-wrap gap-2">
+
+      <div role="radiogroup" aria-labelledby="businessType-label" aria-invalid={Boolean(error)} onKeyDown={onKeyDown} className="mt-4 flex flex-wrap gap-2">
         {BUSINESS_TYPES.map((type, i) => {
           const active = i === index;
           return (
@@ -129,7 +151,7 @@ function BusinessTypeChips({ value, onPick }) {
               type="button"
               role="radio"
               aria-checked={active}
-              tabIndex={active ? 0 : -1}
+              tabIndex={active || (index < 0 && i === 0) ? 0 : -1}
               onClick={() => onPick(type.value)}
               className={clsx(
                 "inline-flex min-h-10 items-center gap-2 rounded-full border px-4 text-[0.88rem] font-semibold outline-none transition-[background-color,border-color,color,box-shadow,transform] duration-300 focus-visible:shadow-[0_0_0_3px_rgba(2,150,217,.2)] active:scale-[0.97]",
@@ -152,18 +174,23 @@ function BusinessTypeChips({ value, onPick }) {
           );
         })}
       </div>
-      {/* What we'll help with — changes with the choice. */}
-      <p key={current.value} className="choice-note mt-3 flex items-center gap-2 text-[0.88rem] text-ink-soft">
-        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-green" />
-        {current.value === "other" ? (
-          <span>Tell us what you need in the message below.</span>
-        ) : (
-          <span>
-            We&apos;ll help you <span className="font-bold text-jet">{current.heading.charAt(0).toLowerCase() + current.heading.slice(1)}</span>
-          </span>
-        )}
-      </p>
-      <input type="hidden" name="businessType" value={current.value} />
+
+      {error ? (
+        <p className="mt-2.5 text-[0.78rem] font-semibold text-[#c2410c]">{error}</p>
+      ) : current ? (
+        // What we'll help with — changes with the choice.
+        <p key={current.value} className="choice-note mt-3 flex items-center gap-2 text-[0.88rem] text-ink-soft">
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-green" />
+          {current.value === "other" ? (
+            <span>Tell us what you need in the message below.</span>
+          ) : (
+            <span>
+              We&apos;ll help you <span className="font-bold text-jet">{current.heading.charAt(0).toLowerCase() + current.heading.slice(1)}</span>
+            </span>
+          )}
+        </p>
+      ) : null}
+      <input type="hidden" name="businessType" value={value} />
     </div>
   );
 }
@@ -276,7 +303,9 @@ function PartnerHero() {
   return (
     <section className="relative overflow-hidden bg-white">
       <HeroBackdrop focus="40% 40%" />
-      <div className="relative mx-auto grid max-w-[84rem] items-center gap-14 px-5 pb-20 pt-28 md:px-10 md:pt-36 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:pb-24">
+      {/* Fade the backdrop out at the bottom so the form below continues the same surface. */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-white" />
+      <div className="relative mx-auto grid max-w-[84rem] items-center gap-14 px-5 pb-20 pt-28 md:px-10 md:pt-36 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:pb-20">
         <div>
           <HeroHeading eyebrow={CONTACT_HERO.eyebrow} lines={CONTACT_HERO.title} className="max-w-2xl text-[clamp(2.2rem,4.6vw,3.8rem)]" />
           <Enter as="p" delay={0.3} className="mt-5 max-w-xl text-[clamp(1.02rem,1.4vw,1.15rem)] leading-relaxed text-ink-soft">
@@ -329,7 +358,10 @@ export default function Partner() {
     setErrors((e) => (e[key] ? { ...e, [key]: undefined } : e));
   };
 
-  const pickType = (value) => setForm((f) => ({ ...f, businessType: value }));
+  const pickType = (value) => {
+    setForm((f) => ({ ...f, businessType: value }));
+    setErrors((e) => (e.businessType ? { ...e, businessType: undefined } : e));
+  };
 
   const onSubmit = async (event) => {
     event.preventDefault();
@@ -354,11 +386,12 @@ export default function Partner() {
       <PartnerHero />
 
       {/* ------------------------------------------------ form + aside --- */}
-      <section className="bg-floral py-24 md:py-32">
+      {/* Same white surface as the hero, so the page reads as one piece. */}
+      <section className="bg-white pb-24 pt-2 md:pb-32">
         {/* min-w-0 on the columns: a long address row may truncate, never widen the page. */}
         <div className="mx-auto grid max-w-[84rem] gap-6 px-5 md:px-10 lg:grid-cols-[1.15fr_1fr] lg:gap-10 [&>*]:min-w-0">
           <Reveal from="left">
-            <div className="rounded-[2rem] border border-hairline bg-white p-6 md:p-10">
+            <div className="rounded-[2rem] border border-hairline bg-white p-6 shadow-[0_30px_60px_-42px_rgba(5,36,57,.35)] md:p-10">
               {status === "sent" ? (
                 <div className="sent flex min-h-[26rem] flex-col items-start justify-center">
                   <span className="sent-badge flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-green text-white">
@@ -389,7 +422,7 @@ export default function Partner() {
                   <p className="mt-2 text-[0.98rem] text-ink-soft">Fields marked with an asterisk are required.</p>
 
                   <div className="mt-7">
-                    <BusinessTypeChips value={form.businessType} onPick={pickType} />
+                    <BusinessTypeChips value={form.businessType} onPick={pickType} error={errors.businessType} />
                   </div>
 
                   <div className="mt-6 grid gap-5 sm:grid-cols-2">
