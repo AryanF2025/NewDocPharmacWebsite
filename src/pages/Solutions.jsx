@@ -158,7 +158,7 @@ function SolutionsHero({ open }) {
 
 /* -------------------------------------------------------------- solutions --- */
 
-/** How long each business stays up while the section plays on its own. */
+/** How long each business stays open while the section plays on its own. */
 const AUTO_MS = 7000;
 
 /** Two small status cards that float over each business's photo. */
@@ -195,16 +195,17 @@ const GLYPH = {
   app: "M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM11 18h2",
 };
 
+const pad = (n) => String(n).padStart(2, "0");
+
 function FloatCard({ glyph, title, sub, delay, className, tone = "blue" }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 18, scale: 0.92 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -8, transition: { duration: 0.2 } }}
-      transition={{ type: "spring", stiffness: 260, damping: 22, delay }}
-      className={clsx("absolute", className)}
+      initial={{ opacity: 0, x: 24, scale: 0.92 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      transition={{ type: "spring", stiffness: 240, damping: 22, delay }}
+      className={className}
     >
-      <div className="sol-float flex items-center gap-3 rounded-2xl bg-white/95 py-2.5 pl-2.5 pr-4 shadow-[0_18px_40px_-18px_rgba(5,36,57,.55)] backdrop-blur">
+      <div className="sol-float flex items-center gap-3 rounded-2xl bg-white/95 py-2.5 pl-2.5 pr-4 shadow-[0_18px_40px_-18px_rgba(0,0,0,.6)] backdrop-blur">
         <span
           className={clsx(
             "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
@@ -238,69 +239,196 @@ function useOnScreen(ref) {
   return on;
 }
 
+/**
+ * One business. Closed, it is a slim photo strip with its name running up
+ * the side; open, it takes the row: headline, outcome, what's included and
+ * the call to action, with live status cards over the photo.
+ */
+function Panel({ tab, i, active, playing, auto, onOpen }) {
+  const [first, second] = FLOAT[tab.id];
+
+  return (
+    <div
+      className={clsx(
+        "group relative isolate flex flex-col overflow-hidden rounded-[1.75rem] bg-jet text-white",
+        "transition-[flex-grow,height,box-shadow] duration-[900ms] ease-[cubic-bezier(.22,1,.36,1)] lg:min-w-[5.5rem] lg:basis-0",
+        active
+          ? "min-h-[34rem] shadow-[0_40px_80px_-40px_rgba(5,36,57,.6)] sm:min-h-[30rem] lg:min-h-0 lg:grow-[7]"
+          : "h-[4.75rem] lg:h-auto lg:grow lg:hover:grow-[1.6]"
+      )}
+    >
+      {/* The photo: muted on a strip, in full colour and drifting when open */}
+      <div className={clsx("absolute inset-0 -z-10", active && "sol-drift")}>
+        <img
+          src={ART[tab.art]}
+          alt=""
+          loading={i === 0 ? undefined : "lazy"}
+          className={clsx(
+            "h-full w-full object-cover transition-[transform,opacity,filter] duration-[1200ms] ease-[cubic-bezier(.22,1,.36,1)]",
+            active ? "scale-100 opacity-100" : "scale-110 opacity-45 grayscale-[.7] group-hover:scale-105 group-hover:opacity-75 group-hover:grayscale-0"
+          )}
+        />
+      </div>
+      <div
+        className={clsx(
+          "absolute inset-0 -z-10 transition-opacity duration-700",
+          active ? "bg-gradient-to-t from-jet via-jet/70 to-jet/10 lg:bg-gradient-to-r lg:from-jet/95 lg:via-jet/55 lg:to-jet/5" : "bg-jet/40"
+        )}
+      />
+      {active ? <div aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-1/2 bg-gradient-to-t from-jet/80 to-transparent lg:hidden" /> : null}
+
+      {active ? (
+        <>
+          {/* Time left on this business while the section plays */}
+          {auto ? (
+            <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-white/10">
+              <span
+                key={`${tab.id}-${playing}`}
+                className="sol-tab-fill block h-full bg-gradient-to-r from-brand-blue to-brand-green !opacity-100"
+                style={{ animationDuration: `${AUTO_MS}ms`, animationPlayState: playing ? "running" : "paused" }}
+              />
+            </span>
+          ) : null}
+
+          <div className="sol-floats absolute right-8 top-8 z-10 space-y-3">
+            <FloatCard glyph={first[0]} title={first[1]} sub={first[2]} delay={0.55} />
+            <FloatCard glyph={second[0]} title={second[1]} sub={second[2]} delay={0.75} tone="green" className="mr-10" />
+          </div>
+
+          <div className="relative flex flex-1 flex-col justify-end p-6 sm:p-8 lg:p-10">
+            <div className="lg:w-[min(38rem,calc(100vw-35rem))]">
+              <motion.p
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, ease: EASE, delay: 0.3 }}
+                className="tabular flex items-center gap-3 text-[0.78rem] font-extrabold uppercase tracking-[0.16em] text-brand-green"
+              >
+                <span className="h-px w-8 bg-brand-green" />
+                {pad(i + 1)} / {pad(SOLUTION_TABS.length)} · {tab.tab}
+              </motion.p>
+              <h3 className="mt-3 text-[clamp(1.6rem,2.3vw,2.25rem)] font-extrabold leading-[1.08] tracking-[-0.035em]">
+                {tab.headline.split(" ").map((word, w) => (
+                  <span key={`${word}${w}`} className="inline-block overflow-hidden pb-[0.08em] align-top">
+                    <motion.span
+                      className="inline-block"
+                      initial={{ y: "105%" }}
+                      animate={{ y: 0 }}
+                      transition={{ duration: 0.65, ease: EASE, delay: 0.35 + w * 0.035 }}
+                    >
+                      {word}&nbsp;
+                    </motion.span>
+                  </span>
+                ))}
+              </h3>
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: EASE, delay: 0.55 }}
+                className="mt-3 border-l-2 border-brand-green pl-3 text-[1.02rem] font-semibold leading-snug text-white/85"
+              >
+                {OUTCOME[tab.id]}
+              </motion.p>
+
+              <ul className="mt-5 grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
+                {tab.props.map((prop, p) => (
+                  <motion.li
+                    key={prop}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.45, ease: EASE, delay: 0.6 + p * 0.05 }}
+                    className="flex items-start gap-2.5 text-[0.9rem] font-semibold text-white/90"
+                  >
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 22, delay: 0.7 + p * 0.05 }}
+                      className="mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-brand-green text-[0.55rem] text-jet"
+                    >
+                      ✓
+                    </motion.span>
+                    {prop}
+                  </motion.li>
+                ))}
+              </ul>
+
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: EASE, delay: 0.85 }}
+                className="mt-6"
+              >
+                <CtaButton to="/partner">{tab.cta}</CtaButton>
+              </motion.div>
+            </div>
+          </div>
+        </>
+      ) : (
+        // A strip: number, name running up the side, and a + that turns on hover
+        <button
+          type="button"
+          onClick={onOpen}
+          aria-label={`Open ${tab.tab}`}
+          className="sol-strip-in absolute inset-0 flex items-center gap-4 px-5 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-blue lg:flex-col lg:justify-between lg:px-0 lg:py-7"
+        >
+          <span className="tabular text-[0.75rem] font-extrabold text-brand-green">{pad(i + 1)}</span>
+          <span className="flex-1 text-[1.02rem] font-extrabold tracking-tight lg:flex-none lg:rotate-180 lg:whitespace-nowrap lg:[writing-mode:vertical-rl]">
+            {tab.tab}
+          </span>
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 text-[1.1rem] backdrop-blur transition-[transform,background-color,color] duration-500 group-hover:rotate-90 group-hover:bg-white group-hover:text-jet">
+            +
+          </span>
+        </button>
+      )}
+    </div>
+  );
+}
+
 function SolutionTabs({ picked, setPicked, auto, setAuto }) {
-  const item = SOLUTION_TABS[picked];
   const ref = useRef(null);
   const onScreen = useOnScreen(ref);
   const [hold, setHold] = useState(false);
   const playing = auto && onScreen && !hold;
+  const count = SOLUTION_TABS.length;
 
-  // Plays through the businesses on its own until the visitor picks one.
+  // Plays through the businesses on its own until the visitor takes over.
   useEffect(() => {
     if (!playing || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
-    const id = window.setTimeout(() => setPicked((picked + 1) % SOLUTION_TABS.length), AUTO_MS);
+    const id = window.setTimeout(() => setPicked((picked + 1) % count), AUTO_MS);
     return () => window.clearTimeout(id);
-  }, [playing, picked, setPicked]);
+  }, [playing, picked, setPicked, count]);
 
   const choose = (i) => {
     setAuto(false);
     setPicked(i);
   };
+  const step = (d) => choose((picked + d + count) % count);
 
   const onKey = (event) => {
     if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
     event.preventDefault();
-    const step = event.key === "ArrowRight" ? 1 : -1;
-    choose((picked + step + SOLUTION_TABS.length) % SOLUTION_TABS.length);
+    step(event.key === "ArrowRight" ? 1 : -1);
   };
 
-  const [first, second] = FLOAT[item.id];
+  const control =
+    "flex h-11 w-11 items-center justify-center rounded-full border border-hairline bg-white text-jet transition-colors duration-300 hover:border-jet hover:bg-jet hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue";
 
   return (
-    // On desktop the whole section is exactly one screen: heading, tabs, and
-    // the business panel filling what is left.
     <section
       ref={ref}
       id="solutions"
-      onPointerEnter={() => setHold(true)}
-      onPointerLeave={() => setHold(false)}
-      className="relative overflow-hidden bg-white py-20 lg:flex lg:h-[100svh] lg:min-h-[42rem] lg:flex-col lg:pb-10 lg:pt-[6.5rem]"
+      onKeyDown={onKey}
+      className="relative bg-white py-20 lg:flex lg:h-[100svh] lg:min-h-[44rem] lg:flex-col lg:pb-10 lg:pt-[6.5rem]"
     >
       {/* Picking a business (hero tiles, header menu, footer
           /solutions#d2c-health) lands on the section top, so the whole
-          business view fits the screen. */}
+          view fits the screen. */}
       <div className="absolute inset-x-0 top-0">
         {SOLUTION_TABS.map((tab) => (
           <span key={tab.id} id={tab.id} aria-hidden className="absolute top-0 block" />
         ))}
       </div>
 
-      {/* The business number, large and faint, behind the copy */}
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.span
-          key={item.id}
-          aria-hidden
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -30 }}
-          transition={{ duration: 0.6, ease: EASE }}
-          className="tabular pointer-events-none absolute -left-4 bottom-0 hidden select-none text-[22rem] font-extrabold leading-[0.75] tracking-[-0.06em] text-jet/[0.035] 2xl:block"
-        >
-          {String(picked + 1).padStart(2, "0")}
-        </motion.span>
-      </AnimatePresence>
-
-      <div className="relative mx-auto w-full max-w-[84rem] px-5 md:px-10 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
+      <div className="mx-auto w-full max-w-[84rem] px-5 md:px-10 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
         <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-5">
           <SectionHeader
             eyebrow="Who we build for"
@@ -308,188 +436,60 @@ function SolutionTabs({ picked, setPicked, auto, setAuto }) {
             titleClassName="!mt-3 !max-w-none !text-[clamp(1.7rem,2.4vw,2.3rem)]"
           />
 
-          {/* Tabs; the active one fills while the section plays on its own */}
-          <div
-            role="tablist"
-            aria-label="Business type"
-            onKeyDown={onKey}
-            className="-mx-5 flex shrink-0 gap-1 overflow-x-auto px-5 pb-1 [scrollbar-width:none] md:mx-0 md:inline-flex md:rounded-full md:border md:border-hairline md:bg-floral md:p-1.5 [&::-webkit-scrollbar]:hidden"
-          >
-            {SOLUTION_TABS.map((tab, i) => (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                aria-selected={i === picked}
-                tabIndex={i === picked ? 0 : -1}
-                onClick={() => choose(i)}
-                className={clsx(
-                  "relative shrink-0 overflow-hidden rounded-full px-4 py-2.5 text-[0.86rem] font-bold outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-brand-blue xl:px-5",
-                  i === picked ? "text-white" : "text-ink-soft hover:text-jet max-md:border max-md:border-hairline"
-                )}
-              >
-                {i === picked ? (
-                  <motion.span layoutId="solution-tab" className="absolute inset-0 rounded-full bg-jet" transition={{ type: "spring", stiffness: 420, damping: 34 }}>
-                    {auto ? (
-                      <span
-                        key={`${picked}-${playing}`}
-                        className="sol-tab-fill absolute inset-y-0 left-0 bg-brand-blue"
-                        style={{ animationDuration: `${AUTO_MS}ms`, animationPlayState: playing ? "running" : "paused" }}
-                      />
-                    ) : null}
-                  </motion.span>
-                ) : null}
-                <span className="relative">{tab.tab}</span>
-              </button>
-            ))}
+          {/* Where you are, and the controls */}
+          <div className="flex items-center gap-2">
+            <p className="tabular mr-2 text-[0.95rem] font-extrabold text-jet" aria-live="polite">
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.span
+                  key={picked}
+                  initial={{ y: 14, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -14, opacity: 0 }}
+                  transition={{ duration: 0.35, ease: EASE }}
+                  className="inline-block"
+                >
+                  {pad(picked + 1)}
+                </motion.span>
+              </AnimatePresence>
+              <span className="text-ink-faint"> / {pad(count)}</span>
+            </p>
+            <button type="button" onClick={() => step(-1)} aria-label="Previous business" className={control}>
+              ←
+            </button>
+            <button type="button" onClick={() => step(1)} aria-label="Next business" className={control}>
+              →
+            </button>
+            <button
+              type="button"
+              onClick={() => setAuto(!auto)}
+              aria-label={auto ? "Pause" : "Play"}
+              className={clsx(control, auto && "border-jet")}
+            >
+              {auto ? (
+                <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="currentColor">
+                  <rect x="3" y="2" width="3.5" height="12" rx="1" />
+                  <rect x="9.5" y="2" width="3.5" height="12" rx="1" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="currentColor">
+                  <path d="M4 2.5v11l9.5-5.5z" />
+                </svg>
+              )}
+            </button>
           </div>
         </div>
 
-        {/* Panel */}
-        {/* Every tab's copy is laid out invisibly in the same cell, so the panel
-            is always as tall as the longest tab and nothing below it moves. */}
-        <div role="tabpanel" className="mt-8 grid lg:mt-7 lg:min-h-0 lg:flex-1">
-          {SOLUTION_TABS.map((tab) => (
-            <div key={tab.id} aria-hidden className="invisible grid gap-10 [grid-area:1/1] lg:hidden">
-              <div>
-                <p className="text-[0.8rem] font-extrabold">00</p>
-                <h3 className="mt-3 text-[clamp(1.6rem,2.5vw,2.3rem)] font-extrabold leading-[1.08] tracking-[-0.035em]">{tab.headline}</h3>
-                <p className="mt-3 max-w-lg text-[1.02rem] leading-relaxed">{tab.copy}</p>
-                <ul className="mt-6 grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
-                  {tab.props.map((prop) => (
-                    <li key={prop} className="flex items-start gap-3 text-[0.95rem] font-semibold">
-                      <span className="mt-0.5 h-5 w-5 shrink-0" />
-                      {prop}
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-8 h-14" />
-              </div>
-              <div className="h-[22rem] sm:h-[26rem]" />
-            </div>
-          ))}
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={item.id}
-              exit={{ opacity: 0, transition: { duration: 0.25 } }}
-              className="grid gap-10 [grid-area:1/1] lg:h-full lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-14"
-            >
-              <div className="lg:flex lg:min-h-0 lg:flex-col lg:justify-center">
-                <motion.p
-                  initial={{ opacity: 0, x: -16 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, ease: EASE }}
-                  className="tabular flex items-center gap-3 text-[0.8rem] font-extrabold text-brand-blue"
-                >
-                  <span className="h-px w-8 bg-brand-blue" />
-                  {String(picked + 1).padStart(2, "0")} / {String(SOLUTION_TABS.length).padStart(2, "0")} · {item.tab}
-                </motion.p>
-                <h3 className="mt-3 text-[clamp(1.6rem,2.4vw,2.3rem)] font-extrabold leading-[1.08] tracking-[-0.035em] text-jet">
-                  {item.headline.split(" ").map((word, i) => (
-                    <span key={`${word}${i}`} className="inline-block overflow-hidden pb-[0.08em] align-top">
-                      <motion.span
-                        className="inline-block"
-                        initial={{ y: "105%" }}
-                        animate={{ y: 0 }}
-                        transition={{ duration: 0.6, ease: EASE, delay: 0.05 + i * 0.035 }}
-                      >
-                        {word}&nbsp;
-                      </motion.span>
-                    </span>
-                  ))}
-                </h3>
-                <motion.p
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, ease: EASE, delay: 0.2 }}
-                  className="mt-3 max-w-lg text-[1.02rem] leading-relaxed text-ink-soft"
-                >
-                  {item.copy}
-                </motion.p>
-
-                <ul className="mt-6 grid gap-x-6 gap-y-1 sm:grid-cols-2">
-                  {item.props.map((prop, i) => (
-                    <motion.li
-                      key={prop}
-                      initial={{ opacity: 0, x: -12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.45, ease: EASE, delay: 0.25 + i * 0.06 }}
-                      className="group/prop -mx-2 flex items-start gap-3 rounded-xl px-2 py-1.5 text-[0.93rem] font-semibold text-jet transition-colors duration-300 hover:bg-floral"
-                    >
-                      <motion.span
-                        initial={{ scale: 0, rotate: -90 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 22, delay: 0.35 + i * 0.06 }}
-                        className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-peppermint text-[0.62rem] text-[#5f8a0f] transition-colors duration-300 group-hover/prop:bg-brand-green group-hover/prop:text-white"
-                      >
-                        ✓
-                      </motion.span>
-                      {prop}
-                    </motion.li>
-                  ))}
-                </ul>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, ease: EASE, delay: 0.45 }}
-                  className="mt-7 flex flex-wrap items-center gap-4"
-                >
-                  <CtaButton to="/partner">{item.cta}</CtaButton>
-                  <button
-                    type="button"
-                    onClick={() => choose((picked + 1) % SOLUTION_TABS.length)}
-                    className="group/next inline-flex items-center gap-2 text-[0.92rem] font-bold text-ink-soft transition-colors hover:text-brand-blue"
-                  >
-                    Next: {SOLUTION_TABS[(picked + 1) % SOLUTION_TABS.length].tab}
-                    <span className="transition-transform duration-300 group-hover/next:translate-x-1">→</span>
-                  </button>
-                </motion.div>
-              </div>
-
-              {/* The photo wipes in, slowly drifts, and carries the business's live status */}
-              <div className="relative min-h-[22rem] sm:min-h-[26rem] lg:min-h-0">
-                <motion.div
-                  initial={{ clipPath: "inset(0 0 0 100% round 2rem)" }}
-                  animate={{ clipPath: "inset(0 0 0 0% round 2rem)" }}
-                  transition={{ duration: 0.9, ease: EASE }}
-                  className="absolute inset-0 overflow-hidden rounded-[2rem] bg-jet"
-                >
-                  <div className="sol-drift absolute inset-0">
-                  <motion.img
-                    src={ART[item.art]}
-                    alt=""
-                    initial={{ scale: 1.25 }}
-                    animate={{ scale: 1.06 }}
-                    transition={{ duration: 1.6, ease: EASE }}
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-jet/90 via-jet/15 to-jet/10" />
-                  <motion.div
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, ease: EASE, delay: 0.55 }}
-                    className="absolute inset-x-6 bottom-6 text-white md:inset-x-8 md:bottom-8"
-                  >
-                    <p className="label text-brand-green">What you get</p>
-                    <p className="mt-2 max-w-md text-[clamp(1.15rem,1.9vw,1.5rem)] font-extrabold leading-snug tracking-[-0.02em]">{OUTCOME[item.id]}</p>
-                  </motion.div>
-                </motion.div>
-
-                <FloatCard glyph={first[0]} title={first[1]} sub={first[2]} delay={0.6} className="left-4 top-5 md:-left-6 md:top-8" />
-                <FloatCard
-                  glyph={second[0]}
-                  title={second[1]}
-                  sub={second[2]}
-                  delay={0.8}
-                  tone="green"
-                  className="right-4 top-[40%] hidden sm:block md:-right-5"
-                />
-              </div>
-            </motion.div>
-          </AnimatePresence>
-        </div>
+        <Reveal from="up" className="mt-8 lg:mt-7 lg:flex lg:min-h-0 lg:flex-1">
+          <div
+            onPointerEnter={() => setHold(true)}
+            onPointerLeave={() => setHold(false)}
+            className="flex flex-col gap-3 lg:min-h-0 lg:flex-1 lg:flex-row"
+          >
+            {SOLUTION_TABS.map((tab, i) => (
+              <Panel key={tab.id} tab={tab} i={i} active={i === picked} playing={playing} auto={auto} onOpen={() => choose(i)} />
+            ))}
+          </div>
+        </Reveal>
       </div>
     </section>
   );

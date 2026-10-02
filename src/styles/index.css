@@ -1719,3 +1719,22 @@
     transform: translateY(-3px);
   }
 }
+
+/* Solutions panels: a strip's label fades in once the panel has closed, and
+   the floating status cards only show where the open panel has room. */
+.sol-strip-in {
+  animation: fade-in 0.5s var(--ease-brand) 0.3s both;
+}
+.sol-floats {
+  display: none;
+}
+@media (min-width: 1024px) and (min-height: 820px) {
+  .sol-floats {
+    display: block;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sol-strip-in {
+    animation: none;
+  }
+}
