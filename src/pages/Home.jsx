@@ -312,7 +312,7 @@ const FOUNDERS = [shashankRai, saquibAli, sagarChauhan];
 function Face({ src, className, style }) {
   return (
     <span className={clsx("block shrink-0 overflow-hidden rounded-full bg-white", className)} style={style}>
-      <img src={src} alt="" loading="lazy" className="h-full w-full scale-[2.3] object-cover [transform-origin:50%_24%]" />
+      <img src={src} alt="" loading="lazy" className="h-full w-full scale-[2.1] object-cover [transform-origin:50%_16%]" />
     </span>
   );
 }
@@ -494,12 +494,12 @@ function Faq() {
 
               {/* The people who answer */}
               <div className="flex items-center gap-2.5">
-                <div className="flex -space-x-2.5">
+                <div className="flex -space-x-1.5">
                   {FOUNDERS.map((src, i) => (
                     <Face
                       key={src}
                       src={src}
-                      className="relative h-10 w-10 ring-2 ring-jet transition-transform duration-300 hover:z-10 hover:-translate-y-1"
+                      className="relative h-12 w-12 ring-[3px] ring-jet transition-transform duration-300 hover:z-10 hover:-translate-y-1 hover:scale-110"
                       style={{ zIndex: FOUNDERS.length - i }}
                     />
                   ))}
