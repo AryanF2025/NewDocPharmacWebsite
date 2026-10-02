@@ -1738,3 +1738,10 @@
     animation: none;
   }
 }
+
+/* Solutions business cards: the supporting line steps aside on short screens. */
+@media (min-width: 1024px) and (max-height: 820px) {
+  .sol-short-hide {
+    display: none;
+  }
+}

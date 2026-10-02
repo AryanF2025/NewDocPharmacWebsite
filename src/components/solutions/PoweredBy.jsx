@@ -15,7 +15,6 @@ import { CountUp } from "@/components/experience/HeroParts";
 import { SectionHeader } from "@/components/motion/Text";
 import { Reveal } from "@/components/ui/Reveal";
 import { PLATFORM } from "@/data/technology";
-import rider from "@/assets/images/rider.webp";
 import stillVerify from "@/assets/images/still-verify.jpg";
 
 /** True while the element is on screen, so the animations only run when seen. */
@@ -46,10 +45,10 @@ const HUB = [200, 132];
 
 /** Rider routes out of the darkstore, each to a door, with its delivery time. */
 const ROUTES = [
-  { d: "M200 132 C 232 118, 262 82, 318 62", to: [318, 62], min: 18, side: "left" },
-  { d: "M200 132 C 168 150, 122 152, 88 196", to: [88, 196], min: 24, side: "right" },
-  { d: "M200 132 C 216 170, 252 200, 304 212", to: [304, 212], min: 21, side: "left" },
-  { d: "M200 132 C 178 108, 132 88, 100 56", to: [100, 56], min: 27, side: "right" },
+  { d: "M200 132 C 232 118, 262 82, 318 62", to: [318, 62], min: 18, side: "right" },
+  { d: "M200 132 C 168 150, 122 152, 88 196", to: [88, 196], min: 24, side: "left" },
+  { d: "M200 132 C 216 170, 252 200, 304 212", to: [304, 212], min: 21, side: "right" },
+  { d: "M200 132 C 178 108, 132 88, 100 56", to: [100, 56], min: 27, side: "left" },
 ];
 
 const CYCLE = 7200;
@@ -252,12 +251,12 @@ function ProductRail({ running }) {
   }, [running]);
 
   return (
-    <ul className="flex flex-col items-stretch gap-1.5">
+    <ul className="flex flex-col items-stretch gap-1">
       {PLATFORM.map((p, i) => (
         <li
           key={p.key}
           className={clsx(
-            "whitespace-nowrap rounded-full border px-3 py-1.5 text-center text-[0.72rem] font-bold transition-all duration-500",
+            "whitespace-nowrap rounded-full border px-3 py-1 text-center text-[0.72rem] font-bold transition-all duration-500",
             i === on ? "border-brand-green bg-brand-green text-jet shadow-[0_0_24px_-4px_rgba(161,230,102,.7)]" : "border-white/15 bg-jet/60 text-white/70 backdrop-blur"
           )}
         >
@@ -273,7 +272,7 @@ export function PoweredBy() {
   const running = useOnScreen(ref);
 
   return (
-    <section ref={ref} className="relative overflow-hidden bg-jet py-20 text-white lg:flex lg:min-h-[100svh] lg:flex-col lg:pb-12 lg:pt-24">
+    <section ref={ref} className="relative overflow-hidden bg-jet py-20 text-white lg:flex lg:min-h-[100svh] lg:flex-col lg:pb-12 lg:pt-28">
       {/* Slow light behind the cards */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="pb-glow absolute -left-40 top-1/4 h-[34rem] w-[34rem] rounded-full bg-brand-blue/25 blur-[120px]" />
@@ -312,8 +311,8 @@ export function PoweredBy() {
             link={{ to: "/about", label: "Meet the team behind the network" }}
             visual={
               <>
-                <img src={rider} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover opacity-25 mix-blend-luminosity transition-transform duration-[1400ms] ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.05]" />
-                <div className="absolute inset-0 bg-gradient-to-b from-jet/40 via-jet/60 to-jet/90" />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_55%,rgba(2,150,217,.22),transparent_65%)]" />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-jet/60" />
                 <div className="absolute inset-x-3 bottom-1 top-12 sm:inset-x-6">
                   <CatchmentMap running={running} />
                 </div>
@@ -343,14 +342,14 @@ export function PoweredBy() {
             link={{ to: "/technology", label: "See the technology" }}
             visual={
               <>
-                <img src={stillVerify} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover opacity-30 mix-blend-luminosity" />
+                <img src={stillVerify} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover opacity-[.12] mix-blend-luminosity" />
                 <div className="absolute inset-0 bg-gradient-to-b from-jet/30 via-jet/70 to-jet/95" />
                 <div className="absolute left-5 right-5 top-16 bottom-0 overflow-hidden sm:right-[10.5rem] [mask-image:linear-gradient(to_bottom,#000_60%,transparent_96%)] [perspective:1200px]">
                   <div className="w-[122%] origin-top-left transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] [transform:rotateX(8deg)_scale(.82)] group-hover:[transform:rotateX(0)_scale(.82)]">
                     <ConsoleMock compact className="w-full" />
                   </div>
                 </div>
-                <div className="absolute right-5 top-16 hidden w-[8.5rem] sm:block">
+                <div className="absolute right-5 top-14 hidden w-[8.5rem] sm:block">
                   <ProductRail running={running} />
                 </div>
               </>

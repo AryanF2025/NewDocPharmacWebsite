@@ -46,7 +46,7 @@ function usePrefetchPages() {
 
 /**
  * Restores the top of the page between routes, but honours in-page anchors so
- * the footer's `/solutions#d2c-health` links land on the right tab.
+ * the footer's `/solutions#d2c-health` links land on the right business card.
  */
 function ScrollManager() {
   const { pathname, hash } = useLocation();
