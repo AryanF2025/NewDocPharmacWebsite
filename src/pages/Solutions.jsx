@@ -190,12 +190,12 @@ function SolutionsHero() {
 
 /* ----------------------------------------------------------------- impact --- */
 
-/** Each figure's pillar: how tall it stands, and its colour. */
+/** Each figure's pillar: how tall it stands, and the accent on its cap and bar. */
 const PILLARS = [
-  { h: 92, tone: "bg-jet text-white", sub: "text-white/60", bar: "bg-brand-green" },
-  { h: 80, tone: "bg-brand-blue text-white", sub: "text-white/75", bar: "bg-white" },
-  { h: 62, tone: "border border-hairline bg-floral text-jet", sub: "text-ink-soft", bar: "bg-brand-blue" },
-  { h: 72, tone: "bg-gradient-to-b from-[#b4ea7c] to-[#8fc124] text-jet", sub: "text-jet/70", bar: "bg-jet" },
+  { h: 70, accent: "bg-jet" },
+  { h: 60, accent: "bg-brand-blue" },
+  { h: 46, accent: "bg-gradient-to-r from-brand-blue to-brand-green" },
+  { h: 54, accent: "bg-brand-green" },
 ];
 
 /** One figure as a pillar that rises from the floor of the screen. */
@@ -207,21 +207,22 @@ function Pillar({ stat, i, seen }) {
       <div
         data-in={seen}
         style={{ "--h": `${p.h}%`, "--i": i }}
-        className={clsx("pillar relative flex w-full flex-col overflow-hidden rounded-[2rem] p-7 lg:rounded-b-none xl:p-8", p.tone)}
+        className="pillar relative flex w-full flex-col overflow-hidden rounded-[1.75rem] border border-hairline bg-gradient-to-b from-floral to-white p-7 text-jet transition-shadow duration-500 group-hover:shadow-[0_-20px_50px_-30px_rgba(5,36,57,.35)] lg:rounded-b-none lg:border-b-0 xl:p-8"
       >
+        <span aria-hidden className={clsx("absolute inset-x-0 top-0 h-1", p.accent)} />
         <div className="flex items-center justify-between">
           <span className="text-[0.95rem] font-extrabold tracking-tight">{stat.label}</span>
-          <span className={clsx("tabular text-[0.75rem] font-extrabold", p.sub)}>{String(i + 1).padStart(2, "0")}</span>
+          <span className="tabular text-[0.75rem] font-extrabold text-ink-faint">{String(i + 1).padStart(2, "0")}</span>
         </div>
-        <p className="tabular mt-4 text-[clamp(2.8rem,4.6vw,4.6rem)] font-extrabold leading-none tracking-[-0.05em]">
+        <p className="tabular mt-4 text-[clamp(2.3rem,3.4vw,3.4rem)] font-extrabold leading-none tracking-[-0.05em]">
           <CountUp value={stat.value} suffix={stat.suffix} delay={300 + i * 150} />
         </p>
         {percent ? (
-          <span aria-hidden className="mt-4 block h-1.5 w-full overflow-hidden rounded-full bg-current/15">
-            <span className={clsx("pillar-bar block h-full rounded-full", p.bar)} style={{ "--w": `${stat.value}%` }} />
+          <span aria-hidden className="mt-4 block h-1 w-full overflow-hidden rounded-full bg-jet/8">
+            <span className={clsx("pillar-bar block h-full rounded-full", p.accent)} style={{ "--w": `${stat.value}%` }} />
           </span>
         ) : null}
-        <p className={clsx("mt-4 max-w-[16rem] text-[0.95rem] leading-snug", p.sub)}>{stat.note}</p>
+        <p className="mt-4 max-w-[16rem] text-[0.92rem] leading-snug text-ink-soft">{stat.note}</p>
       </div>
     </div>
   );
