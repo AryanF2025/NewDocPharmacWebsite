@@ -1308,3 +1308,8 @@
     stroke-dashoffset: 0;
   }
 }
+
+/* The "I'm a…" note slides in each time the choice changes. */
+.choice-note {
+  animation: rise-in 0.45s var(--ease-brand) both;
+}

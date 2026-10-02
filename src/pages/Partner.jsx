@@ -14,7 +14,6 @@ import { CONTACT, OFFICE, SOCIAL } from "@/components/experience/siteInfo";
 import { submitContactEnquiry } from "@/api/contact.api";
 import {
   BUSINESS_TYPES,
-  SLIDER_TYPES,
   MONTHLY_ORDERS,
   CONTACT_INITIAL,
   CONTACT_HERO,
@@ -24,7 +23,7 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 import { scrollToTarget } from "@/components/motion/smoothScroll";
 import { CountUp } from "@/components/experience/HeroParts";
 import { Select } from "@/components/ui/Select";
-import { SectionHeader } from "@/components/motion/Text";
+import { SocialIcon } from "@/components/ui/SocialIcon";
 import { CtaButton, GhostButton } from "@/components/motion/CtaButton";
 
 /** The figures partners actually stay for. */
@@ -76,41 +75,6 @@ function validate(form) {
   return errors;
 }
 
-/** How far through the required fields the visitor is: name, a valid email,
- *  and a business type. Fills as they type. */
-function FormProgress({ form }) {
-  const steps = [
-    ["Name", Boolean(form.name.trim())],
-    // The same email rule the form submits with.
-    ["Email", Boolean(form.email.trim()) && !validate(form).email],
-    ["Business", Boolean(form.businessType)],
-  ];
-  const done = steps.filter(([, ok]) => ok).length;
-  return (
-    <div className="mt-6" aria-live="polite">
-      <div className="flex items-center justify-between text-[0.8rem] font-semibold">
-        <span className={done === steps.length ? "text-[#5c7a15]" : "text-ink-faint"}>
-          {done === steps.length ? "Ready to send" : `${done} of ${steps.length} required`}
-        </span>
-        <span className="flex gap-3 text-ink-faint">
-          {steps.map(([label, ok]) => (
-            <span key={label} className={clsx("transition-colors duration-300", ok && "text-jet")}>
-              {ok ? "✓ " : ""}
-              {label}
-            </span>
-          ))}
-        </span>
-      </div>
-      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-floral">
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-brand-blue to-brand-green transition-[width] duration-500 ease-[cubic-bezier(.22,1,.36,1)]"
-          style={{ width: `${(done / steps.length) * 100}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
 const FIELD =
   "w-full rounded-xl border border-hairline bg-white px-4 py-3 text-[0.95rem] text-jet outline-none transition-[border-color,box-shadow,background-color] duration-200 placeholder:text-ink-faint hover:border-[#cfd4da] focus:border-brand-blue focus:bg-white focus:shadow-[0_0_0_3px_rgba(2,150,217,.15)]";
 
@@ -134,73 +98,72 @@ function Field({ label, error, children, hint, labelId }) {
 }
 
 /**
- * The five audiences as selectable cards. Picking one sets the enquiry form's
- * business type and takes the visitor to the form. Nothing changes on its own:
- * the choice is always the visitor's.
+ * The form's first question, "I'm a…": one tap per business type, with a
+ * line under it saying what we'll help that business do. Arrow keys move
+ * between the choices, as in any radio group.
  */
-function BusinessTypePicker({ value, onPick }) {
-  const choose = (type) => {
-    onPick(type);
-    const form = document.getElementById("enquiry");
-    if (!form) return;
-    scrollToTarget(form);
-    // Put the cursor in the first field once the page has arrived.
-    window.setTimeout(() => form.querySelector("input")?.focus({ preventScroll: true }), 700);
+function BusinessTypeChips({ value, onPick }) {
+  const index = Math.max(0, BUSINESS_TYPES.findIndex((type) => type.value === value));
+  const current = BUSINESS_TYPES[index];
+
+  const onKeyDown = (event) => {
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
+    if (!step) return;
+    event.preventDefault();
+    const next = (index + step + BUSINESS_TYPES.length) % BUSINESS_TYPES.length;
+    onPick(BUSINESS_TYPES[next].value);
+    event.currentTarget.querySelectorAll('[role="radio"]')[next]?.focus();
   };
 
   return (
-    <div role="radiogroup" aria-label="Type of business" className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
-      {SLIDER_TYPES.map((type, i) => {
-        const active = type.value === value;
-        return (
-          <button
-            key={type.value}
-            type="button"
-            role="radio"
-            aria-checked={active}
-            onClick={() => choose(type.value)}
-            className={clsx(
-              "group relative flex flex-col overflow-hidden rounded-3xl border bg-white text-left outline-none transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 hover:shadow-[0_24px_50px_-28px_rgba(5,36,57,.45)] focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-floral",
-              active ? "border-brand-blue shadow-[0_0_0_1px_var(--color-brand-blue)]" : "border-hairline",
-              // The fifth card spans both columns on phones, so the grid stays even.
-              i === SLIDER_TYPES.length - 1 && "col-span-2 md:col-span-1"
-            )}
-          >
-            <span className="relative block aspect-[16/10] overflow-hidden bg-jet">
-              <img
-                src={type.image}
-                alt=""
-                loading="lazy"
-                className={clsx(
-                  "h-full w-full object-cover transition-[transform,filter,opacity] duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-105",
-                  active ? "opacity-100" : "opacity-75 grayscale-[40%] group-hover:opacity-100 group-hover:grayscale-0"
-                )}
-              />
-              <span className="tabular absolute left-3 top-3 rounded-full bg-white/90 px-2 py-0.5 text-[0.72rem] font-extrabold text-jet">
-                {String(i + 1).padStart(2, "0")}
-              </span>
+    <div className="field">
+      <p id="businessType-label" className="mb-2.5 text-[0.8rem] font-bold text-jet">
+        I&apos;m a… *
+      </p>
+      <div role="radiogroup" aria-labelledby="businessType-label" onKeyDown={onKeyDown} className="flex flex-wrap gap-2">
+        {BUSINESS_TYPES.map((type, i) => {
+          const active = i === index;
+          return (
+            <button
+              key={type.value}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              tabIndex={active ? 0 : -1}
+              onClick={() => onPick(type.value)}
+              className={clsx(
+                "inline-flex min-h-10 items-center gap-2 rounded-full border px-4 text-[0.88rem] font-semibold outline-none transition-[background-color,border-color,color,box-shadow,transform] duration-300 focus-visible:shadow-[0_0_0_3px_rgba(2,150,217,.2)] active:scale-[0.97]",
+                active
+                  ? "border-brand-blue bg-brand-blue text-white shadow-[0_8px_20px_-10px_rgba(2,150,217,.8)]"
+                  : "border-hairline bg-white text-ink-soft hover:border-brand-blue/50 hover:bg-viking/50 hover:text-jet"
+              )}
+            >
               <span
+                aria-hidden
                 className={clsx(
-                  "absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full border-2 text-[0.7rem] font-extrabold transition-all duration-300",
-                  active ? "scale-100 border-brand-blue bg-brand-blue text-white" : "scale-90 border-white/80 bg-jet/30 text-transparent"
+                  "grid transition-[grid-template-columns,opacity] duration-300",
+                  active ? "grid-cols-[1fr] opacity-100" : "grid-cols-[0fr] opacity-0"
                 )}
               >
-                ✓
+                <span className="overflow-hidden text-[0.7rem]">✓</span>
               </span>
-            </span>
-            <span className="flex flex-1 flex-col p-4">
-              <span className={clsx("text-[1rem] font-extrabold tracking-tight transition-colors", active ? "text-brand-blue" : "text-jet")}>
-                {type.tab}
-              </span>
-              <span className="mt-1 text-[0.85rem] leading-snug text-ink-soft">{type.heading}</span>
-              <span className="mt-auto flex items-center gap-1.5 pt-3 text-[0.8rem] font-bold text-brand-blue">
-                {active ? "Selected" : "Choose"}
-                <span aria-hidden className="transition-transform duration-300 group-hover:translate-y-0.5">↓</span>
-              </span>
-            </span>
-          </button>
-        );
-      })}
+              {type.tab}
+            </button>
+          );
+        })}
+      </div>
+      {/* What we'll help with — changes with the choice. */}
+      <p key={current.value} className="choice-note mt-3 flex items-center gap-2 text-[0.88rem] text-ink-soft">
+        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-green" />
+        {current.value === "other" ? (
+          <span>Tell us what you need in the message below.</span>
+        ) : (
+          <span>
+            We&apos;ll help you <span className="font-bold text-jet">{current.heading.charAt(0).toLowerCase() + current.heading.slice(1)}</span>
+          </span>
+        )}
+      </p>
+      <input type="hidden" name="businessType" value={current.value} />
     </div>
   );
 }
@@ -390,18 +353,8 @@ export default function Partner() {
     <>
       <PartnerHero />
 
-      {/* --------------------------------------- who we build for --- */}
-      <section className="bg-floral pt-20 md:pt-28">
-        <div className="mx-auto max-w-[84rem] px-5 md:px-10">
-          <SectionHeader eyebrow="Who we build for" title="Pick what fits you. We'll shape the network around it." />
-          <Reveal from="up" delay={0.08} className="mt-8">
-            <BusinessTypePicker value={form.businessType} onPick={pickType} />
-          </Reveal>
-        </div>
-      </section>
-
       {/* ------------------------------------------------ form + aside --- */}
-      <section className="bg-floral pb-24 pt-16 md:pb-32 md:pt-20">
+      <section className="bg-floral py-24 md:py-32">
         {/* min-w-0 on the columns: a long address row may truncate, never widen the page. */}
         <div className="mx-auto grid max-w-[84rem] gap-6 px-5 md:px-10 lg:grid-cols-[1.15fr_1fr] lg:gap-10 [&>*]:min-w-0">
           <Reveal from="left">
@@ -434,9 +387,12 @@ export default function Partner() {
                     Tell us about your business
                   </h2>
                   <p className="mt-2 text-[0.98rem] text-ink-soft">Fields marked with an asterisk are required.</p>
-                  <FormProgress form={form} />
 
-                  <div className="mt-7 grid gap-5 sm:grid-cols-2">
+                  <div className="mt-7">
+                    <BusinessTypeChips value={form.businessType} onPick={pickType} />
+                  </div>
+
+                  <div className="mt-6 grid gap-5 sm:grid-cols-2">
                     <Field label="Your name *" error={errors.name}>
                       <input id="name" name="name" value={form.name} onChange={set("name")} placeholder="Priya Sharma" autoComplete="name" className={FIELD} />
                     </Field>
@@ -453,17 +409,6 @@ export default function Partner() {
                       <input id="phone" name="phone" type="tel" value={form.phone} onChange={set("phone")} placeholder="+91 98765 43210" autoComplete="tel" className={FIELD} />
                     </Field>
 
-                    <Field label="Type of business *" labelId="businessType-label">
-                      <Select
-                        id="businessType"
-                        name="businessType"
-                        labelledBy="businessType-label"
-                        value={form.businessType}
-                        onChange={set("businessType")}
-                        options={BUSINESS_TYPES.map((type) => ({ value: type.value, label: type.label }))}
-                      />
-                    </Field>
-
                     <Field label="Monthly orders" labelId="monthlyOrders-label">
                       <Select
                         id="monthlyOrders"
@@ -475,7 +420,7 @@ export default function Partner() {
                       />
                     </Field>
 
-                    <div className="sm:col-span-2">
+                    <div>
                       <Field label="Cities you need" hint="Where your customers are — we'll map the nearest darkstores.">
                         <input id="cities" name="cities" value={form.cities} onChange={set("cities")} placeholder="Bengaluru, Mumbai, Delhi NCR" className={FIELD} />
                       </Field>
@@ -607,9 +552,11 @@ export default function Partner() {
                       href={s.href}
                       target="_blank"
                       rel="noreferrer"
-                      className="pill-fill rounded-full border border-hairline px-4 py-2 text-[0.82rem] font-semibold text-ink-soft"
+                      className="pill-fill inline-flex min-h-10 items-center gap-2 rounded-full border border-hairline px-4 text-[0.85rem] font-semibold text-ink-soft"
                     >
-                      {s.name} <span aria-hidden className="pill-arrow">↗</span>
+                      <SocialIcon name={s.name} />
+                      {s.name}
+                      <span aria-hidden className="pill-arrow">↗</span>
                     </a>
                   ))}
                 </div>

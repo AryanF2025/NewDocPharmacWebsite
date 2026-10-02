@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import clsx from "clsx";
 import { Logo } from "@/components/ui/Logo";
 import { CONTACT, SOCIAL } from "./siteInfo";
+import { SocialIcon } from "@/components/ui/SocialIcon";
 
 const EASE = [0.22, 1, 0.36, 1];
 
@@ -145,8 +146,10 @@ export function MobileMenu({ solutions, onClose }) {
               {CONTACT.phone}
             </a>
             {SOCIAL.map((s) => (
-              <a key={s.name} href={s.href} target="_blank" rel="noreferrer" className="pill-fill pill-fill--dark rounded-full border border-white/20 px-3 py-1.5 font-semibold">
-                {s.name} <span aria-hidden className="pill-arrow">↗</span>
+              <a key={s.name} href={s.href} target="_blank" rel="noreferrer" className="pill-fill pill-fill--dark inline-flex min-h-9 items-center gap-1.5 rounded-full border border-white/20 px-3 font-semibold">
+                <SocialIcon name={s.name} size={14} />
+                {s.name}
+                <span aria-hidden className="pill-arrow">↗</span>
               </a>
             ))}
           </div>

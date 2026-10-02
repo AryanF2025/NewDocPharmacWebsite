@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Logo } from "@/components/ui/Logo";
+import { SocialIcon } from "@/components/ui/SocialIcon";
 import { COVERAGE_CITIES } from "@/components/art/IndiaCoverageMap";
 import { FooterWordmark } from "./FooterWordmark";
 import { scrollToTarget } from "@/components/motion/smoothScroll";
@@ -35,8 +36,6 @@ const ICONS = {
   phone: "M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2",
   mail: "M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zm0 0 9 6 9-6",
   pin: "M12 21s7-6.3 7-12a7 7 0 1 0-14 0c0 5.7 7 12 7 12zm0-9.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5",
-  LinkedIn: "M7 10v7M7 7v.01M11 17v-4a2 2 0 0 1 4 0v4M11 10v7M4 4h16v16H4z",
-  Instagram: "M4 8a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4zm8 7.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M17 7v.01",
 };
 
 function Icon({ name, size = 18 }) {
@@ -133,7 +132,7 @@ export function SiteFooter() {
                   rel="noreferrer"
                   className="pill-fill pill-fill--dark inline-flex min-h-11 items-center gap-2 rounded-full border border-white/15 px-4 text-[0.88rem] font-semibold text-white/85"
                 >
-                  <Icon name={s.name} size={16} />
+                  <SocialIcon name={s.name} />
                   {s.name}
                   <span aria-hidden className="pill-arrow">↗</span>
                 </a>
