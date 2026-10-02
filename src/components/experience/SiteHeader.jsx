@@ -28,7 +28,7 @@ function NavPill() {
     <motion.span
       layoutId="nav-pill"
       aria-hidden
-      className="absolute inset-0 rounded-full bg-floral shadow-[inset_0_0_0_1px_rgba(5,36,57,.06)]"
+      className="absolute inset-0 rounded-full bg-viking"
       transition={{ type: "spring", stiffness: 420, damping: 34, mass: 0.6 }}
     />
   );
@@ -107,7 +107,7 @@ export function SiteHeader() {
                 onPointerEnter={() => setHovered("/solutions")}
                 className={clsx(
                   "relative flex items-center gap-1.5 rounded-full px-4 py-2 transition-colors duration-300",
-                  pill === "/solutions" || solutions ? "text-jet" : "hover:text-jet"
+                  pill === "/solutions" || solutions ? "text-brand-blue-deep" : "hover:text-jet"
                 )}
               >
                 {pill === "/solutions" ? <NavPill /> : null}
@@ -124,7 +124,7 @@ export function SiteHeader() {
                 onPointerEnter={() => setHovered(l.to)}
                 className={clsx(
                   "relative rounded-full px-4 py-2 transition-colors duration-300",
-                  pill === l.to ? "text-jet" : "hover:text-jet"
+                  pill === l.to ? "text-brand-blue-deep" : "hover:text-jet"
                 )}
               >
                 {pill === l.to ? <NavPill /> : null}

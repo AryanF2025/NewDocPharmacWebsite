@@ -197,7 +197,27 @@ function SolutionTabs({ picked, setPicked }) {
         </div>
 
         {/* Panel */}
-        <div role="tabpanel" className="mt-8 lg:min-h-0 lg:flex-1">
+        {/* Every tab's copy is laid out invisibly in the same cell, so the panel
+            is always as tall as the longest tab and nothing below it moves. */}
+        <div role="tabpanel" className="mt-8 grid lg:min-h-0 lg:flex-1">
+          {SOLUTION_TABS.map((tab) => (
+            <div key={tab.id} aria-hidden className="invisible grid gap-10 [grid-area:1/1] lg:grid-cols-[1.05fr_1fr] lg:gap-14">
+              <div>
+                <p className="text-[0.8rem] font-extrabold">00</p>
+                <h3 className="mt-3 text-[clamp(1.6rem,2.5vw,2.3rem)] font-extrabold leading-[1.08] tracking-[-0.035em]">{tab.headline}</h3>
+                <p className="mt-3 max-w-lg text-[1.02rem] leading-relaxed">{tab.copy}</p>
+                <ul className="mt-6 grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
+                  {tab.props.map((prop) => (
+                    <li key={prop} className="flex items-start gap-3 text-[0.95rem] font-semibold">
+                      <span className="mt-0.5 h-5 w-5 shrink-0" />
+                      {prop}
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-8 h-14" />
+              </div>
+            </div>
+          ))}
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={item.id}
@@ -205,7 +225,7 @@ function SolutionTabs({ picked, setPicked }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.45, ease: EASE }}
-              className="grid gap-10 lg:h-full lg:grid-cols-[1.05fr_1fr] lg:gap-14"
+              className="grid gap-10 [grid-area:1/1] lg:h-full lg:grid-cols-[1.05fr_1fr] lg:gap-14"
             >
               <div className="lg:flex lg:flex-col lg:justify-center">
                 <p className="tabular text-[0.8rem] font-extrabold text-brand-blue">
