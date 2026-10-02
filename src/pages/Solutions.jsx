@@ -10,10 +10,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
+import { motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { Reveal } from "@/components/ui/Reveal";
 import { CountUp } from "@/components/experience/HeroParts";
 import { HeroBackdrop, HeroHeading, Enter, HIGHLIGHT } from "@/components/motion/Hero";
-import { SectionHeader } from "@/components/motion/Text";
+import { SectionHeader, SplitText } from "@/components/motion/Text";
 import { CtaButton, GhostButton } from "@/components/motion/CtaButton";
 import { scrollToTarget } from "@/components/motion/smoothScroll";
 import { useInViewOnce } from "@/components/motion/useInViewOnce";
@@ -187,28 +188,20 @@ function SolutionsHero() {
 
 /* ----------------------------------------------------------------- impact --- */
 
-/** A small picture for each figure: a ring for a rate, a clock for time, bars for depth. */
+/** A picture for each figure: a ring for a rate, a dial for time, bars for depth. */
 function StatArt({ i, value, on }) {
   const draw = { transition: "stroke-dashoffset 1.8s cubic-bezier(.22,1,.36,1) .2s" };
   if (i < 2) {
     return (
-      <svg viewBox="0 0 64 64" className="h-16 w-16 -rotate-90" aria-hidden>
-        <circle
-          cx="32"
-          cy="32"
-          r="26"
-          fill="none"
-          stroke="#052439"
-          strokeOpacity=".08"
-          strokeWidth="6"
-        />
+      <svg viewBox="0 0 64 64" className="h-full w-full -rotate-90" aria-hidden>
+        <circle cx="32" cy="32" r="26" fill="none" stroke="#052439" strokeOpacity=".07" strokeWidth="5" />
         <circle
           cx="32"
           cy="32"
           r="26"
           fill="none"
           stroke={i === 0 ? "#0296d9" : "#8fc124"}
-          strokeWidth="6"
+          strokeWidth="5"
           strokeLinecap="round"
           pathLength="100"
           strokeDasharray="100"
@@ -221,23 +214,18 @@ function StatArt({ i, value, on }) {
   if (i === 2) {
     // Half the dial: thirty minutes of the hour.
     return (
-      <svg viewBox="0 0 64 64" className="h-16 w-16" aria-hidden>
-        <circle
-          cx="32"
-          cy="32"
-          r="26"
-          fill="#fff"
-          stroke="#052439"
-          strokeOpacity=".08"
-          strokeWidth="6"
-        />
+      <svg viewBox="0 0 64 64" className="h-full w-full" aria-hidden>
+        <circle cx="32" cy="32" r="26" fill="#fff" stroke="#052439" strokeOpacity=".07" strokeWidth="5" />
+        {[0, 1, 2, 3].map((q) => (
+          <line key={q} x1="32" y1="9" x2="32" y2="12.5" stroke="#052439" strokeOpacity=".25" strokeWidth="1.5" transform={`rotate(${q * 90} 32 32)`} />
+        ))}
         <circle
           cx="32"
           cy="32"
           r="26"
           fill="none"
           stroke="#0296d9"
-          strokeWidth="6"
+          strokeWidth="5"
           strokeLinecap="round"
           pathLength="100"
           strokeDasharray="100"
@@ -249,9 +237,9 @@ function StatArt({ i, value, on }) {
           x1="32"
           y1="32"
           x2="32"
-          y2="14"
+          y2="15"
           stroke="#052439"
-          strokeWidth="3"
+          strokeWidth="2.5"
           strokeLinecap="round"
           style={{
             transformOrigin: "32px 32px",
@@ -259,23 +247,24 @@ function StatArt({ i, value, on }) {
             transition: "transform 1.8s cubic-bezier(.22,1,.36,1) .2s",
           }}
         />
-        <circle cx="32" cy="32" r="3.5" fill="#052439" />
+        <circle cx="32" cy="32" r="3" fill="#052439" />
       </svg>
     );
   }
   return (
-    <span className="flex h-16 items-end gap-1.5" aria-hidden>
-      {[0.45, 0.7, 0.55, 0.9, 1].map((h, j) => (
+    <span className="flex h-full w-full items-end justify-center gap-2" aria-hidden>
+      {[0.4, 0.62, 0.5, 0.82, 1].map((h, j) => (
         <span
           key={j}
-          className="w-2.5 rounded-full bg-gradient-to-t from-brand-blue to-brand-green transition-[height] duration-[1200ms] ease-[cubic-bezier(.22,1,.36,1)]"
-          style={{ height: on ? `${h * 100}%` : "8%", transitionDelay: `${0.2 + j * 0.09}s` }}
+          className="w-[14%] rounded-full bg-gradient-to-t from-brand-blue to-brand-green transition-[height] duration-[1200ms] ease-[cubic-bezier(.22,1,.36,1)]"
+          style={{ height: on ? `${h * 100}%` : "6%", transitionDelay: `${0.2 + j * 0.09}s` }}
         />
       ))}
     </span>
   );
 }
 
+/** One figure, as a tall card: what it measures, its picture, the number, and the note. */
 function ImpactCard({ stat, i }) {
   const ref = useRef(null);
   const on = useInViewOnce(ref);
@@ -288,30 +277,45 @@ function ImpactCard({ stat, i }) {
           e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
           e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
         }}
-        className="spotlight group relative flex h-full flex-col rounded-3xl border border-hairline bg-floral p-7 transition-[transform,background-color,box-shadow] duration-500 hover:-translate-y-1 hover:bg-white hover:shadow-[0_24px_50px_-32px_rgba(5,36,57,.4)]"
+        className="spotlight group relative flex h-full flex-col rounded-[2rem] border border-hairline bg-floral p-7 transition-[transform,background-color,box-shadow] duration-500 hover:-translate-y-1.5 hover:bg-white hover:shadow-[0_30px_60px_-36px_rgba(5,36,57,.45)] xl:p-8"
       >
-        <div className="flex items-start justify-between gap-4">
-          <p className="tabular text-[clamp(2.4rem,3.6vw,3.2rem)] font-extrabold leading-none tracking-[-0.05em] text-jet">
-            <CountUp value={stat.value} suffix={stat.suffix} delay={i * 100} />
-          </p>
-          <StatArt i={i} value={stat.value} on={on} />
+        <div className="flex items-center justify-between">
+          <p className="text-[0.95rem] font-extrabold tracking-tight text-jet">{stat.label}</p>
+          <span className="tabular text-[0.75rem] font-extrabold text-ink-faint transition-colors duration-300 group-hover:text-brand-blue">
+            {String(i + 1).padStart(2, "0")}
+          </span>
         </div>
-        <p className="mt-auto pt-8 text-[1.02rem] font-extrabold tracking-tight text-jet">
-          {stat.label}
+
+        <div className="my-8 flex flex-1 items-center justify-center lg:my-4">
+          <div className="h-28 w-28 transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-105 lg:h-[min(11rem,22svh)] lg:w-[min(11rem,22svh)]">
+            <StatArt i={i} value={stat.value} on={on} />
+          </div>
+        </div>
+
+        <p className="tabular text-[clamp(2.6rem,4.2vw,4rem)] font-extrabold leading-none tracking-[-0.05em] text-jet">
+          <CountUp value={stat.value} suffix={stat.suffix} delay={i * 100} />
         </p>
-        <p className="mt-1 text-[0.9rem] text-ink-soft">{stat.note}</p>
+        <p className="mt-2 text-[0.95rem] text-ink-soft">{stat.note}</p>
       </div>
     </Reveal>
   );
 }
 
+/** What the network delivers, as one screen of four figures. */
 function Impact() {
   return (
-    <section className="bg-white py-24 md:py-32">
-      <div className="mx-auto max-w-[84rem] px-5 md:px-10">
-        <SectionHeader eyebrow={SOLUTIONS_IMPACT.eyebrow} title={SOLUTIONS_IMPACT.headline} />
+    <section className="bg-white py-24 lg:flex lg:h-[100svh] lg:min-h-[44rem] lg:flex-col lg:pb-12 lg:pt-28">
+      <div className="mx-auto w-full max-w-[84rem] px-5 md:px-10 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
+        <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
+          <SectionHeader eyebrow={SOLUTIONS_IMPACT.eyebrow} title={SOLUTIONS_IMPACT.headline} />
+          <Reveal from="up" delay={0.15}>
+            <p className="max-w-sm text-[1rem] leading-relaxed text-ink-soft">
+              Four figures from the network every solution above runs on: how often orders are fulfilled, how often they arrive on time, how fast, and how deep the shelves go.
+            </p>
+          </Reveal>
+        </div>
 
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:mt-10 lg:min-h-0 lg:flex-1 lg:grid-cols-4">
           {SOLUTIONS_IMPACT.stats.map((stat, i) => (
             <ImpactCard key={stat.label} stat={stat} i={i} />
           ))}
@@ -323,55 +327,118 @@ function Impact() {
 
 /* ----------------------------------------------------------- closing call --- */
 
-/** The last word: a light panel, with a delivery route flowing along its foot. */
+/** The route the finale draws: darkstore, bottom left, to the customer's door, top right. */
+const FINALE_ROUTE = "M 120 650 C 300 650, 360 548, 520 578 S 800 705, 1010 612 S 1240 392, 1330 300";
+
+/**
+ * The last screen. As it scrolls in, a delivery route draws itself from a
+ * darkstore to a customer's door, a rider rides it with the minutes ticking,
+ * and the door lights up as the screen settles. The call sits in the middle.
+ */
 function ClosingCall() {
+  const ref = useRef(null);
+  const path = useRef(null);
+  const rider = useRef(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end end"] });
+  const draw = useTransform(scrollYProgress, [0.2, 0.92], [0, 1]);
+  const [minutes, setMinutes] = useState(0);
+  const [arrived, setArrived] = useState(false);
+
+  const place = (v) => {
+    const p = path.current;
+    if (!p) return;
+    const pt = p.getPointAtLength(v * p.getTotalLength());
+    rider.current?.setAttribute("transform", `translate(${pt.x} ${pt.y})`);
+    setMinutes(Math.max(1, Math.round(v * 24)));
+    setArrived(v > 0.985);
+  };
+  useMotionValueEvent(draw, "change", (v) => !reduce && place(v));
+  useEffect(() => place(reduce ? 1 : draw.get()), [reduce, draw]);
+
   return (
-    <section className="bg-white py-24 md:py-28">
-      <div className="mx-auto max-w-[84rem] px-5 md:px-10">
+    <section ref={ref} className="relative overflow-hidden bg-floral py-28 lg:flex lg:h-[100svh] lg:min-h-[44rem] lg:items-center">
+      {/* The route, behind everything */}
+      <svg aria-hidden viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 hidden h-full w-full md:block">
+        <defs>
+          <linearGradient id="finale-ink" x1="0" x2="1">
+            <stop offset="0" stopColor="#0296d9" />
+            <stop offset="1" stopColor="#8fc124" />
+          </linearGradient>
+        </defs>
+        <path ref={path} d={FINALE_ROUTE} fill="none" stroke="#052439" strokeOpacity=".08" strokeWidth="3" strokeDasharray="2 12" strokeLinecap="round" />
+        <motion.path
+          d={FINALE_ROUTE}
+          fill="none"
+          stroke="url(#finale-ink)"
+          strokeWidth="4"
+          strokeLinecap="round"
+          style={{ pathLength: reduce ? 1 : draw }}
+        />
+
+        {/* The darkstore */}
+        <g transform="translate(120 650)">
+          <circle r="34" fill="#0296d9" opacity=".12" />
+          <rect x="-18" y="-18" width="36" height="36" rx="10" fill="#0296d9" />
+          <path d="M0 -9v18M-9 0h18" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" />
+          <text y="44" textAnchor="middle" fill="#052439" fontSize="15" fontWeight="800">
+            Darkstore
+          </text>
+        </g>
+
+        {/* The door */}
+        <g transform="translate(1330 300)">
+          {arrived ? <circle className="door-ping" r="30" fill="none" stroke="#8fc124" strokeWidth="2.5" /> : null}
+          <circle r="22" fill={arrived ? "#8fc124" : "#fff"} stroke="#8fc124" strokeWidth="3" style={{ transition: "fill .4s" }} />
+          <path
+            d="M-8 1l8-7 8 7M-6 0v8h12v-8"
+            fill="none"
+            stroke={arrived ? "#fff" : "#8fc124"}
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ transition: "stroke .4s" }}
+          />
+          <text y="-36" textAnchor="middle" fill="#052439" fontSize="15" fontWeight="800">
+            {arrived ? "Delivered" : "Your customer"}
+          </text>
+        </g>
+
+        {/* The rider, with the minutes so far */}
+        <g ref={rider} transform="translate(120 650)" style={{ opacity: arrived ? 0 : 1, transition: "opacity .3s" }}>
+          <circle r="18" fill="#8fc124" opacity=".25" />
+          <circle r="9" fill="#8fc124" stroke="#fff" strokeWidth="3" />
+          <rect x="16" y="-34" width="70" height="26" rx="13" fill="#052439" />
+          <text x="51" y="-16" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="800">
+            {minutes} min
+          </text>
+        </g>
+      </svg>
+
+      <div className="relative mx-auto max-w-6xl px-5 text-center md:px-10">
         <Reveal from="up">
-          <div className="relative overflow-hidden rounded-[2rem] border border-hairline bg-floral px-7 py-12 text-jet md:px-12 md:py-14">
-            <div aria-hidden className="pointer-events-none absolute inset-0">
-              <div className="pb-glow absolute -right-24 -top-24 h-80 w-80 rounded-full bg-brand-blue/15 blur-[100px]" />
-              <svg
-                viewBox="0 0 600 200"
-                preserveAspectRatio="none"
-                className="absolute inset-x-0 bottom-0 h-1/2 w-full opacity-60"
-              >
-                <path
-                  d="M20 185 C 160 190, 240 120, 340 150 S 500 175, 585 70"
-                  fill="none"
-                  stroke="#052439"
-                  strokeOpacity=".08"
-                  strokeWidth="2"
-                />
-                <path
-                  className="route-flow"
-                  d="M20 185 C 160 190, 240 120, 340 150 S 500 175, 585 70"
-                  fill="none"
-                  stroke="#8fc124"
-                  strokeWidth="2.5"
-                  strokeDasharray="6 8"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
-            <div className="relative flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
-              <div>
-                <p className="label text-brand-blue">Not sure where you fit?</p>
-                <h2 className="mt-3 max-w-xl text-[clamp(1.6rem,2.8vw,2.4rem)] font-extrabold leading-[1.1] tracking-[-0.035em]">
-                  Tell us what you sell and where. We&apos;ll map the route.
-                </h2>
-                <p className="mt-3 max-w-lg text-[1.02rem] leading-relaxed text-ink-soft">
-                  The darkstores, licences and delivery SLA your orders need, back to you within two
-                  working days.
-                </p>
-              </div>
-              <div className="flex shrink-0 flex-wrap gap-3">
-                <CtaButton to="/partner">Talk to our team</CtaButton>
-                <GhostButton to="/technology">See the technology</GhostButton>
-              </div>
-            </div>
+          <p className="label text-brand-blue">Not sure where you fit?</p>
+        </Reveal>
+        <SplitText
+          lines={["Tell us what you sell and where.", ["We'll", { text: "map the route.", className: HIGHLIGHT }]]}
+          className="mx-auto mt-5 text-[clamp(2.1rem,4.1vw,4rem)] font-extrabold leading-[1.04] tracking-[-0.045em] text-jet"
+        />
+        <Reveal from="up" delay={0.2}>
+          <p className="mx-auto mt-6 max-w-xl text-[1.08rem] leading-relaxed text-ink-soft">
+            The darkstores, licences and delivery SLA your orders need, back to you within two working days.
+          </p>
+        </Reveal>
+        <Reveal from="up" delay={0.3}>
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+            <CtaButton to="/partner">Talk to our team</CtaButton>
+            <GhostButton to="/technology">See the technology</GhostButton>
           </div>
+          <p className="mt-6 text-[0.9rem] text-ink-faint">
+            Or call{" "}
+            <a href="tel:+917542021525" className="link-underline font-bold text-jet">
+              +91 75420 21525
+            </a>
+          </p>
         </Reveal>
       </div>
     </section>
