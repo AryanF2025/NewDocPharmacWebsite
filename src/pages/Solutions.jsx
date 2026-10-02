@@ -10,24 +10,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
-import {
-  AnimatePresence,
-  motion,
-  useAnimationFrame,
-  useMotionValue,
-  useReducedMotion,
-  useScroll,
-  useSpring,
-  useTransform,
-  useVelocity,
-} from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { Reveal } from "@/components/ui/Reveal";
 import { HeroBackdrop, HeroHeading, Enter, HIGHLIGHT } from "@/components/motion/Hero";
 import { SectionHeader, SplitText } from "@/components/motion/Text";
 import { CtaButton, GhostButton } from "@/components/motion/CtaButton";
 import { scrollToTarget } from "@/components/motion/smoothScroll";
+import { useInViewOnce } from "@/components/motion/useInViewOnce";
 import { usePageSeo } from "@/seo/usePageSeo";
 import { PoweredBy } from "@/components/solutions/PoweredBy";
+import { CountUp } from "@/components/experience/HeroParts";
 import { BusinessReel } from "@/components/solutions/BusinessReel";
 import { SOLUTIONS_HERO, SOLUTION_TABS, SOLUTIONS_IMPACT } from "@/data/site";
 import { BUSINESS_TYPES, MONTHLY_ORDERS } from "@/data/contact";
@@ -198,111 +190,69 @@ function SolutionsHero() {
 
 /* ----------------------------------------------------------------- impact --- */
 
-const wrap = (min, max, v) => {
-  const range = max - min;
-  return ((((v - min) % range) + range) % range) + min;
-};
+/** Each figure's pillar: how tall it stands, and its colour. */
+const PILLARS = [
+  { h: 92, tone: "bg-jet text-white", sub: "text-white/60", bar: "bg-brand-green" },
+  { h: 80, tone: "bg-brand-blue text-white", sub: "text-white/75", bar: "bg-white" },
+  { h: 62, tone: "border border-hairline bg-floral text-jet", sub: "text-ink-soft", bar: "bg-brand-blue" },
+  { h: 72, tone: "bg-gradient-to-b from-[#b4ea7c] to-[#8fc124] text-jet", sub: "text-jet/70", bar: "bg-jet" },
+];
 
-/**
- * A row that slides sideways forever and speeds up with the scroll, turning
- * round when the visitor scrolls back up. Four copies keep it seamless.
- */
-function DriftRow({ children, speed = 3, reverse = false }) {
-  const reduce = useReducedMotion();
-  const offset = useMotionValue(0);
-  const { scrollY } = useScroll();
-  const velocity = useSpring(useVelocity(scrollY), { damping: 50, stiffness: 400 });
-  const boost = useTransform(velocity, [0, 1000], [0, 4], { clamp: false });
-  const x = useTransform(offset, (v) => `${wrap(-25, -50, v)}%`);
-  const direction = useRef(reverse ? 1 : -1);
-
-  useAnimationFrame((_, delta) => {
-    if (reduce) return;
-    const b = boost.get();
-    if (b < 0) direction.current = reverse ? -1 : 1;
-    else if (b > 0) direction.current = reverse ? 1 : -1;
-    let move = direction.current * speed * (delta / 1000);
-    move += move * Math.abs(b);
-    offset.set(offset.get() + move);
-  });
-
+/** One figure as a pillar that rises from the floor of the screen. */
+function Pillar({ stat, i, seen }) {
+  const p = PILLARS[i];
+  const percent = stat.suffix === "%";
   return (
-    <div className="flex overflow-hidden whitespace-nowrap">
-      <motion.div style={{ x }} className="flex shrink-0 whitespace-nowrap">
-        {[0, 1, 2, 3].map((copy) => (
-          <div key={copy} aria-hidden={copy > 0 || undefined} className="flex shrink-0">
-            {children}
-          </div>
-        ))}
-      </motion.div>
+    <div className="group relative lg:flex lg:h-full lg:items-end">
+      <div
+        data-in={seen}
+        style={{ "--h": `${p.h}%`, "--i": i }}
+        className={clsx("pillar relative flex w-full flex-col overflow-hidden rounded-[2rem] p-7 lg:rounded-b-none xl:p-8", p.tone)}
+      >
+        <div className="flex items-center justify-between">
+          <span className="text-[0.95rem] font-extrabold tracking-tight">{stat.label}</span>
+          <span className={clsx("tabular text-[0.75rem] font-extrabold", p.sub)}>{String(i + 1).padStart(2, "0")}</span>
+        </div>
+        <p className="tabular mt-4 text-[clamp(2.8rem,4.6vw,4.6rem)] font-extrabold leading-none tracking-[-0.05em]">
+          <CountUp value={stat.value} suffix={stat.suffix} delay={300 + i * 150} />
+        </p>
+        {percent ? (
+          <span aria-hidden className="mt-4 block h-1.5 w-full overflow-hidden rounded-full bg-current/15">
+            <span className={clsx("pillar-bar block h-full rounded-full", p.bar)} style={{ "--w": `${stat.value}%` }} />
+          </span>
+        ) : null}
+        <p className={clsx("mt-4 max-w-[16rem] text-[0.95rem] leading-snug", p.sub)}>{stat.note}</p>
+      </div>
     </div>
   );
 }
 
-/**
- * What the network delivers, as a band of enormous figures sliding across
- * the screen, with what each one means sliding the other way beneath it.
- */
+/** What the network delivers: four pillars, rising one after another. */
 function Impact() {
+  const ref = useRef(null);
+  const seen = useInViewOnce(ref, { margin: "0px 0px -20% 0px" });
   const stats = SOLUTIONS_IMPACT.stats;
   return (
-    <section className="overflow-hidden bg-white py-24 lg:flex lg:h-[100svh] lg:min-h-[44rem] lg:flex-col lg:pb-14 lg:pt-28">
+    <section className="relative overflow-hidden bg-white pt-24 lg:flex lg:h-[100svh] lg:min-h-[44rem] lg:flex-col lg:pt-28">
       <div className="mx-auto w-full max-w-[84rem] px-5 md:px-10">
         <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
           <SectionHeader eyebrow={SOLUTIONS_IMPACT.eyebrow} title={SOLUTIONS_IMPACT.headline} />
           <Reveal from="up" delay={0.15}>
             <p className="max-w-sm text-[1rem] leading-relaxed text-ink-soft">
-              Four figures from the network every solution runs on. Scroll faster and they move faster.
+              Four figures from the network every solution on this page runs on.
             </p>
           </Reveal>
         </div>
       </div>
 
-      <Reveal from="up" delay={0.1} className="mt-14 flex flex-col justify-center gap-6 lg:mt-0 lg:flex-1">
-        {/* The figures */}
-        <DriftRow speed={2.4}>
-          {stats.map((s, i) => (
-            <span key={s.label} className="flex shrink-0 items-center gap-6 pr-14 md:gap-8 md:pr-20">
-              <span
-                className={clsx(
-                  "tabular text-[clamp(4.5rem,11vw,10.5rem)] font-extrabold leading-[0.95] tracking-[-0.06em]",
-                  i % 2 ? HIGHLIGHT : "text-jet"
-                )}
-              >
-                {s.value}
-                {s.suffix}
-              </span>
-              <span className="flex flex-col whitespace-normal">
-                <span className="tabular text-[0.8rem] font-extrabold text-brand-blue">{String(i + 1).padStart(2, "0")}</span>
-                <span className="mt-1 w-[11rem] text-[clamp(1.1rem,1.6vw,1.45rem)] font-extrabold leading-tight tracking-tight text-jet">{s.label}</span>
-              </span>
-              <span aria-hidden className="ml-4 h-4 w-4 shrink-0 rotate-45 rounded-[3px] bg-brand-green md:ml-8" />
-            </span>
-          ))}
-        </DriftRow>
-
-        {/* What they mean, the other way */}
-        <DriftRow speed={1.6} reverse>
-          {stats.map((s) => (
-            <span key={s.note} className="flex shrink-0 items-center gap-10 pr-10">
-              <span className="text-[clamp(2rem,4.4vw,4rem)] font-extrabold tracking-[-0.04em] text-transparent [-webkit-text-stroke:1.5px_rgba(5,36,57,.28)]">
-                {s.note}
-              </span>
-              <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-full bg-brand-blue/40" />
-            </span>
-          ))}
-        </DriftRow>
-      </Reveal>
-
-      {/* The same figures for screen readers, once */}
-      <ul className="sr-only">
-        {stats.map((s) => (
-          <li key={s.label}>
-            {s.label}: {s.value}
-            {s.suffix}. {s.note}.
-          </li>
+      <div
+        ref={ref}
+        className="mx-auto mt-10 grid w-full max-w-[84rem] gap-3 px-5 pb-20 sm:grid-cols-2 md:px-10 lg:mt-12 lg:min-h-0 lg:flex-1 lg:grid-cols-4 lg:gap-4 lg:pb-0"
+      >
+        {stats.map((stat, i) => (
+          <Pillar key={stat.label} stat={stat} i={i} seen={seen} />
         ))}
-      </ul>
+      </div>
     </section>
   );
 }
@@ -373,19 +323,33 @@ function ClosingCall() {
         </defs>
       </svg>
 
-      <div className="relative mx-auto w-full max-w-5xl px-5 text-center md:px-10">
-        <Reveal from="up">
-          <p className="label text-brand-blue">Not sure where you fit?</p>
-        </Reveal>
-        <SplitText
-          lines={["Tell us what you sell and where.", ["We'll", { text: "map the route.", className: HIGHLIGHT }]]}
-          className="mx-auto mt-5 text-[clamp(2rem,3.8vw,3.6rem)] font-extrabold leading-[1.05] tracking-[-0.045em] text-jet"
-        />
+      <div className="relative mx-auto grid w-full max-w-[84rem] items-center gap-10 px-5 md:px-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] lg:gap-16">
+        {/* The ask */}
+        <div>
+          <Reveal from="up">
+            <p className="label text-brand-blue">Not sure where you fit?</p>
+          </Reveal>
+          <SplitText
+            lines={["Tell us what you sell", "and where.", ["We'll", { text: "map the route.", className: HIGHLIGHT }]]}
+            className="mt-4 text-[clamp(1.9rem,3vw,2.8rem)] font-extrabold leading-[1.08] tracking-[-0.04em] text-jet"
+          />
+          <Reveal from="up" delay={0.2}>
+            <p className="mt-5 max-w-md text-[1.02rem] leading-relaxed text-ink-soft">
+              Finish the sentence and we&apos;ll open the enquiry with your answers filled in. The partnerships team replies within two working days.
+            </p>
+            <p className="mt-5 text-[0.92rem] text-ink-faint">
+              Rather talk?{" "}
+              <a href="tel:+917542021525" className="link-underline font-bold text-jet">
+                +91 75420 21525
+              </a>
+            </p>
+          </Reveal>
+        </div>
 
         {/* The sentence */}
-        <Reveal from="up" delay={0.2}>
-          <div className="mx-auto mt-10 max-w-4xl rounded-[2rem] border border-hairline bg-white p-6 text-left shadow-[0_40px_80px_-50px_rgba(5,36,57,.35)] md:p-9">
-            <p className="text-[clamp(1.3rem,2.3vw,2rem)] font-extrabold leading-[1.6] tracking-[-0.025em] text-jet">
+        <Reveal from="up" delay={0.15}>
+          <div className="rounded-[1.75rem] border border-hairline bg-white p-6 shadow-[0_30px_60px_-45px_rgba(5,36,57,.35)] md:p-8">
+            <p className="text-[clamp(1.05rem,1.5vw,1.3rem)] font-bold leading-[1.9] text-jet">
               I&apos;m {blank(0)} in {blank(1)} with {blank(2)} orders a month.
             </p>
 
@@ -414,7 +378,7 @@ function ClosingCall() {
                         transition={{ type: "spring", stiffness: 420, damping: 26, delay: k * 0.03 }}
                         aria-pressed={on}
                         className={clsx(
-                          "rounded-full border px-4 py-2 text-[0.9rem] font-bold outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-brand-blue",
+                          "rounded-full border px-3.5 py-1.5 text-[0.84rem] font-semibold outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-brand-blue",
                           on ? "border-jet bg-jet text-white" : "border-hairline bg-floral text-ink-soft hover:border-jet hover:text-jet"
                         )}
                       >
@@ -428,12 +392,7 @@ function ClosingCall() {
             </div>
 
             <div className="mt-7 flex flex-wrap items-center justify-between gap-4">
-              <p className="text-[0.9rem] text-ink-faint">
-                Replies within two working days, or call{" "}
-                <a href="tel:+917542021525" className="link-underline font-bold text-jet">
-                  +91 75420 21525
-                </a>
-              </p>
+              <p className="text-[0.85rem] text-ink-faint">{type ? "Opens the enquiry, filled in." : "You can skip any blank."}</p>
               <CtaButton to={to}>{type ? "Map my route" : "Talk to our team"}</CtaButton>
             </div>
           </div>

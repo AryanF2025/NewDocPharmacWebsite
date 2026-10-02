@@ -308,6 +308,15 @@ const CHAT = [
 
 const FOUNDERS = [shashankRai, saquibAli, sagarChauhan];
 
+/** A founder's photo cropped to the face, so it reads at avatar size. */
+function Face({ src, className, style }) {
+  return (
+    <span className={clsx("block shrink-0 overflow-hidden rounded-full bg-white", className)} style={style}>
+      <img src={src} alt="" loading="lazy" className="h-full w-full scale-[2.3] object-cover [transform-origin:50%_24%]" />
+    </span>
+  );
+}
+
 /** A question comes in, the team types, the answer lands; then the next one. */
 function ChatPreview() {
   const ref = useRef(null);
@@ -343,7 +352,7 @@ function ChatPreview() {
             {q}
           </motion.p>
           <div className="flex items-end gap-2">
-            <img src={FOUNDERS[n % FOUNDERS.length]} alt="" className="h-7 w-7 shrink-0 rounded-full object-cover ring-2 ring-jet" />
+            <Face src={FOUNDERS[n % FOUNDERS.length]} className="h-9 w-9 ring-2 ring-white/80" />
             {typing ? (
               <span className="faq-typing flex gap-1 rounded-2xl rounded-bl-md bg-brand-blue px-3.5 py-3">
                 <span />
@@ -487,12 +496,10 @@ function Faq() {
               <div className="flex items-center gap-2.5">
                 <div className="flex -space-x-2.5">
                   {FOUNDERS.map((src, i) => (
-                    <img
+                    <Face
                       key={src}
                       src={src}
-                      alt=""
-                      loading="lazy"
-                      className="h-9 w-9 rounded-full object-cover ring-2 ring-jet transition-transform duration-300 hover:z-10 hover:-translate-y-1"
+                      className="relative h-10 w-10 ring-2 ring-jet transition-transform duration-300 hover:z-10 hover:-translate-y-1"
                       style={{ zIndex: FOUNDERS.length - i }}
                     />
                   ))}

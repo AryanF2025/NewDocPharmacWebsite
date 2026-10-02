@@ -10,7 +10,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import clsx from "clsx";
-import { ConsoleMock } from "@/components/directions/shared";
+import { NetworkConsole } from "@/components/solutions/NetworkConsole";
 import { CountUp } from "@/components/experience/HeroParts";
 import { SectionHeader } from "@/components/motion/Text";
 import { Reveal } from "@/components/ui/Reveal";
@@ -346,7 +346,7 @@ export function PoweredBy() {
                 <div className="absolute inset-0 bg-gradient-to-b from-jet/30 via-jet/70 to-jet/95" />
                 <div className="absolute left-5 right-5 top-16 bottom-0 overflow-hidden sm:right-[10.5rem] [mask-image:linear-gradient(to_bottom,#000_60%,transparent_96%)] [perspective:1200px]">
                   <div className="w-[122%] origin-top-left transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] [transform:rotateX(8deg)_scale(.82)] group-hover:[transform:rotateX(0)_scale(.82)]">
-                    <ConsoleMock compact className="w-full" />
+                    <NetworkConsole running={running} />
                   </div>
                 </div>
                 <div className="absolute right-5 top-14 hidden w-[8.5rem] sm:block">

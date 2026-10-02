@@ -1775,3 +1775,32 @@
     animation: none;
   }
 }
+
+/* Solutions impact: the pillars rise from the floor one after another, the
+   percentage bars fill once they are up, and a hovered pillar stands taller. */
+.pillar-bar {
+  width: 0;
+  transition: width 1.4s var(--ease-brand) calc(0.6s + var(--i, 0) * 0.15s);
+}
+[data-in="true"] .pillar-bar {
+  width: var(--w);
+}
+@media (min-width: 1024px) {
+  .pillar {
+    height: 14%;
+    transition: height 1.3s var(--ease-brand) calc(var(--i) * 0.14s);
+  }
+  .pillar[data-in="true"] {
+    height: var(--h);
+  }
+  .group:hover > .pillar[data-in="true"] {
+    height: calc(var(--h) + 5%);
+    transition-delay: 0s;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pillar,
+  .pillar-bar {
+    transition: none;
+  }
+}
