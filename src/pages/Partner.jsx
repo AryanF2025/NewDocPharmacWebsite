@@ -5,6 +5,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import clsx from "clsx";
 import { Reveal } from "@/components/ui/Reveal";
 import { LogoMark } from "@/components/ui/Logo";
@@ -343,7 +344,19 @@ function PartnerHero() {
 export default function Partner() {
   usePageSeo("partner");
 
-  const [form, setForm] = useState(CONTACT_INITIAL);
+  // The Solutions quick start (/partner?type=…&city=…&orders=…#enquiry) arrives
+  // with its answers; anything unrecognised is ignored.
+  const [params] = useSearchParams();
+  const [form, setForm] = useState(() => {
+    const type = params.get("type");
+    const orders = params.get("orders");
+    return {
+      ...CONTACT_INITIAL,
+      businessType: BUSINESS_TYPES.some((t) => t.value === type) ? type : "",
+      monthlyOrders: MONTHLY_ORDERS.includes(orders) ? orders : CONTACT_INITIAL.monthlyOrders,
+      cities: (params.get("city") || "").slice(0, 80),
+    };
+  });
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle"); // idle | sending | sent | error
   const [failure, setFailure] = useState("");

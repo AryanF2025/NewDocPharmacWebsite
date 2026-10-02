@@ -1746,34 +1746,6 @@
   }
 }
 
-/* Impact gauges: the outer ring turns slowly and the knob breathes. */
-.gauge-spin {
-  transform-origin: 60px 60px;
-  animation: gauge-spin 40s linear infinite;
-}
-@keyframes gauge-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-.gauge-glow {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: gauge-glow 2.4s ease-in-out infinite;
-}
-@keyframes gauge-glow {
-  50% {
-    transform: scale(1.5);
-    opacity: 0.12;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .gauge-spin,
-  .gauge-glow {
-    animation: none;
-  }
-}
-
 /* Solutions finale: the ridden route flows toward the door. */
 .finale-flow {
   animation: finale-flow 1.4s linear infinite;
@@ -1785,6 +1757,21 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .finale-flow {
+    animation: none;
+  }
+}
+
+/* Solutions quick start: the blank being filled in breathes. */
+.sol-blank {
+  animation: sol-blank 1.6s ease-in-out infinite;
+}
+@keyframes sol-blank {
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sol-blank {
     animation: none;
   }
 }
