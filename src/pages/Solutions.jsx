@@ -19,9 +19,10 @@ import { scrollToTarget } from "@/components/motion/smoothScroll";
 import { useInViewOnce } from "@/components/motion/useInViewOnce";
 import { usePageSeo } from "@/seo/usePageSeo";
 import { PoweredBy } from "@/components/solutions/PoweredBy";
-import { CountUp } from "@/components/experience/HeroParts";
 import { BusinessReel } from "@/components/solutions/BusinessReel";
-import { SOLUTIONS_HERO, SOLUTION_TABS, SOLUTIONS_IMPACT } from "@/data/site";
+import { SOLUTIONS_HERO, SOLUTION_TABS } from "@/data/site";
+import { INTEGRATION_LOGOS } from "@/data/logos";
+import { LogoImg } from "@/components/ui/LogoImg";
 import { BUSINESS_TYPES, MONTHLY_ORDERS } from "@/data/contact";
 import { COVERAGE_CITIES } from "@/components/art/IndiaCoverageMap";
 import stillPick from "@/assets/images/still-pick.jpg";
@@ -188,71 +189,163 @@ function SolutionsHero() {
   );
 }
 
-/* ----------------------------------------------------------------- impact --- */
+/* --------------------------------------------------------------- going live --- */
 
-/** Each figure's pillar: how tall it stands, and the accent on its cap and bar. */
-const PILLARS = [
-  { h: 70, accent: "bg-jet" },
-  { h: 60, accent: "bg-brand-blue" },
-  { h: 46, accent: "bg-gradient-to-r from-brand-blue to-brand-green" },
-  { h: 54, accent: "bg-brand-green" },
+const STACK = INTEGRATION_LOGOS.filter((l) => ["Shopify", "Unicommerce", "EasyEcom"].includes(l.name));
+
+/** From first call to first delivery: what partnering actually involves. */
+const GO_LIVE = [
+  {
+    title: "Tell us what you sell",
+    body: "Your categories, cities and order volumes. The partnerships team replies within two working days.",
+    icon: "M4 6h16v10H8l-4 4zM8 10h8M8 13h5",
+  },
+  {
+    title: "We map your network",
+    body: "The licensed darkstores, delivery SLA and compliance your orders need, city by city.",
+    icon: "M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z",
+  },
+  {
+    title: "Plug in your stack",
+    body: "Shopify, Unicommerce, EasyEcom or our order API, with status sent back by webhook. No rebuild.",
+    icon: "M8 6l-5 6 5 6M16 6l5 6-5 6M14 4l-4 16",
+    stack: true,
+  },
+  {
+    title: "Go live",
+    body: "Stock sits in the darkstores and orders reach your customers' doors in about 30 minutes.",
+    icon: "M5 13l4 4L19 7",
+    live: true,
+  },
 ];
 
-/** One figure as a pillar that rises from the floor of the screen. */
-function Pillar({ stat, i, seen }) {
-  const p = PILLARS[i];
-  const percent = stat.suffix === "%";
-  return (
-    <div className="group relative lg:flex lg:h-full lg:items-end">
-      <div
-        data-in={seen}
-        style={{ "--h": `${p.h}%`, "--i": i }}
-        className="pillar relative flex w-full flex-col overflow-hidden rounded-[1.75rem] border border-hairline bg-gradient-to-b from-floral to-white p-7 text-jet transition-shadow duration-500 group-hover:shadow-[0_-20px_50px_-30px_rgba(5,36,57,.35)] lg:rounded-b-none lg:border-b-0 xl:p-8"
-      >
-        <span aria-hidden className={clsx("absolute inset-x-0 top-0 h-1", p.accent)} />
-        <div className="flex items-center justify-between">
-          <span className="text-[0.95rem] font-extrabold tracking-tight">{stat.label}</span>
-          <span className="tabular text-[0.75rem] font-extrabold text-ink-faint">{String(i + 1).padStart(2, "0")}</span>
-        </div>
-        <p className="tabular mt-4 text-[clamp(2.3rem,3.4vw,3.4rem)] font-extrabold leading-none tracking-[-0.05em]">
-          <CountUp value={stat.value} suffix={stat.suffix} delay={300 + i * 150} />
-        </p>
-        {percent ? (
-          <span aria-hidden className="mt-4 block h-1 w-full overflow-hidden rounded-full bg-jet/8">
-            <span className={clsx("pillar-bar block h-full rounded-full", p.accent)} style={{ "--w": `${stat.value}%` }} />
-          </span>
-        ) : null}
-        <p className="mt-4 max-w-[16rem] text-[0.92rem] leading-snug text-ink-soft">{stat.note}</p>
-      </div>
-    </div>
-  );
-}
+const STEP_MS = 2400;
 
-/** What the network delivers: four pillars, rising one after another. */
-function Impact() {
+/**
+ * Going live, in four steps on one track. A parcel rides the track on a
+ * loop; each step lights as it arrives and stays lit until the loop resets.
+ * Hovering a step holds the parcel there.
+ */
+function GoingLive() {
   const ref = useRef(null);
-  const seen = useInViewOnce(ref, { margin: "0px 0px -20% 0px" });
-  const stats = SOLUTIONS_IMPACT.stats;
+  const seen = useInViewOnce(ref, { margin: "0px 0px -25% 0px" });
+  const [step, setStep] = useState(-1);
+  const [hold, setHold] = useState(null);
+  const at = hold ?? step;
+
+  useEffect(() => {
+    if (!seen) return undefined;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setStep(GO_LIVE.length - 1);
+      return undefined;
+    }
+    setStep(0);
+    const id = window.setInterval(() => setStep((s) => (s + 1) % (GO_LIVE.length + 1)), STEP_MS);
+    return () => window.clearInterval(id);
+  }, [seen]);
+
+  // The parcel's place on the track: the middle of the current step.
+  const shown = Math.min(at, GO_LIVE.length - 1);
+  const parcel = shown < 0 ? 0 : ((shown + 0.5) / GO_LIVE.length) * 100;
+
   return (
-    <section className="relative overflow-hidden bg-white pt-24 lg:flex lg:h-[100svh] lg:min-h-[44rem] lg:flex-col lg:pt-28">
-      <div className="mx-auto w-full max-w-[84rem] px-5 md:px-10">
+    <section className="bg-white py-24 lg:flex lg:h-[100svh] lg:min-h-[44rem] lg:flex-col lg:justify-center lg:py-28">
+      <div ref={ref} className="mx-auto w-full max-w-[84rem] px-5 md:px-10">
         <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
-          <SectionHeader eyebrow={SOLUTIONS_IMPACT.eyebrow} title={SOLUTIONS_IMPACT.headline} />
+          <SectionHeader eyebrow="Going live" title="From first call to first delivery." />
           <Reveal from="up" delay={0.15}>
             <p className="max-w-sm text-[1rem] leading-relaxed text-ink-soft">
-              Four figures from the network every solution on this page runs on.
+              No warehouse to lease, no fleet to hire. Four steps, and your orders run on the network above.
             </p>
           </Reveal>
         </div>
-      </div>
 
-      <div
-        ref={ref}
-        className="mx-auto mt-10 grid w-full max-w-[84rem] gap-3 px-5 pb-20 sm:grid-cols-2 md:px-10 lg:mt-12 lg:min-h-0 lg:flex-1 lg:grid-cols-4 lg:gap-4 lg:pb-0"
-      >
-        {stats.map((stat, i) => (
-          <Pillar key={stat.label} stat={stat} i={i} seen={seen} />
-        ))}
+        {/* The track, with the parcel riding it */}
+        <div aria-hidden className="relative mt-14 hidden h-10 lg:block">
+          <span className="absolute inset-x-[12.5%] top-1/2 h-0 -translate-y-1/2 border-t-2 border-dashed border-hairline" />
+          <span
+            className="absolute left-[12.5%] top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-gradient-to-r from-brand-blue to-brand-green transition-[width] duration-700 ease-[cubic-bezier(.22,1,.36,1)]"
+            style={{ width: `${Math.max(0, parcel - 12.5)}%` }}
+          />
+          {GO_LIVE.map((s, i) => (
+            <span
+              key={s.title}
+              className={clsx(
+                "absolute top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 text-[0.8rem] font-extrabold transition-colors duration-500",
+                i <= at ? "border-brand-blue bg-brand-blue text-white" : "border-hairline bg-white text-ink-faint"
+              )}
+              style={{ left: `${((i + 0.5) / GO_LIVE.length) * 100}%` }}
+            >
+              {i < at ? "✓" : String(i + 1).padStart(2, "0")}
+            </span>
+          ))}
+          <span
+            className="absolute top-1/2 h-14 w-14 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-brand-green/60 transition-[left,opacity] duration-700 ease-[cubic-bezier(.22,1,.36,1)]"
+            style={{ left: `${parcel}%`, opacity: at >= 0 ? 1 : 0 }}
+          >
+            <span className="absolute inset-0 animate-ping rounded-full border border-brand-green/40" />
+          </span>
+        </div>
+
+        {/* The steps */}
+        <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:mt-8 lg:grid-cols-4" onPointerLeave={() => setHold(null)}>
+          {GO_LIVE.map((s, i) => {
+            const on = i === Math.min(at, GO_LIVE.length - 1) && at >= 0;
+            const done = i < at;
+            return (
+              <Reveal as="li" key={s.title} from="up" delay={i * 0.08}>
+                <div
+                  onPointerEnter={() => setHold(i)}
+                  className={clsx(
+                    "group relative flex h-full flex-col rounded-[1.75rem] border p-7 transition-[border-color,box-shadow,transform,background-color] duration-500",
+                    on
+                      ? "-translate-y-1.5 border-brand-blue/40 bg-white shadow-[0_30px_60px_-36px_rgba(2,150,217,.55)]"
+                      : "border-hairline bg-floral"
+                  )}
+                >
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={clsx(
+                        "flex h-11 w-11 items-center justify-center rounded-2xl transition-colors duration-500",
+                        on ? "bg-brand-blue text-white" : done ? "bg-peppermint text-[#5f8a0f]" : "bg-white text-brand-blue"
+                      )}
+                    >
+                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                        <path d={s.icon} />
+                      </svg>
+                    </span>
+                    <span className="tabular text-[0.75rem] font-extrabold text-ink-faint lg:hidden">{String(i + 1).padStart(2, "0")}</span>
+                  </div>
+                  <h3 className="mt-6 text-[1.2rem] font-extrabold tracking-tight text-jet">{s.title}</h3>
+                  <p className="mt-2 text-[0.95rem] leading-relaxed text-ink-soft">{s.body}</p>
+
+                  {s.stack ? (
+                    <div className="mt-auto flex items-center gap-2 pt-6">
+                      {STACK.map((l) => (
+                        <span key={l.name} className="flex h-10 flex-1 items-center justify-center rounded-xl border border-hairline bg-white px-2">
+                          <LogoImg src={l.src} alt={l.name} area={1500} maxWidth={84} maxHeight={26} />
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                  {s.live ? (
+                    <div className="mt-auto pt-6">
+                      <span
+                        className={clsx(
+                          "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[0.8rem] font-bold transition-colors duration-500",
+                          on ? "bg-brand-green/15 text-[#5c7a15]" : "bg-white text-ink-faint"
+                        )}
+                      >
+                        <span className={clsx("h-2 w-2 rounded-full", on ? "animate-pulse bg-brand-green" : "bg-hairline")} />
+                        {on ? "Orders flowing" : "Ready when you are"}
+                      </span>
+                    </div>
+                  ) : null}
+                </div>
+              </Reveal>
+            );
+          })}
+        </ol>
       </div>
     </section>
   );
@@ -412,7 +505,7 @@ export default function Solutions() {
     <>
       <SolutionsHero />
       <BusinessReel art={ART} outcome={OUTCOME} />
-      <Impact />
+      <GoingLive />
       <PoweredBy />
       <ClosingCall />
     </>

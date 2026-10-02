@@ -244,13 +244,3 @@ export const SOLUTION_TABS = [
   },
 ];
 
-export const SOLUTIONS_IMPACT = {
-  eyebrow: "Impact",
-  headline: "What the network delivers.",
-  stats: [
-    { value: 95, suffix: "%", label: "Fulfilment rate", note: "Orders fulfilled first time" },
-    { value: 93, suffix: "%", label: "Delivery adherence", note: "Inside the promised SLA" },
-    { value: 30, suffix: " min", label: "Median hyperlocal", note: "Order to doorstep" },
-    { value: 40, suffix: "k+", label: "SKUs per store", note: "Depth at the point of demand" },
-  ],
-};
