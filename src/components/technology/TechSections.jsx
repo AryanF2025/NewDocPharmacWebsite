@@ -80,9 +80,9 @@ function ProductPanel({ item, index, compact = false }) {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, ease: EASE, delay: 0.1 + i * 0.06 }}
-              className="flex items-start gap-3 text-[0.94rem] leading-snug text-white/85"
+              className="group/pt -mx-2 flex items-start gap-3 rounded-xl px-2 py-1 text-[0.94rem] leading-snug text-white/85 transition-colors duration-300 hover:bg-white/[0.06] hover:text-white"
             >
-              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-green/20 text-[0.6rem] text-brand-green">✓</span>
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-green/20 text-[0.6rem] text-brand-green transition-colors duration-300 group-hover/pt:bg-brand-green group-hover/pt:text-jet">✓</span>
               {point}
             </motion.li>
           ))}
@@ -131,7 +131,7 @@ function PlatformPinned() {
   const item = PLATFORM[active];
 
   return (
-    <section ref={hostRef} className="relative bg-floral" style={{ height: `${100 + count * 55}svh` }}>
+    <section ref={hostRef} className="relative bg-floral" style={{ height: `${100 + count * 12}svh` }}>
       <div className="sticky top-0 flex h-[100svh] flex-col justify-center overflow-hidden pb-8 pt-24">
         <div className="mx-auto w-full max-w-[84rem] px-5 md:px-10">
           <SectionHeader
@@ -197,10 +197,10 @@ function PlatformPinned() {
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={item.key}
-                  initial={{ opacity: 0, y: 28, filter: "blur(6px)" }}
+                  initial={{ opacity: 0, y: 22, filter: "blur(6px)" }}
                   animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, y: -18, filter: "blur(4px)" }}
-                  transition={{ duration: 0.4, ease: EASE }}
+                  exit={{ opacity: 0, y: -14, filter: "blur(4px)", transition: { duration: 0.18 } }}
+                  transition={{ duration: 0.35, ease: EASE }}
                   className="w-full"
                 >
                   <ProductPanel item={item} index={active} />
@@ -331,8 +331,11 @@ export function Delivery() {
           <div className="mt-10 grid gap-5 sm:grid-cols-2">
             {DELIVERY_POINTS.map(([title, body], i) => (
               <Reveal key={title} from="up" delay={i * 0.07}>
-                <div className="h-full border-t-2 border-hairline pt-4 transition-colors duration-300 hover:border-brand-blue">
-                  <h3 className="text-[1.05rem] font-extrabold tracking-tight text-jet">{title}</h3>
+                <div className="group relative h-full pt-4">
+                  <span aria-hidden className="absolute inset-x-0 top-0 h-0.5 bg-hairline" />
+                  <span aria-hidden className="absolute left-0 top-0 h-0.5 w-full origin-left scale-x-0 bg-gradient-to-r from-brand-blue to-brand-green transition-transform duration-500 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-x-100" />
+                  <span className="tabular text-[0.75rem] font-extrabold text-ink-faint transition-colors duration-300 group-hover:text-brand-blue">{String(i + 1).padStart(2, "0")}</span>
+                  <h3 className="mt-1 text-[1.05rem] font-extrabold tracking-tight text-jet transition-transform duration-300 group-hover:translate-x-1">{title}</h3>
                   <p className="mt-2 text-[0.95rem] leading-relaxed text-ink-soft">{body}</p>
                 </div>
               </Reveal>
@@ -351,69 +354,90 @@ export function Delivery() {
 
 const CONNECT_LOGOS = INTEGRATION_LOGOS.filter((l) => ["Shopify", "Unicommerce", "EasyEcom"].includes(l.name));
 
+/** One line in either list: a mark, a title and a short line, nothing more. */
+function ListRow({ title, body, tone, i }) {
+  const dark = tone === "dark";
+  return (
+    <li
+      className={clsx(
+        "group flex items-start gap-3.5 rounded-xl px-3 py-3 transition-colors duration-300",
+        dark ? "hover:bg-white/[0.06]" : "hover:bg-floral"
+      )}
+      style={{ "--i": i }}
+    >
+      <span
+        className={clsx(
+          "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[0.62rem] transition-colors duration-300",
+          dark ? "job-dot bg-brand-green/20 text-brand-green group-hover:bg-brand-green group-hover:text-jet" : "bg-viking text-brand-blue group-hover:bg-brand-blue group-hover:text-white"
+        )}
+      >
+        {dark ? "●" : "✓"}
+      </span>
+      <span className="min-w-0">
+        <span className={clsx("block text-[0.98rem] font-extrabold tracking-tight", dark ? "text-white" : "text-jet")}>{title}</span>
+        <span className={clsx("mt-0.5 block text-[0.88rem] leading-snug", dark ? "text-white/60" : "text-ink-soft")}>{body}</span>
+      </span>
+    </li>
+  );
+}
+
+/**
+ * How partners plug in, and what runs on its own — one screen: the heading
+ * with the platforms we connect to, then the two lists side by side.
+ */
 export function ConnectAndAutomate() {
   return (
-    <section className="bg-floral py-24 md:py-32">
-      <div className="mx-auto max-w-[84rem] px-5 md:px-10">
-        <SectionHeader
-          eyebrow="Plugs in, runs itself"
-          title="No rebuild on your side. No babysitting on ours."
-          sub="Orders arrive from the systems you already use, and the routine work runs on its own, around the clock."
-        />
+    <section className="flex flex-col justify-center bg-floral py-20 lg:min-h-[100svh] lg:py-16">
+      <div className="mx-auto w-full max-w-[84rem] px-5 md:px-10">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+          <SectionHeader
+            eyebrow="Plugs in, runs itself"
+            title="No rebuild on your side. No babysitting on ours."
+            titleClassName="!text-[clamp(1.9rem,3vw,2.7rem)]"
+          />
+          <Reveal from="up" className="shrink-0">
+            <p className="label text-ink-faint">Works with</p>
+            <div className="mt-3 flex gap-2.5">
+              {CONNECT_LOGOS.map((l) => (
+                <span
+                  key={l.name}
+                  className="flex h-14 w-32 items-center justify-center rounded-2xl border border-hairline bg-white px-4 transition-[transform,border-color] duration-300 hover:-translate-y-0.5 hover:border-brand-blue/40"
+                >
+                  <LogoImg src={l.src} alt={l.name} area={1900} maxWidth={96} maxHeight={34} />
+                </span>
+              ))}
+            </div>
+          </Reveal>
+        </div>
 
-        <div className="mt-12 grid gap-5 lg:grid-cols-2">
-          {/* Connect */}
+        <div className="mt-10 grid gap-4 lg:grid-cols-2">
           <Reveal from="up">
-            <div className="h-full rounded-[2rem] border border-hairline bg-white p-7 md:p-9">
-              <p className="label text-brand-blue">Connects to</p>
-              <div className="mt-5 flex flex-wrap gap-3">
-                {CONNECT_LOGOS.map((l) => (
-                  <span key={l.name} className="flex h-16 w-36 items-center justify-center rounded-2xl bg-floral px-4 transition-colors duration-300 hover:bg-viking">
-                    <LogoImg src={l.src} alt={l.name} area={2200} maxWidth={110} maxHeight={40} className="mix-blend-multiply" />
-                  </span>
-                ))}
-              </div>
-              <ul className="mt-7 divide-y divide-hairline">
-                {CONNECT.map((c) => (
-                  <li key={c.title} className="group flex gap-4 py-4">
-                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-brand-blue transition-transform duration-300 group-hover:scale-150" />
-                    <span>
-                      <span className="block text-[1rem] font-extrabold text-jet">{c.title}</span>
-                      <span className="mt-1 block text-[0.93rem] leading-relaxed text-ink-soft">{c.body}</span>
-                    </span>
-                  </li>
+            <div className="h-full rounded-[2rem] border border-hairline bg-white p-5 md:p-7">
+              <p className="label px-3 text-brand-blue">Connects to your stack</p>
+              <ul className="mt-3 grid">
+                {CONNECT.map((c, i) => (
+                  <ListRow key={c.title} {...c} i={i} />
                 ))}
               </ul>
             </div>
           </Reveal>
 
-          {/* Automate */}
           <Reveal from="up" delay={0.08}>
-            <div className="relative h-full overflow-hidden rounded-[2rem] bg-jet p-7 text-white md:p-9">
-              <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-brand-green/15 blur-[90px]" />
-              <div className="relative flex items-center justify-between">
-                <p className="label text-brand-green">Always running</p>
-                <span className="flex items-center gap-2 text-[0.78rem] font-semibold text-white/60">
+            <div className="relative h-full overflow-hidden rounded-[2rem] bg-jet p-5 text-white md:p-7">
+              <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-brand-green/15 blur-[90px]" />
+              <div className="relative flex items-center justify-between px-3">
+                <p className="label text-brand-green">Runs on its own</p>
+                <span className="flex items-center gap-2 text-[0.75rem] font-semibold text-white/55">
                   <span className="relative flex h-2 w-2">
                     <span className="absolute inset-0 animate-ping rounded-full bg-brand-green opacity-75" />
                     <span className="relative h-2 w-2 rounded-full bg-brand-green" />
                   </span>
-                  Scheduled jobs
+                  Around the clock
                 </span>
               </div>
-              <ul className="relative mt-6 grid gap-3 sm:grid-cols-2">
+              <ul className="relative mt-3 grid sm:grid-cols-2">
                 {AUTOMATION.map((job, i) => (
-                  <li
-                    key={job.title}
-                    className="job group rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition-colors duration-300 hover:border-brand-green/40 hover:bg-white/[0.07]"
-                    style={{ "--i": i }}
-                  >
-                    <span className="flex items-center gap-2 text-[0.95rem] font-extrabold">
-                      <span className="job-dot h-1.5 w-1.5 rounded-full bg-brand-green" />
-                      {job.title}
-                    </span>
-                    <span className="mt-1.5 block text-[0.86rem] leading-relaxed text-white/60">{job.body}</span>
-                  </li>
+                  <ListRow key={job.title} {...job} tone="dark" i={i} />
                 ))}
               </ul>
             </div>
@@ -438,12 +462,16 @@ export function ControlRoom() {
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {CONTROL.map((c, i) => (
             <Reveal key={c.title} from="up" delay={(i % 3) * 0.07}>
-              <article className="group h-full rounded-3xl border border-hairline bg-white p-7 transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 hover:border-brand-blue/30 hover:shadow-[0_24px_50px_-30px_rgba(5,36,57,.4)]">
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-viking text-brand-blue transition-colors duration-300 group-hover:bg-brand-blue group-hover:text-white">
+              <article className="card-sweep group relative h-full overflow-hidden rounded-3xl border border-hairline bg-white p-7 transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 hover:border-jet hover:shadow-[0_30px_60px_-30px_rgba(5,36,57,.55)]">
+                <span className="tabular absolute right-6 top-6 text-[0.75rem] font-extrabold text-ink-faint/60 transition-colors duration-500 group-hover:text-brand-green">{String(i + 1).padStart(2, "0")}</span>
+                <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-viking text-brand-blue transition-colors duration-500 group-hover:bg-brand-green group-hover:text-jet">
                   <Icon name={CONTROL_ICONS[i]} />
                 </span>
-                <h3 className="mt-5 text-[1.12rem] font-extrabold tracking-tight text-jet">{c.title}</h3>
-                <p className="mt-2 text-[0.95rem] leading-relaxed text-ink-soft">{c.body}</p>
+                <h3 className="relative mt-5 flex items-center gap-2 text-[1.12rem] font-extrabold tracking-tight text-jet transition-colors duration-500 group-hover:text-white">
+                  {c.title}
+                  <span aria-hidden className="-translate-x-1 text-brand-green opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100">→</span>
+                </h3>
+                <p className="relative mt-2 text-[0.95rem] leading-relaxed text-ink-soft transition-colors duration-500 group-hover:text-white/70">{c.body}</p>
               </article>
             </Reveal>
           ))}

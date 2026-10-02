@@ -1458,3 +1458,38 @@
   stroke-dashoffset: 1;
   animation: dash-draw 1.6s var(--ease-brand) 0.3s forwards;
 }
+
+/* Logistics demo: the routes flow; the hub breathes. */
+.flow-dash {
+  animation: route-flow 1s linear infinite;
+}
+.hub-ping {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cov-ring 2.4s ease-out infinite;
+}
+/* Hovering a demo speeds its motion up a little. */
+.demo-frame:hover .flow-dash {
+  animation-duration: 0.6s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .flow-dash,
+  .hub-ping {
+    animation: none;
+  }
+}
+
+/* Control room cards: a navy panel sweeps up behind the card on hover. */
+.card-sweep::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(18rem circle at 85% 0%, rgba(2, 150, 217, 0.35), transparent 60%),
+    var(--color-jet);
+  transform: translateY(101%);
+  transition: transform 0.55s var(--ease-brand);
+}
+.card-sweep:hover::before {
+  transform: none;
+}

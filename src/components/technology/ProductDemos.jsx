@@ -19,43 +19,82 @@ function useCycle(ms) {
 }
 
 const Frame = ({ children, className }) => (
-  <div className={clsx("relative h-[15rem] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-4", className)}>
+  <div
+    className={clsx(
+      "demo-frame relative h-[15rem] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition-[transform,border-color,background-color,box-shadow] duration-500 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.07] hover:shadow-[0_24px_50px_-30px_rgba(0,0,0,.6)]",
+      className
+    )}
+  >
     {children}
   </div>
 );
 
-/* DocPharma One: stock by batch, levels filling in. */
+/* DocPharma One: stock drains smoothly as orders are picked; a low item is
+   restocked and fills back up. */
+const STOCK = [
+  ["Paracetamol 650", "B2407", 82],
+  ["Metformin 500", "B2411", 54],
+  ["Vitamin D3", "B2402", 91],
+  ["Pantoprazole 40", "B2409", 36],
+];
 function InventoryDemo() {
-  const rows = [
-    ["Paracetamol 650", "B2407", 82],
-    ["Metformin 500", "B2411", 54],
-    ["Vitamin D3", "B2402", 91],
-    ["Pantoprazole 40", "B2409", 23],
-  ];
+  const [levels, setLevels] = useState(() => STOCK.map(([, , l]) => l));
+  const [picked, setPicked] = useState(-1);
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
+    let tick = 0;
+    const id = window.setInterval(() => {
+      tick++;
+      const i = (tick * 3) % STOCK.length;
+      setPicked(i);
+      setLevels((ls) =>
+        ls.map((l, j) => {
+          if (l < 18) return 92; // restocked
+          return j === i ? l - (6 + ((tick * 7) % 9)) : l;
+        })
+      );
+    }, 1300);
+    return () => window.clearInterval(id);
+  }, []);
+  const low = levels.findIndex((l) => l < 30);
   return (
     <Frame>
       <div className="flex items-center justify-between text-[0.7rem] font-bold uppercase tracking-[0.14em] text-white/45">
         <span>Stock · BLR-07</span>
-        <span className="text-brand-green">Live</span>
+        <span className="flex items-center gap-1.5 text-brand-green">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand-green" /> Live
+        </span>
       </div>
       <ul className="mt-3 space-y-2.5">
-        {rows.map(([name, batch, level], i) => (
+        {STOCK.map(([name, batch], i) => (
           <li key={name} className="demo-row" style={{ "--i": i }}>
             <div className="flex items-center justify-between gap-2 text-[0.8rem]">
-              <span className="truncate font-semibold text-white/90">{name}</span>
-              <span className="shrink-0 rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-[0.68rem] text-white/70">{batch}</span>
+              <span className={clsx("truncate font-semibold transition-colors duration-500", picked === i ? "text-white" : "text-white/80")}>{name}</span>
+              <span className="flex shrink-0 items-center gap-2">
+                <span className="tabular w-8 text-right text-[0.7rem] font-bold text-white/55">{levels[i]}%</span>
+                <span className="rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-[0.68rem] text-white/70">{batch}</span>
+              </span>
             </div>
             <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
               <div
-                className={clsx("demo-bar h-full rounded-full", level < 30 ? "bg-[#f59e0b]" : "bg-gradient-to-r from-brand-blue to-brand-green")}
-                style={{ "--w": `${level}%`, "--i": i }}
+                className={clsx(
+                  "h-full rounded-full transition-[width,background-color] duration-[1200ms] ease-[cubic-bezier(.22,1,.36,1)]",
+                  levels[i] < 30 ? "bg-[#f59e0b]" : "bg-gradient-to-r from-brand-blue to-brand-green"
+                )}
+                style={{ width: `${levels[i]}%` }}
               />
             </div>
           </li>
         ))}
       </ul>
-      <p className="demo-alert mt-3 flex items-center gap-2 text-[0.72rem] font-semibold text-[#fbbf24]">
-        <span className="h-1.5 w-1.5 rounded-full bg-[#fbbf24]" /> Pantoprazole 40 running low
+      <p
+        className={clsx(
+          "mt-3 flex items-center gap-2 text-[0.72rem] font-semibold text-[#fbbf24] transition-[opacity,transform] duration-500",
+          low >= 0 ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
+        )}
+      >
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#fbbf24]" />
+        {low >= 0 ? `${STOCK[low][0]} running low · restock raised` : "All stock healthy"}
       </p>
     </Frame>
   );
@@ -142,29 +181,51 @@ function RiderDemo() {
   );
 }
 
-/* Logistics engine: each order goes the best way — own fleet or partner. */
+/* Logistics engine: orders flow out of the hub without pause — most to the
+   own fleet, out-of-zone ones to a partner — and the counts tick as they land. */
+const TO_OWN = "M46 75 C 100 75, 110 32, 162 32";
+const TO_PARTNER = "M46 75 C 100 75, 110 118, 162 118";
 function LogisticsDemo() {
-  const n = useCycle(2600);
-  const own = n % 3 !== 2; // most orders stay on our own fleet
+  const [own, setOwn] = useState(126);
+  const [partner, setPartner] = useState(31);
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
+    // Three own-fleet dots and one partner dot each land every 2.4s.
+    const a = window.setInterval(() => setOwn((v) => v + 1), 800);
+    const b = window.setInterval(() => setPartner((v) => v + 1), 2400);
+    return () => {
+      window.clearInterval(a);
+      window.clearInterval(b);
+    };
+  }, []);
   return (
     <Frame>
-      <svg viewBox="0 0 220 150" className="h-full w-full" aria-hidden>
-        <path d="M44 75 C 100 75, 110 32, 170 32" fill="none" stroke={own ? "#8fc124" : "rgba(255,255,255,.15)"} strokeWidth="2.5" className="transition-[stroke] duration-500" />
-        <path d="M44 75 C 100 75, 110 118, 170 118" fill="none" stroke={!own ? "#0296d9" : "rgba(255,255,255,.15)"} strokeWidth="2.5" className="transition-[stroke] duration-500" />
-        <circle cx="34" cy="75" r="16" fill="#0a3452" stroke="rgba(255,255,255,.25)" />
-        <text x="34" y="79" textAnchor="middle" fontSize="10" fontWeight="700" fill="#fff">Hub</text>
-        <g key={n}>
-          <circle r="5" fill={own ? "#8fc124" : "#0296d9"}>
-            <animateMotion dur="1.6s" fill="freeze" path={own ? "M44 75 C 100 75, 110 32, 170 32" : "M44 75 C 100 75, 110 118, 170 118"} />
+      <svg viewBox="0 0 230 150" className="h-[11rem] w-full" aria-hidden>
+        <path d={TO_OWN} fill="none" stroke="rgba(143,193,36,.35)" strokeWidth="2.5" />
+        <path d={TO_OWN} fill="none" stroke="#8fc124" strokeWidth="2.5" strokeDasharray="4 7" className="flow-dash" />
+        <path d={TO_PARTNER} fill="none" stroke="rgba(2,150,217,.3)" strokeWidth="2.5" />
+        <path d={TO_PARTNER} fill="none" stroke="#0296d9" strokeWidth="2.5" strokeDasharray="4 7" className="flow-dash" />
+        {[0, 0.8, 1.6].map((begin) => (
+          <circle key={begin} r="4.5" fill="#8fc124">
+            <animateMotion dur="2.4s" begin={`${begin}s`} repeatCount="indefinite" path={TO_OWN} keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines=".4 0 .2 1" />
           </circle>
-        </g>
-        <rect x="160" y="18" width="56" height="28" rx="8" fill={own ? "rgba(143,193,36,.18)" : "rgba(255,255,255,.05)"} className="transition-[fill] duration-500" />
-        <text x="188" y="36" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#fff">Own fleet</text>
-        <rect x="160" y="104" width="56" height="28" rx="8" fill={!own ? "rgba(2,150,217,.22)" : "rgba(255,255,255,.05)"} className="transition-[fill] duration-500" />
-        <text x="188" y="122" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#fff">Partner</text>
+        ))}
+        <circle r="4.5" fill="#0296d9">
+          <animateMotion dur="2.4s" begin="0.4s" repeatCount="indefinite" path={TO_PARTNER} keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines=".4 0 .2 1" />
+        </circle>
+        <circle cx="34" cy="75" r="18" fill="#0a3452" stroke="rgba(255,255,255,.25)" />
+        <circle cx="34" cy="75" r="18" fill="none" stroke="#8fc124" strokeOpacity=".5" className="hub-ping" />
+        <text x="34" y="79" textAnchor="middle" fontSize="10" fontWeight="700" fill="#fff">Hub</text>
+        <rect x="160" y="16" width="64" height="32" rx="9" fill="rgba(143,193,36,.16)" />
+        <text x="192" y="30" textAnchor="middle" fontSize="8.5" fontWeight="700" fill="rgba(255,255,255,.7)">Own fleet</text>
+        <text x="192" y="42" textAnchor="middle" fontSize="10" fontWeight="800" fill="#8fc124">{own}</text>
+        <rect x="160" y="102" width="64" height="32" rx="9" fill="rgba(2,150,217,.18)" />
+        <text x="192" y="116" textAnchor="middle" fontSize="8.5" fontWeight="700" fill="rgba(255,255,255,.7)">Partner</text>
+        <text x="192" y="128" textAnchor="middle" fontSize="10" fontWeight="800" fill="#62b8de">{partner}</text>
       </svg>
-      <p className="absolute bottom-3 left-4 text-[0.72rem] font-semibold text-white/55">
-        Order #{2140 + n} → <span className="font-bold text-white">{own ? "own rider, 30-min zone" : "partner courier, out of zone"}</span>
+      <p className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[0.72rem] font-semibold text-white/55">
+        <span>Routed today</span>
+        <span className="tabular font-bold text-white">{own + partner} orders</span>
       </p>
     </Frame>
   );
