@@ -4,30 +4,52 @@
  * screen. Figures and codes are illustrative.
  */
 
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import clsx from "clsx";
 
-/** Re-runs a cycle every `ms`: returns a counter that ticks up. */
+/** True while the visitor points at a demo: it then runs at double speed. */
+const Fast = createContext(false);
+const useSpeed = (ms) => (useContext(Fast) ? Math.round(ms / 2) : ms);
+
+/** Re-runs a cycle every `ms` (halved on hover): returns a counter. */
 function useCycle(ms) {
+  const step = useSpeed(ms);
   const [n, setN] = useState(0);
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
-    const id = window.setInterval(() => setN((v) => v + 1), ms);
+    const id = window.setInterval(() => setN((v) => v + 1), step);
     return () => window.clearInterval(id);
-  }, [ms]);
+  }, [step]);
   return n;
 }
 
-const Frame = ({ children, className }) => (
-  <div
-    className={clsx(
-      "demo-frame relative h-[15rem] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition-[transform,border-color,background-color,box-shadow] duration-500 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.07] hover:shadow-[0_24px_50px_-30px_rgba(0,0,0,.6)]",
-      className
-    )}
-  >
-    {children}
-  </div>
-);
+/** A demo's frame. Pointing at it speeds the demo up and lights the frame. */
+function Frame({ children, className }) {
+  const [fast, setFast] = useState(false);
+  return (
+    <Fast.Provider value={fast}>
+      <div
+        onPointerEnter={(e) => e.pointerType === "mouse" && setFast(true)}
+        onPointerLeave={() => setFast(false)}
+        className={clsx(
+          "demo-frame relative h-[15rem] overflow-hidden rounded-2xl border bg-white/[0.04] p-4 transition-[border-color,background-color,box-shadow] duration-500",
+          fast ? "border-brand-green/40 bg-white/[0.07] shadow-[0_0_0_4px_rgba(143,193,36,.08)]" : "border-white/10",
+          className
+        )}
+      >
+        {children}
+        <span
+          className={clsx(
+            "pointer-events-none absolute right-3 top-3 rounded-full bg-brand-green/15 px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-[0.12em] text-brand-green transition-opacity duration-300",
+            fast ? "opacity-100" : "opacity-0"
+          )}
+        >
+          2× speed
+        </span>
+      </div>
+    </Fast.Provider>
+  );
+}
 
 /* DocPharma One: stock drains smoothly as orders are picked; a low item is
    restocked and fills back up. */
@@ -38,6 +60,7 @@ const STOCK = [
   ["Pantoprazole 40", "B2409", 36],
 ];
 function InventoryDemo() {
+  const step = useSpeed(1500);
   const [levels, setLevels] = useState(() => STOCK.map(([, , l]) => l));
   const [picked, setPicked] = useState(-1);
   useEffect(() => {
@@ -53,9 +76,9 @@ function InventoryDemo() {
           return j === i ? l - (6 + ((tick * 7) % 9)) : l;
         })
       );
-    }, 1300);
+    }, step);
     return () => window.clearInterval(id);
-  }, []);
+  }, [step]);
   const low = levels.findIndex((l) => l < 30);
   return (
     <Frame>
@@ -100,12 +123,14 @@ function InventoryDemo() {
   );
 }
 
-/* Picker app: the scan sweeps the pack, then the details land. */
+/* Picker app: each scan sweeps the pack and re-verifies its details. */
 function ScanDemo() {
-  const n = useCycle(3600);
+  const n = useCycle(2600);
+  const units = ["B2407", "B2411", "B2402"];
+  const batch = units[n % units.length];
   return (
     <Frame className="flex items-center gap-4">
-      <div key={n} className="relative h-36 w-28 shrink-0 overflow-hidden rounded-xl bg-white p-2.5">
+      <div className="relative h-36 w-28 shrink-0 overflow-hidden rounded-xl bg-white p-2.5">
         <div className="h-2 w-16 rounded bg-brand-blue/70" />
         <div className="mt-1.5 h-1.5 w-12 rounded bg-jet/15" />
         <div className="mt-1 h-1.5 w-14 rounded bg-jet/15" />
@@ -114,23 +139,27 @@ function ScanDemo() {
             <span key={i} className="bg-jet" style={{ width: i % 3 ? 2 : 1, height: `${70 + ((i * 37) % 30)}%` }} />
           ))}
         </div>
-        <span className="demo-scan absolute inset-x-0 h-0.5 bg-[#ef4444] shadow-[0_0_10px_2px_rgba(239,68,68,.6)]" />
+        <span key={n} className="demo-scan absolute inset-x-0 h-0.5 bg-[#ef4444] shadow-[0_0_10px_2px_rgba(239,68,68,.6)]" />
       </div>
-      <dl key={`f${n}`} className="min-w-0 flex-1 space-y-2 text-[0.8rem]">
+      <dl className="min-w-0 flex-1 space-y-2 text-[0.8rem]">
         {[
-          ["Batch", "B2407"],
+          ["Batch", batch],
           ["MRP", "₹ 32.00"],
           ["Expiry", "08 / 2027"],
         ].map(([k, v], i) => (
-          <div key={k} className="demo-field flex items-center justify-between gap-2 rounded-lg bg-white/[0.06] px-2.5 py-1.5" style={{ "--i": i }}>
+          <div key={k} className="flex items-center justify-between gap-2 rounded-lg bg-white/[0.06] px-2.5 py-1.5">
             <dt className="text-white/50">{k}</dt>
             <dd className="flex items-center gap-1.5 font-semibold text-white">
-              {v} <span className="text-[0.65rem] text-brand-green">✓</span>
+              <span key={`${n}-${k}`} className="blank-fill">{v}</span>
+              <span key={`t${n}-${k}`} className="tick-pop text-[0.65rem] text-brand-green" style={{ animationDelay: `${0.5 + i * 0.12}s` }}>✓</span>
             </dd>
           </div>
         ))}
-        <div className="demo-field flex items-center gap-2 pt-1 text-[0.72rem] font-bold text-brand-green" style={{ "--i": 3 }}>
-          <span className="h-1.5 w-1.5 rounded-full bg-brand-green" /> Picked & verified
+        <div className="flex items-center justify-between pt-1 text-[0.72rem] font-bold">
+          <span className="flex items-center gap-2 text-brand-green">
+            <span className="h-1.5 w-1.5 rounded-full bg-brand-green" /> Picked & verified
+          </span>
+          <span className="tabular text-white/55">{12 + n} units</span>
         </div>
       </dl>
     </Frame>
@@ -181,52 +210,81 @@ function RiderDemo() {
   );
 }
 
-/* Logistics engine: orders flow out of the hub without pause — most to the
-   own fleet, out-of-zone ones to a partner — and the counts tick as they land. */
-const TO_OWN = "M46 75 C 100 75, 110 32, 162 32";
-const TO_PARTNER = "M46 75 C 100 75, 110 118, 162 118";
+/* Logistics engine: stock comes in from distributors to the darkstore, and
+   each order leaves it for the customer — by our own rider inside the 30-minute
+   zone, or a partner courier beyond it. Counts move at a believable pace. */
+const INBOUND = "M38 70 H 94";
+const OWN = "M146 70 C 170 70, 176 36, 200 36";
+const COURIER = "M146 70 C 170 70, 176 104, 200 104";
 function LogisticsDemo() {
-  const [own, setOwn] = useState(126);
-  const [partner, setPartner] = useState(31);
+  const step = useSpeed(2200);
+  const [delivered, setDelivered] = useState({ own: 128, courier: 34, inbound: 412 });
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
-    // Three own-fleet dots and one partner dot each land every 2.4s.
-    const a = window.setInterval(() => setOwn((v) => v + 1), 800);
-    const b = window.setInterval(() => setPartner((v) => v + 1), 2400);
-    return () => {
-      window.clearInterval(a);
-      window.clearInterval(b);
-    };
-  }, []);
+    let k = 0;
+    const id = window.setInterval(() => {
+      k++;
+      setDelivered((d) => ({
+        own: d.own + (k % 4 === 0 ? 0 : 1),
+        courier: d.courier + (k % 4 === 0 ? 1 : 0),
+        inbound: d.inbound + (k % 3 === 0 ? 6 : 0),
+      }));
+    }, step);
+    return () => window.clearInterval(id);
+  }, [step]);
+  const dur = `${(step / 1000) * 1.1}s`;
   return (
     <Frame>
-      <svg viewBox="0 0 230 150" className="h-[11rem] w-full" aria-hidden>
-        <path d={TO_OWN} fill="none" stroke="rgba(143,193,36,.35)" strokeWidth="2.5" />
-        <path d={TO_OWN} fill="none" stroke="#8fc124" strokeWidth="2.5" strokeDasharray="4 7" className="flow-dash" />
-        <path d={TO_PARTNER} fill="none" stroke="rgba(2,150,217,.3)" strokeWidth="2.5" />
-        <path d={TO_PARTNER} fill="none" stroke="#0296d9" strokeWidth="2.5" strokeDasharray="4 7" className="flow-dash" />
-        {[0, 0.8, 1.6].map((begin) => (
-          <circle key={begin} r="4.5" fill="#8fc124">
-            <animateMotion dur="2.4s" begin={`${begin}s`} repeatCount="indefinite" path={TO_OWN} keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines=".4 0 .2 1" />
+      <svg viewBox="0 0 240 140" className="h-[10.5rem] w-full" aria-hidden>
+        {/* routes */}
+        <path d={INBOUND} fill="none" stroke="rgba(255,255,255,.3)" strokeWidth="2.5" strokeDasharray="4 6" className="flow-dash" />
+        <path d={OWN} fill="none" stroke="#8fc124" strokeWidth="2.5" strokeDasharray="4 6" className="flow-dash" />
+        <path d={COURIER} fill="none" stroke="#0296d9" strokeWidth="2.5" strokeDasharray="4 6" className="flow-dash" />
+        {/* stock coming in */}
+        <rect r="2" width="9" height="7" rx="1.5" fill="#fff" opacity=".85">
+          <animateMotion dur={dur} repeatCount="indefinite" path={INBOUND} />
+        </rect>
+        {/* orders going out */}
+        {[0, 0.36].map((b) => (
+          <circle key={b} r="4" fill="#8fc124">
+            <animateMotion dur={dur} begin={`${b * parseFloat(dur)}s`} repeatCount="indefinite" path={OWN} />
           </circle>
         ))}
-        <circle r="4.5" fill="#0296d9">
-          <animateMotion dur="2.4s" begin="0.4s" repeatCount="indefinite" path={TO_PARTNER} keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines=".4 0 .2 1" />
+        <circle r="4" fill="#0296d9">
+          <animateMotion dur={dur} begin={`${0.7 * parseFloat(dur)}s`} repeatCount="indefinite" path={COURIER} />
         </circle>
-        <circle cx="34" cy="75" r="18" fill="#0a3452" stroke="rgba(255,255,255,.25)" />
-        <circle cx="34" cy="75" r="18" fill="none" stroke="#8fc124" strokeOpacity=".5" className="hub-ping" />
-        <text x="34" y="79" textAnchor="middle" fontSize="10" fontWeight="700" fill="#fff">Hub</text>
-        <rect x="160" y="16" width="64" height="32" rx="9" fill="rgba(143,193,36,.16)" />
-        <text x="192" y="30" textAnchor="middle" fontSize="8.5" fontWeight="700" fill="rgba(255,255,255,.7)">Own fleet</text>
-        <text x="192" y="42" textAnchor="middle" fontSize="10" fontWeight="800" fill="#8fc124">{own}</text>
-        <rect x="160" y="102" width="64" height="32" rx="9" fill="rgba(2,150,217,.18)" />
-        <text x="192" y="116" textAnchor="middle" fontSize="8.5" fontWeight="700" fill="rgba(255,255,255,.7)">Partner</text>
-        <text x="192" y="128" textAnchor="middle" fontSize="10" fontWeight="800" fill="#62b8de">{partner}</text>
+
+        {/* nodes */}
+        <rect x="2" y="52" width="38" height="36" rx="9" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.2)" />
+        <path d="M15 67 l6 -3 l6 3 v7 l-6 3 l-6 -3 z M15 67 l6 3 l6 -3 M21 70 v7" fill="none" stroke="#fff" strokeWidth="1.4" strokeLinejoin="round" />
+        <rect x="94" y="46" width="52" height="48" rx="11" fill="#0a3452" stroke="#8fc124" strokeOpacity=".6" />
+        <circle cx="120" cy="70" r="30" fill="none" stroke="#8fc124" strokeOpacity=".4" className="hub-ping" />
+        <text x="120" y="68" textAnchor="middle" fontSize="8" fontWeight="800" fill="#fff">Darkstore</text>
+        <text x="120" y="80" textAnchor="middle" fontSize="7" fontWeight="700" fill="rgba(255,255,255,.55)">in stock</text>
+        <rect x="200" y="20" width="38" height="32" rx="9" fill="rgba(143,193,36,.18)" />
+        <path d="M213 36 l6 -5 l6 5 v6 h-12 z M217 42 v-3 h4 v3" fill="none" stroke="#8fc124" strokeWidth="1.4" strokeLinejoin="round" />
+        <rect x="200" y="88" width="38" height="32" rx="9" fill="rgba(2,150,217,.2)" />
+        <path d="M213 104 l6 -5 l6 5 v6 h-12 z M217 110 v-3 h4 v3" fill="none" stroke="#62b8de" strokeWidth="1.4" strokeLinejoin="round" />
+
+        {/* labels */}
+        <text x="21" y="102" textAnchor="middle" fontSize="7.5" fontWeight="700" fill="rgba(255,255,255,.55)">Distributor</text>
+        <text x="219" y="15" textAnchor="middle" fontSize="7.5" fontWeight="700" fill="#8fc124">Own rider · 30 min</text>
+        <text x="219" y="132" textAnchor="middle" fontSize="7.5" fontWeight="700" fill="#62b8de">Courier · beyond</text>
       </svg>
-      <p className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[0.72rem] font-semibold text-white/55">
-        <span>Routed today</span>
-        <span className="tabular font-bold text-white">{own + partner} orders</span>
-      </p>
+      <div className="absolute inset-x-4 bottom-3 grid grid-cols-3 gap-2 text-center">
+        {[
+          ["Units in", delivered.inbound, "text-white"],
+          ["Own fleet", delivered.own, "text-brand-green"],
+          ["Courier", delivered.courier, "text-[#62b8de]"],
+        ].map(([label, v, tone]) => (
+          <div key={label} className="rounded-lg bg-white/[0.05] py-1">
+            <p className={clsx("tabular text-[0.9rem] font-extrabold leading-tight", tone)}>
+              <span key={v} className="count-tick inline-block">{v}</span>
+            </p>
+            <p className="text-[0.6rem] font-semibold uppercase tracking-[0.1em] text-white/45">{label}</p>
+          </div>
+        ))}
+      </div>
     </Frame>
   );
 }

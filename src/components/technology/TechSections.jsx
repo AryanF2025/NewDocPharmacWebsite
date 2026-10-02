@@ -72,7 +72,7 @@ function ProductPanel({ item, index, compact = false }) {
         <h3 className="mt-3 text-[clamp(1.7rem,2.6vw,2.4rem)] font-extrabold leading-[1.05] tracking-[-0.035em]">{item.name}</h3>
         <p className="mt-3 text-[1.02rem] leading-relaxed text-white/75">{item.line}</p>
         <p className="mt-1.5 text-[0.82rem] text-white/45">Used by: {item.who}</p>
-        <ul className="mt-6 grid gap-2.5">
+        <ul className="mt-4 grid gap-1">
           {item.points.map((point, i) => (
             <motion.li
               key={point}
@@ -191,7 +191,7 @@ function PlatformPinned() {
 
             {/* The panel: wipes to the next product as the visitor scrolls */}
             {/* One fixed height for every product, so nothing shifts as they change. */}
-            <div className="relative flex h-[min(30rem,62svh)] items-center overflow-hidden rounded-[2rem] bg-jet p-8 text-white">
+            <div className="relative flex h-[min(33rem,64svh)] items-start overflow-hidden rounded-[2rem] bg-jet px-8 pb-7 pt-8 text-white">
               <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-blue/25 blur-[90px]" />
               <div aria-hidden className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-brand-green/15 blur-[90px]" />
               <AnimatePresence mode="wait" initial={false}>
@@ -241,15 +241,73 @@ function PlatformStacked() {
 /* ----------------------------------------------------------------- delivery --- */
 
 /** A route drawn across a small map; the rider follows it on a loop. */
-const ROUTE = "M40 250 C 80 250, 90 190, 140 185 S 200 120, 230 110 S 270 60, 290 52";
+const ROUTE = "M52 250 C 90 250, 96 190, 140 185 S 200 120, 230 110 S 262 70, 282 58";
+const RIDE_S = 6; // seconds on the road, then the handover
 
+/** Rider on a scooter, centred on 0,0. */
+function RiderGlyph() {
+  return (
+    <g>
+      <circle r="15" fill="#0296d9" stroke="#fff" strokeWidth="3" />
+      <g fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="-5.5" cy="5" r="2.6" />
+        <circle cx="6" cy="5" r="2.6" />
+        <path d="M-5.5 5h5l3-6h4M1.5-1-1-1M7.5-1l-1.5 6" />
+        <circle cx="0" cy="-6.5" r="2.2" fill="#fff" stroke="none" />
+      </g>
+    </g>
+  );
+}
+
+/**
+ * Customer tracking, played as the whole delivery: the rider leaves the
+ * darkstore and rides to the door while the arrival time counts down, the
+ * customer is shown the handover OTP, and the order is marked delivered.
+ */
 function TrackingPhone() {
-  // Arrival time counts down with the rider, then the loop starts over.
-  const [eta, setEta] = useState(18);
+  const reduce = useReducedMotion();
+  const [phase, setPhase] = useState("ride"); // ride | otp | done
+  const [eta, setEta] = useState(12);
+  const [loop, setLoop] = useState(0);
+  const pathRef = useRef(null);
+  const riderRef = useRef(null);
+
   useEffect(() => {
-    const id = window.setInterval(() => setEta((m) => (m <= 1 ? 18 : m - 1)), 400);
-    return () => window.clearInterval(id);
-  }, []);
+    if (reduce) {
+      setPhase("otp");
+      return undefined;
+    }
+    setPhase("ride");
+    setEta(12);
+    // Move the rider along the route, eased, from the store to the door.
+    let frame;
+    const start = performance.now();
+    const ride = (now) => {
+      const path = pathRef.current;
+      const rider = riderRef.current;
+      if (!path || !rider) return;
+      const t = Math.min(1, (now - start) / (RIDE_S * 1000));
+      const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      const pt = path.getPointAtLength(eased * path.getTotalLength());
+      rider.setAttribute("transform", `translate(${pt.x} ${pt.y})`);
+      if (t < 1) frame = requestAnimationFrame(ride);
+    };
+    frame = requestAnimationFrame(ride);
+    const tick = window.setInterval(() => setEta((m) => Math.max(1, m - 2)), (RIDE_S * 1000) / 6);
+    const toOtp = window.setTimeout(() => {
+      window.clearInterval(tick);
+      setPhase("otp");
+    }, RIDE_S * 1000);
+    const toDone = window.setTimeout(() => setPhase("done"), RIDE_S * 1000 + 2600);
+    const again = window.setTimeout(() => setLoop((l) => l + 1), RIDE_S * 1000 + 4400);
+    return () => {
+      window.clearInterval(tick);
+      cancelAnimationFrame(frame);
+      [toOtp, toDone, again].forEach(window.clearTimeout);
+    };
+  }, [loop, reduce]);
+
+  const step = phase === "ride" ? 2 : phase === "otp" ? 3 : 4;
 
   return (
     <div className="relative mx-auto w-full max-w-[20rem]">
@@ -258,7 +316,6 @@ function TrackingPhone() {
         {/* Map */}
         <div className="relative h-72 bg-[#eef3f6]">
           <svg viewBox="0 0 330 290" className="absolute inset-0 h-full w-full" aria-hidden>
-            {/* streets */}
             {[50, 110, 170, 230].map((y) => (
               <path key={y} d={`M0 ${y} H330`} stroke="#fff" strokeWidth="9" />
             ))}
@@ -266,31 +323,68 @@ function TrackingPhone() {
               <path key={x} d={`M${x} 0 V290`} stroke="#fff" strokeWidth="9" />
             ))}
             <path d={ROUTE} pathLength="1" fill="none" stroke="#0296d9" strokeOpacity=".25" strokeWidth="7" strokeLinecap="round" className="route-draw" />
-            <path d={ROUTE} fill="none" stroke="#0296d9" strokeWidth="4" strokeLinecap="round" strokeDasharray="6 8" className="route-flow" />
-            {/* store and door */}
-            <circle cx="40" cy="250" r="9" fill="#052439" />
-            <circle cx="290" cy="52" r="11" fill="#8fc124" />
-            <circle cx="290" cy="52" r="20" fill="none" stroke="#8fc124" strokeOpacity=".5" strokeWidth="2" className="door-ping" />
-            {/* rider */}
-            <g>
-              <circle r="11" fill="#fff" />
-              <circle r="7" fill="#0296d9" />
-              <animateMotion dur="7.2s" repeatCount="indefinite" path={ROUTE} />
+            <path ref={pathRef} d={ROUTE} fill="none" stroke="#0296d9" strokeWidth="4" strokeLinecap="round" strokeDasharray="6 8" className="route-flow" />
+
+            {/* Darkstore */}
+            <g transform="translate(52 250)">
+              <rect x="-18" y="-17" width="36" height="32" rx="8" fill="#052439" />
+              <path d="M-9 -2 l9 -7 l9 7 v10 h-18 z" fill="none" stroke="#8fc124" strokeWidth="1.8" strokeLinejoin="round" />
+              <path d="M-2 8 v-5 h4 v5" fill="none" stroke="#8fc124" strokeWidth="1.8" />
+            </g>
+            <text x="52" y="282" textAnchor="middle" fontSize="11" fontWeight="700" fill="#052439">Darkstore</text>
+
+            {/* Customer's door */}
+            <circle cx="282" cy="58" r="24" fill="none" stroke="#8fc124" strokeOpacity=".5" strokeWidth="2" className="door-ping" />
+            <g transform="translate(282 58)">
+              <circle r="16" fill="#8fc124" />
+              <path d="M-7 1 l7 -6 l7 6 v7 h-14 z" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinejoin="round" />
+            </g>
+            <text x="282" y="94" textAnchor="middle" fontSize="11" fontWeight="700" fill="#052439">You</text>
+
+            {/* Rider */}
+            <g ref={riderRef} transform={reduce ? "translate(282 58)" : "translate(52 250)"}>
+              <RiderGlyph />
             </g>
           </svg>
           <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[0.72rem] font-bold text-jet shadow-sm">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand-green" /> Live
           </span>
         </div>
-        {/* Sheet */}
+
+        {/* Sheet: what the customer sees at each moment */}
         <div className="p-5">
-          <p className="label text-ink-faint">Arriving in</p>
-          <p className="tabular mt-1 text-[2rem] font-extrabold leading-none tracking-tight text-jet">
-            {eta} <span className="text-[1rem] font-bold text-ink-soft">min</span>
-          </p>
+          <div className="relative h-[4.25rem]">
+            <div className={clsx("absolute inset-0 transition-[opacity,transform] duration-500", phase === "ride" ? "opacity-100" : "pointer-events-none -translate-y-2 opacity-0")}>
+              <p className="label text-ink-faint">Arriving in</p>
+              <p className="tabular mt-1 text-[2rem] font-extrabold leading-none tracking-tight text-jet">
+                <span key={eta} className="count-tick inline-block">{eta}</span> <span className="text-[1rem] font-bold text-ink-soft">min</span>
+              </p>
+            </div>
+            <div className={clsx("absolute inset-0 transition-[opacity,transform] duration-500", phase === "otp" ? "opacity-100" : "pointer-events-none translate-y-2 opacity-0")}>
+              <p className="label text-brand-blue">Rider has arrived · share OTP</p>
+              <div className="mt-2 flex gap-1.5">
+                {"4821".split("").map((d, i) => (
+                  <span
+                    key={`${loop}-${i}`}
+                    className="tick-pop flex h-9 w-9 items-center justify-center rounded-xl border-2 border-brand-blue bg-viking text-[1.1rem] font-extrabold text-jet"
+                    style={{ animationDelay: `${i * 0.1}s` }}
+                  >
+                    {d}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className={clsx("absolute inset-0 flex items-center gap-3 transition-[opacity,transform] duration-500", phase === "done" ? "opacity-100" : "pointer-events-none translate-y-2 opacity-0")}>
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-green text-[1.1rem] font-extrabold text-white">✓</span>
+              <span>
+                <span className="block text-[1.2rem] font-extrabold text-jet">Delivered</span>
+                <span className="block text-[0.78rem] text-ink-faint">Handed over with OTP</span>
+              </span>
+            </div>
+          </div>
           <div className="mt-4 flex gap-1.5">
             {["Packed", "Picked up", "On the way", "Delivered"].map((s, i) => (
-              <span key={s} className={clsx("h-1.5 flex-1 rounded-full", i < 3 ? "bg-brand-blue" : "bg-floral")} />
+              <span key={s} className={clsx("h-1.5 flex-1 rounded-full transition-colors duration-500", i < step ? (step === 4 ? "bg-brand-green" : "bg-brand-blue") : "bg-floral")} />
             ))}
           </div>
           <div className="mt-4 flex items-center justify-between rounded-2xl bg-floral px-3.5 py-3">
@@ -401,9 +495,9 @@ export function ConnectAndAutomate() {
               {CONNECT_LOGOS.map((l) => (
                 <span
                   key={l.name}
-                  className="flex h-14 w-32 items-center justify-center rounded-2xl border border-hairline bg-white px-4 transition-[transform,border-color] duration-300 hover:-translate-y-0.5 hover:border-brand-blue/40"
+                  className="flex h-[4.5rem] w-44 items-center justify-center rounded-2xl border border-hairline bg-white px-5 transition-[transform,border-color] duration-300 hover:-translate-y-0.5 hover:border-brand-blue/40"
                 >
-                  <LogoImg src={l.src} alt={l.name} area={1900} maxWidth={96} maxHeight={34} />
+                  <LogoImg src={l.src} alt={l.name} area={5200} maxWidth={136} maxHeight={46} />
                 </span>
               ))}
             </div>
@@ -462,16 +556,23 @@ export function ControlRoom() {
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {CONTROL.map((c, i) => (
             <Reveal key={c.title} from="up" delay={(i % 3) * 0.07}>
-              <article className="card-sweep group relative h-full overflow-hidden rounded-3xl border border-hairline bg-white p-7 transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 hover:border-jet hover:shadow-[0_30px_60px_-30px_rgba(5,36,57,.55)]">
-                <span className="tabular absolute right-6 top-6 text-[0.75rem] font-extrabold text-ink-faint/60 transition-colors duration-500 group-hover:text-brand-green">{String(i + 1).padStart(2, "0")}</span>
-                <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-viking text-brand-blue transition-colors duration-500 group-hover:bg-brand-green group-hover:text-jet">
+              <article
+                onPointerMove={(e) => {
+                  const r = e.currentTarget.getBoundingClientRect();
+                  e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
+                  e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
+                }}
+                className="spotlight group relative h-full overflow-hidden rounded-3xl border border-hairline bg-white p-7 transition-shadow duration-500 hover:shadow-[0_24px_50px_-32px_rgba(5,36,57,.4)]"
+              >
+                <span className="tabular absolute right-6 top-6 text-[0.75rem] font-extrabold text-ink-faint/60 transition-colors duration-300 group-hover:text-brand-blue">{String(i + 1).padStart(2, "0")}</span>
+                <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-viking text-brand-blue transition-[background-color,color,transform] duration-500 group-hover:scale-105 group-hover:bg-brand-blue group-hover:text-white">
                   <Icon name={CONTROL_ICONS[i]} />
                 </span>
-                <h3 className="relative mt-5 flex items-center gap-2 text-[1.12rem] font-extrabold tracking-tight text-jet transition-colors duration-500 group-hover:text-white">
+                <h3 className="relative mt-5 flex items-center gap-2 text-[1.12rem] font-extrabold tracking-tight text-jet">
                   {c.title}
-                  <span aria-hidden className="-translate-x-1 text-brand-green opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100">→</span>
+                  <span aria-hidden className="-translate-x-1 text-brand-blue opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">→</span>
                 </h3>
-                <p className="relative mt-2 text-[0.95rem] leading-relaxed text-ink-soft transition-colors duration-500 group-hover:text-white/70">{c.body}</p>
+                <p className="relative mt-2 text-[0.95rem] leading-relaxed text-ink-soft">{c.body}</p>
               </article>
             </Reveal>
           ))}

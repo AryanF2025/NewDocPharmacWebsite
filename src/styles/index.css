@@ -1479,17 +1479,49 @@
   }
 }
 
-/* Control room cards: a navy panel sweeps up behind the card on hover. */
-.card-sweep::before {
+/* Control room cards: a soft blue light follows the cursor across the card,
+   and the border brightens near it. */
+.spotlight::before,
+.spotlight::after {
   content: "";
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(18rem circle at 85% 0%, rgba(2, 150, 217, 0.35), transparent 60%),
-    var(--color-jet);
-  transform: translateY(101%);
-  transition: transform 0.55s var(--ease-brand);
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-brand);
 }
-.card-sweep:hover::before {
-  transform: none;
+.spotlight::before {
+  background: radial-gradient(340px circle at var(--mx, 50%) var(--my, 50%), rgba(2, 150, 217, 0.1), transparent 55%);
+}
+.spotlight::after {
+  padding: 1px;
+  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgba(2, 150, 217, 0.7), rgba(143, 193, 36, 0.35) 45%, transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+.spotlight:hover::before,
+.spotlight:hover::after {
+  opacity: 1;
+}
+
+/* Demo numbers roll up into their new value instead of jumping. */
+.count-tick {
+  animation: count-tick 0.45s var(--ease-brand) both;
+}
+@keyframes count-tick {
+  from {
+    opacity: 0;
+    transform: translateY(70%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* A verification tick pops in after each scan. */
+.tick-pop {
+  display: inline-block;
+  animation: seal-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
