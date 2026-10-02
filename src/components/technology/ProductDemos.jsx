@@ -95,7 +95,7 @@ function InventoryDemo() {
               <span className={clsx("truncate font-semibold transition-colors duration-500", picked === i ? "text-white" : "text-white/80")}>{name}</span>
               <span className="flex shrink-0 items-center gap-2">
                 <span className="tabular w-8 text-right text-[0.7rem] font-bold text-white/55">{levels[i]}%</span>
-                <span className="rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-[0.68rem] text-white/70">{batch}</span>
+                <span className="rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-[0.72rem] text-white/70">{batch}</span>
               </span>
             </div>
             <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
@@ -129,8 +129,8 @@ function ScanDemo() {
   const units = ["B2407", "B2411", "B2402"];
   const batch = units[n % units.length];
   return (
-    <Frame className="flex items-center gap-4">
-      <div className="relative h-36 w-28 shrink-0 overflow-hidden rounded-xl bg-white p-2.5">
+    <Frame className="flex items-center gap-3 sm:gap-4">
+      <div className="relative h-36 w-24 shrink-0 sm:w-28 overflow-hidden rounded-xl bg-white p-2.5">
         <div className="h-2 w-16 rounded bg-brand-blue/70" />
         <div className="mt-1.5 h-1.5 w-12 rounded bg-jet/15" />
         <div className="mt-1 h-1.5 w-14 rounded bg-jet/15" />
@@ -141,7 +141,7 @@ function ScanDemo() {
         </div>
         <span key={n} className="demo-scan absolute inset-x-0 h-0.5 bg-[#ef4444] shadow-[0_0_10px_2px_rgba(239,68,68,.6)]" />
       </div>
-      <dl className="min-w-0 flex-1 space-y-2 text-[0.8rem]">
+      <dl className="min-w-0 flex-1 space-y-2 text-[0.76rem] sm:text-[0.8rem]">
         {[
           ["Batch", batch],
           ["MRP", "₹ 32.00"],

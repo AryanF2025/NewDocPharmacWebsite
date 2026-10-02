@@ -117,7 +117,7 @@ export function Select({ id, name, value, options, onChange, labelledBy, classNa
         onClick={() => (open ? setOpen(false) : openMenu())}
         onKeyDown={onKeyDown}
         className={clsx(
-          "flex w-full items-center justify-between gap-3 rounded-xl border bg-white px-4 py-3 text-left text-[0.95rem] text-jet outline-none transition-[border-color,box-shadow] duration-200",
+          "flex w-full items-center justify-between gap-3 rounded-xl border bg-white px-4 py-3 text-left text-base text-jet sm:text-[0.95rem] outline-none transition-[border-color,box-shadow] duration-200",
           open
             ? "border-brand-blue shadow-[0_0_0_3px_rgba(2,150,217,.15)]"
             : "border-hairline hover:border-[#cfd4da] focus-visible:border-brand-blue focus-visible:shadow-[0_0_0_3px_rgba(2,150,217,.15)]"

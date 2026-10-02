@@ -89,7 +89,7 @@ export function NewsTicker({ className = "" }) {
             onClick={() => goTo(i)}
             aria-label={`Show news ${i + 1} of ${NEWS.length}: ${n.tag}`}
             aria-current={i === index}
-            className="group flex h-6 items-center px-[3px]"
+            className="group flex h-9 items-center px-2"
           >
             <span
               className={`block h-1.5 rounded-full transition-all duration-500 ${

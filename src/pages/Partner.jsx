@@ -77,7 +77,7 @@ function validate(form) {
 }
 
 const FIELD =
-  "w-full rounded-xl border border-hairline bg-white px-4 py-3 text-[0.95rem] text-jet outline-none transition-[border-color,box-shadow,background-color] duration-200 placeholder:text-ink-faint hover:border-[#cfd4da] focus:border-brand-blue focus:bg-white focus:shadow-[0_0_0_3px_rgba(2,150,217,.15)]";
+  "w-full rounded-xl border border-hairline bg-white px-4 py-3 text-base text-jet sm:text-[0.95rem] outline-none transition-[border-color,box-shadow,background-color] duration-200 placeholder:text-ink-faint hover:border-[#cfd4da] focus:border-brand-blue focus:bg-white focus:shadow-[0_0_0_3px_rgba(2,150,217,.15)]";
 
 /** A form field. Pass `labelId` for custom controls: they are named by the
  *  label text instead of being wrapped in a <label>. */

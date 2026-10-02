@@ -1177,7 +1177,7 @@
 .pill-fill::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: -1px; /* over the border too, so no pale edge shows */
   z-index: -1;
   border-radius: inherit;
   background: var(--color-brand-blue);

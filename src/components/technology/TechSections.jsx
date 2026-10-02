@@ -80,7 +80,7 @@ function ProductPanel({ item, index, compact = false }) {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, ease: EASE, delay: 0.1 + i * 0.06 }}
-              className="group/pt -mx-2 flex items-start gap-3 rounded-xl px-2 py-1 text-[0.94rem] leading-snug text-white/85 transition-colors duration-300 hover:bg-white/[0.06] hover:text-white"
+              className="group/pt flex items-start gap-3 rounded-xl py-1 sm:-mx-2 sm:px-2 text-[0.94rem] leading-snug text-white/85 transition-colors duration-300 hover:bg-white/[0.06] hover:text-white"
             >
               <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-green/20 text-[0.6rem] text-brand-green transition-colors duration-300 group-hover/pt:bg-brand-green group-hover/pt:text-jet">✓</span>
               {point}
@@ -216,7 +216,7 @@ function PlatformPinned() {
 
 function PlatformStacked() {
   return (
-    <section className="bg-floral py-24 md:py-32">
+    <section className="overflow-x-clip bg-floral py-24 md:py-32">
       <div className="mx-auto max-w-[84rem] px-5 md:px-10">
         <SectionHeader
           eyebrow="The platform"
@@ -437,7 +437,7 @@ const DELIVERY_POINTS = [
 
 export function Delivery() {
   return (
-    <section className="bg-white py-24 md:py-32">
+    <section className="overflow-x-clip bg-white py-24 md:py-32">
       <div className="mx-auto grid max-w-[84rem] items-center gap-14 px-5 md:px-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
         <div>
           <SectionHeader
