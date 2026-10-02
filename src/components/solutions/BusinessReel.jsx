@@ -137,8 +137,18 @@ function DialName({ tab, i, progress, active, onPick }) {
   );
 }
 
-/** What the business gets, in a glass panel that swaps as the dial turns. */
-function Details({ tab, i, outcome }) {
+/** One bar per business in the progress; it fills as the reel reaches that business. */
+function Segment({ i, progress }) {
+  const fill = useTransform(progress, (v) => Math.min(1, Math.max(0, v * STEPS - i + 1)));
+  return (
+    <span className="h-1 w-8 overflow-hidden rounded-full bg-white/15">
+      <motion.span style={{ scaleX: fill }} className="block h-full origin-left rounded-full bg-gradient-to-r from-brand-blue to-brand-green" />
+    </span>
+  );
+}
+
+/** The business in detail, in a glass panel that swaps as the dial turns. */
+function Details({ tab }) {
   return (
     <motion.div
       key={tab.id}
@@ -148,11 +158,7 @@ function Details({ tab, i, outcome }) {
       transition={{ duration: 0.6, ease: EASE }}
       className="rounded-[2rem] border border-white/15 bg-jet/55 p-7 shadow-[0_40px_80px_-40px_rgba(0,0,0,.7)] backdrop-blur-xl xl:p-8"
     >
-      <p className="tabular flex items-center gap-3 text-[0.75rem] font-extrabold uppercase tracking-[0.18em] text-brand-green">
-        <span className="h-px w-8 bg-brand-green" />
-        {pad(i + 1)} / {pad(STEPS + 1)} · {tab.tab}
-      </p>
-      <h3 className="mt-3 text-[clamp(1.4rem,1.9vw,1.9rem)] font-extrabold leading-[1.1] tracking-[-0.035em]">
+      <h3 className="text-[clamp(1.4rem,1.9vw,1.9rem)] font-extrabold leading-[1.1] tracking-[-0.035em]">
         {tab.headline.split(" ").map((word, w) => (
           <span key={`${word}${w}`} className="inline-block overflow-hidden pb-[0.08em] align-top">
             <motion.span
@@ -166,7 +172,14 @@ function Details({ tab, i, outcome }) {
           </span>
         ))}
       </h3>
-      <p className="mt-3 border-l-2 border-brand-green pl-3 text-[0.98rem] font-semibold leading-snug text-white/85">{outcome}</p>
+      <motion.p
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: EASE, delay: 0.2 }}
+        className="mt-3 text-[0.98rem] leading-relaxed text-white/70"
+      >
+        {tab.copy}
+      </motion.p>
       <ul className="mt-5 flex flex-wrap gap-1.5">
         {tab.props.map((prop, p) => (
           <motion.li
@@ -219,19 +232,33 @@ function Reel({ art, outcome }) {
         <div className="absolute inset-0 bg-gradient-to-r from-jet via-jet/80 to-jet/25" />
         <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-jet/80 to-transparent" />
 
-        <div className="relative mx-auto grid h-full max-w-[84rem] grid-cols-[minmax(0,1fr)_minmax(0,27rem)] gap-10 px-10 pb-10 pt-28 xl:grid-cols-[minmax(0,1fr)_minmax(0,30rem)]">
-          {/* The dial */}
-          <div className="flex min-h-0 flex-col">
-            <Eyebrow tone="dark">Who we build for</Eyebrow>
-            <p className="mt-3 text-[1.25rem] font-extrabold tracking-tight text-white/80">One network. Five ways to plug in.</p>
+        <div className="relative mx-auto grid h-full max-w-[84rem] grid-cols-[minmax(0,1fr)_minmax(0,27rem)] grid-rows-[auto_minmax(0,1fr)] gap-x-10 gap-y-6 px-10 pb-10 pt-28 xl:grid-cols-[minmax(0,1fr)_minmax(0,30rem)]">
+          {/* The section's own title, and the one place that says where you are */}
+          <div className="col-span-2 flex items-end justify-between gap-10 border-b border-white/10 pb-6">
+            <div>
+              <Eyebrow tone="dark">Who we build for</Eyebrow>
+              <h2 className="mt-3 text-[clamp(1.9rem,2.7vw,2.7rem)] font-extrabold leading-[1.05] tracking-[-0.04em]">
+                One network. Five ways to plug in.
+              </h2>
+            </div>
+            <div className="flex shrink-0 items-center gap-4">
+              <div className="flex gap-1.5" aria-hidden>
+                {SOLUTION_TABS.map((t, i) => (
+                  <Segment key={t.id} i={i} progress={dialProgress} />
+                ))}
+              </div>
+              <p className="tabular text-[0.95rem] font-extrabold text-white/50">
+                <span className="text-white">{pad(active + 1)}</span> / {pad(STEPS + 1)}
+              </p>
+            </div>
+          </div>
 
-            <div className="relative mt-4 min-h-0 flex-1">
-              {/* The centre line the current name sits on, and how far along we are */}
+          {/* The dial of names, and what the current one gets */}
+          <div className="flex min-h-0 flex-col">
+            <div className="relative mb-6 min-h-0 flex-1">
+              {/* The centre line the current name sits on */}
               <span aria-hidden className="absolute -left-6 top-1/2 h-px w-4 bg-brand-green" />
-              <span aria-hidden className="absolute -left-[1.4rem] top-[12%] bottom-[12%] w-px bg-white/10">
-                <motion.span style={{ scaleY: dialProgress }} className="block h-full w-full origin-top bg-gradient-to-b from-brand-blue to-brand-green" />
-              </span>
-              <div className="absolute inset-0 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,#000_22%,#000_78%,transparent)]">
+              <div className="absolute inset-0 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,#000_24%,#000_68%,transparent_92%)]">
                 <motion.ul style={{ y: dialY, top: `calc(50% - ${ROW / 2}rem)` }} className="absolute left-0 right-0">
                   {SOLUTION_TABS.map((t, i) => (
                     <DialName key={t.id} tab={t} i={i} progress={dialProgress} active={i === active} onPick={() => pick(i)} />
@@ -240,9 +267,20 @@ function Reel({ art, outcome }) {
               </div>
             </div>
 
-            <p className="tabular text-[0.85rem] font-bold text-white/50">
-              <span className="text-white">{pad(active + 1)}</span> / {pad(STEPS + 1)}
-            </p>
+            <div className="relative h-[5.5rem] max-w-xl">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={tab.id}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10, transition: { duration: 0.2 } }}
+                  transition={{ duration: 0.55, ease: EASE, delay: 0.15 }}
+                >
+                  <p className="label text-brand-green">What you get</p>
+                  <p className="mt-2 text-[clamp(1.15rem,1.6vw,1.45rem)] font-extrabold leading-snug tracking-[-0.02em]">{outcome[tab.id]}</p>
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
 
           {/* Status over the photo, then the details panel */}
@@ -265,7 +303,7 @@ function Reel({ art, outcome }) {
               </AnimatePresence>
             </div>
             <AnimatePresence mode="wait">
-              <Details key={tab.id} tab={tab} i={active} outcome={outcome[tab.id]} />
+              <Details key={tab.id} tab={tab} />
             </AnimatePresence>
           </div>
         </div>

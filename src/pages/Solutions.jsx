@@ -316,29 +316,39 @@ function Impact() {
             <ImpactCard key={stat.label} stat={stat} i={i} />
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
 
-        {/* Closing call, with a delivery route flowing along its foot. */}
-        <Reveal from="up" className="mt-20">
-          <div className="relative overflow-hidden rounded-[2rem] bg-jet px-7 py-12 text-white md:px-12 md:py-14">
+/* ----------------------------------------------------------- closing call --- */
+
+/** The last word: a light panel, with a delivery route flowing along its foot. */
+function ClosingCall() {
+  return (
+    <section className="bg-white py-24 md:py-28">
+      <div className="mx-auto max-w-[84rem] px-5 md:px-10">
+        <Reveal from="up">
+          <div className="relative overflow-hidden rounded-[2rem] border border-hairline bg-floral px-7 py-12 text-jet md:px-12 md:py-14">
             <div aria-hidden className="pointer-events-none absolute inset-0">
-              <div className="pb-glow absolute -right-24 -top-24 h-80 w-80 rounded-full bg-brand-blue/30 blur-[100px]" />
+              <div className="pb-glow absolute -right-24 -top-24 h-80 w-80 rounded-full bg-brand-blue/15 blur-[100px]" />
               <svg
                 viewBox="0 0 600 200"
                 preserveAspectRatio="none"
-                className="absolute inset-x-0 bottom-0 h-1/2 w-full opacity-45"
+                className="absolute inset-x-0 bottom-0 h-1/2 w-full opacity-60"
               >
                 <path
                   d="M20 185 C 160 190, 240 120, 340 150 S 500 175, 585 70"
                   fill="none"
-                  stroke="#fff"
-                  strokeOpacity=".12"
+                  stroke="#052439"
+                  strokeOpacity=".08"
                   strokeWidth="2"
                 />
                 <path
                   className="route-flow"
                   d="M20 185 C 160 190, 240 120, 340 150 S 500 175, 585 70"
                   fill="none"
-                  stroke="#a1e666"
+                  stroke="#8fc124"
                   strokeWidth="2.5"
                   strokeDasharray="6 8"
                   strokeLinecap="round"
@@ -347,20 +357,18 @@ function Impact() {
             </div>
             <div className="relative flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
               <div>
-                <p className="label text-brand-green">Not sure where you fit?</p>
+                <p className="label text-brand-blue">Not sure where you fit?</p>
                 <h2 className="mt-3 max-w-xl text-[clamp(1.6rem,2.8vw,2.4rem)] font-extrabold leading-[1.1] tracking-[-0.035em]">
                   Tell us what you sell and where. We&apos;ll map the route.
                 </h2>
-                <p className="mt-3 max-w-lg text-[1.02rem] leading-relaxed text-white/65">
+                <p className="mt-3 max-w-lg text-[1.02rem] leading-relaxed text-ink-soft">
                   The darkstores, licences and delivery SLA your orders need, back to you within two
                   working days.
                 </p>
               </div>
               <div className="flex shrink-0 flex-wrap gap-3">
                 <CtaButton to="/partner">Talk to our team</CtaButton>
-                <GhostButton to="/technology" tone="dark">
-                  See the technology
-                </GhostButton>
+                <GhostButton to="/technology">See the technology</GhostButton>
               </div>
             </div>
           </div>
@@ -379,8 +387,9 @@ export default function Solutions() {
     <>
       <SolutionsHero />
       <BusinessReel art={ART} outcome={OUTCOME} />
-      <PoweredBy />
       <Impact />
+      <PoweredBy />
+      <ClosingCall />
     </>
   );
 }
