@@ -19,7 +19,7 @@ import {
   CONTACT_HERO,
   PARTNER_ASSURANCES,
 } from "@/data/contact";
-import { usePageMeta } from "@/hooks/usePageMeta";
+import { usePageSeo } from "@/seo/usePageSeo";
 import { scrollToTarget } from "@/components/motion/smoothScroll";
 import { CountUp } from "@/components/experience/HeroParts";
 import { Select } from "@/components/ui/Select";
@@ -341,11 +341,7 @@ function PartnerHero() {
 }
 
 export default function Partner() {
-  usePageMeta({
-    title: "Partner with us — DocPharma",
-    description:
-      "Let's build better healthcare access together. Fulfil more orders, reach customers faster, expand into new cities or build a healthcare delivery layer.",
-  });
+  usePageSeo("partner");
 
   const [form, setForm] = useState(CONTACT_INITIAL);
   const [errors, setErrors] = useState({});

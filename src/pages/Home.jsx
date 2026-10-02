@@ -21,7 +21,8 @@ import { HeroBackdrop, Enter, HIGHLIGHT } from "@/components/motion/Hero";
 import { SplitText, SectionHeader, Eyebrow } from "@/components/motion/Text";
 import { CtaButton, GhostButton } from "@/components/motion/CtaButton";
 import { useInViewOnce } from "@/components/motion/useInViewOnce";
-import { usePageMeta } from "@/hooks/usePageMeta";
+import { usePageSeo } from "@/seo/usePageSeo";
+import { FAQ } from "@/seo/config";
 import { CLIENT_LOGOS, INTEGRATION_LOGOS } from "@/data/logos";
 import { TECH_SECTION } from "@/data/site";
 import rider from "@/assets/images/rider.webp";
@@ -279,14 +280,50 @@ function Bento() {
   );
 }
 
+/* -------------------------------------------------------------------- faq --- */
+
+/** Common questions, answered in plain text. Same answers as the FAQPage schema (src/seo/config.js). */
+function Faq() {
+  return (
+    <section id="faq" aria-label="Frequently asked questions" className="border-t border-hairline bg-white">
+      <div className="mx-auto grid max-w-[84rem] gap-12 px-5 py-24 md:px-10 md:py-32 lg:grid-cols-[1fr_1.5fr]">
+        <div className="lg:sticky lg:top-28 lg:self-start">
+          <SectionHeader eyebrow="FAQ" title="Questions, answered." />
+          <p className="mt-5 max-w-sm text-[1.05rem] leading-relaxed text-ink-soft">
+            See what we do for your business on{" "}
+            <Link to="/solutions" className="link-underline font-semibold text-brand-blue">Solutions</Link>, how orders move on{" "}
+            <Link to="/technology" className="link-underline font-semibold text-brand-blue">Technology</Link>, or{" "}
+            <Link to="/partner" className="link-underline font-semibold text-brand-blue">talk to our team</Link>.
+          </p>
+        </div>
+
+        <div className="divide-y divide-hairline border-y border-hairline">
+          {FAQ.map(({ q, a }) => (
+            <details key={q} className="faq-item group">
+              <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-6 py-5 text-left text-[1.08rem] font-bold text-jet transition-colors duration-300 hover:text-brand-blue [&::-webkit-details-marker]:hidden">
+                <h3 className="text-[inherit] font-[inherit]">{q}</h3>
+                <span
+                  aria-hidden
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-floral text-brand-blue transition-transform duration-300 group-open:rotate-45"
+                >
+                  <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="M8 3v10M3 8h10" />
+                  </svg>
+                </span>
+              </summary>
+              <p className="max-w-2xl pb-6 text-[1rem] leading-relaxed text-ink-soft">{a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ------------------------------------------------------------------- page --- */
 
 export default function Home() {
-  usePageMeta({
-    title: "DocPharma — Medicine delivered in 30 minutes",
-    description:
-      "India's first healthcare quick-commerce supply chain: licensed darkstores, pharmacist validation, AI-driven inventory and our own fleet.",
-  });
+  usePageSeo("home");
 
   return (
     <div className="bg-floral">
@@ -302,6 +339,7 @@ export default function Home() {
       <HowItWorksPinned />
       <PlatformBand />
       <Bento />
+      <Faq />
     </div>
   );
 }

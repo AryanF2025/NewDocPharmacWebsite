@@ -18,7 +18,7 @@ import { HeroBackdrop, HeroHeading, Enter, HIGHLIGHT } from "@/components/motion
 import { SectionHeader } from "@/components/motion/Text";
 import { CtaButton, GhostButton } from "@/components/motion/CtaButton";
 import { scrollToTarget } from "@/components/motion/smoothScroll";
-import { usePageMeta } from "@/hooks/usePageMeta";
+import { usePageSeo } from "@/seo/usePageSeo";
 import { SOLUTIONS_HERO, SOLUTION_TABS, SOLUTIONS_IMPACT } from "@/data/site";
 import stillPick from "@/assets/images/still-pick.jpg";
 import stillVerify from "@/assets/images/still-verify.jpg";
@@ -425,11 +425,7 @@ function Impact() {
 /* ------------------------------------------------------------------ page --- */
 
 export default function Solutions() {
-  usePageMeta({
-    title: "Solutions — DocPharma",
-    description:
-      "End-to-end supply chain built for healthcare: e-pharmacies, corporate wellness platforms, health insurers, D2C brands, doctors and hospitals.",
-  });
+  usePageSeo("solutions");
 
   const { hash } = useLocation();
   const [picked, setPicked] = useState(() => {

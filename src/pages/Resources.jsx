@@ -10,7 +10,7 @@ import { useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import { motion } from "motion/react";
 import { Reveal } from "@/components/ui/Reveal";
-import { usePageMeta } from "@/hooks/usePageMeta";
+import { usePageSeo } from "@/seo/usePageSeo";
 import { PRESS, PRESS_HERO, PRESS_TOPICS } from "@/data/press";
 import { HeroBackdrop, HeroHeading, Enter } from "@/components/motion/Hero";
 import { CtaButton } from "@/components/motion/CtaButton";
@@ -75,10 +75,7 @@ function PressCard({ item, lead = false, index = 0 }) {
 }
 
 export default function Resources() {
-  usePageMeta({
-    title: "Resources — DocPharma",
-    description: "Press coverage of DocPharma: the $2M Pre-Series A, the 30-minute network, and the founders' story.",
-  });
+  usePageSeo("resources");
 
   const [topic, setTopic] = useState("All");
   const shown = useMemo(() => (topic === "All" ? PRESS : PRESS.filter((item) => item.topic === topic)), [topic]);

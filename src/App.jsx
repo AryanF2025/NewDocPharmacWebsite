@@ -1,5 +1,5 @@
 import { Suspense, useEffect } from "react";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { SiteHeader } from "@/components/experience/SiteHeader";
 import { SiteFooter } from "@/components/experience/SiteFooter";
 import { BrandLoader } from "@/components/ui/BrandLoader";
@@ -139,7 +139,7 @@ export default function App() {
               <Route path="/technology" element={<Technology />} />
               <Route path="/about" element={<About />} />
               <Route path="/partner" element={<Partner />} />
-              <Route path="/contact" element={<Partner />} />
+              <Route path="/contact" element={<Navigate to="/partner" replace />} />
               <Route path="/resources" element={<Resources />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfUse />} />

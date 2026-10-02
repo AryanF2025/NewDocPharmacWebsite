@@ -1,0 +1,25 @@
+# DocPharma
+
+> DocPharma is India's first healthcare quick-commerce supply chain. It runs licensed darkstores, pharmacist validation, AI-driven inventory and its own delivery fleet as one network, so healthcare businesses can deliver medicines and wellness products in about 30 minutes without building that infrastructure themselves.
+
+- Legal entity: Fledge Healthplus Private Limited
+- Registered office: A2 306, Azure Tower, MI Central Park, Arjunganj, Lucknow, Uttar Pradesh 226001, India
+- Coverage: 12+ cities including Delhi NCR, Mumbai, Bengaluru, Hyderabad, Chennai, Pune and Kolkata; 19,000+ pincodes through own riders and partner couriers
+- Serves: e-pharmacies, D2C health and wellness brands, corporate wellness platforms, health insurers, doctors and hospitals
+- Compliance: drug-licensed fulfilment, prescriptions validated with registered-pharmacist sign-off before dispatch, FSSAI-compliant handling of food and nutrition products, batch/expiry/MRP captured for every unit
+- Integrations: Shopify, Unicommerce, EasyEcom, order API with webhook status updates
+- Contact: +91 75420 21525, tech-support@fledgehealth.com
+
+## Pages
+
+- [Home](https://docpharma.in/): what DocPharma does and how the network works, with FAQs
+- [Solutions](https://docpharma.in/solutions): fulfilment and delivery by business type
+- [Technology](https://docpharma.in/technology): DocPharma One, the inventory, order, picking, rider and tracking platform
+- [About](https://docpharma.in/about): story, values, leadership and investors
+- [Partner with us](https://docpharma.in/partner): business enquiries; replies within two working days
+- [Resources](https://docpharma.in/resources): press coverage and founder interviews
+
+## Optional
+
+- [Privacy Policy](https://docpharma.in/privacy)
+- [Terms & Conditions](https://docpharma.in/terms)

@@ -17,7 +17,7 @@ import { HeroBackdrop, HeroHeading, Enter, HIGHLIGHT } from "@/components/motion
 import { SectionHeader, SplitText } from "@/components/motion/Text";
 import { CtaButton, GhostButton } from "@/components/motion/CtaButton";
 import { useInViewOnce } from "@/components/motion/useInViewOnce";
-import { usePageMeta } from "@/hooks/usePageMeta";
+import { usePageSeo } from "@/seo/usePageSeo";
 import { PlatformExplorer, Delivery, ConnectAndAutomate, ControlRoom } from "@/components/technology/TechSections";
 import { TECH_HERO, TECH_ONE, TRACE, FINAL_STATEMENT, COMPLIANCE } from "@/data/pages";
 
@@ -376,11 +376,7 @@ function FinalStatement() {
 /* ------------------------------------------------------------------ page --- */
 
 export default function Technology() {
-  usePageMeta({
-    title: "Technology & Compliance — DocPharma",
-    description:
-      "DocPharma One connects inventory, orders, fulfilment and delivery on licensed, pharmacist-led, fully traceable infrastructure.",
-  });
+  usePageSeo("technology");
 
   const desktop = useIsDesktop();
   const reduce = useReducedMotion();

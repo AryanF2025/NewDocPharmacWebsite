@@ -14,7 +14,7 @@ import { SectionHeader, SplitText, Eyebrow } from "@/components/motion/Text";
 import { ParallaxImage } from "@/components/motion/Media";
 import { CtaButton, GhostButton } from "@/components/motion/CtaButton";
 import { lockScroll } from "@/components/motion/smoothScroll";
-import { usePageMeta } from "@/hooks/usePageMeta";
+import { usePageSeo } from "@/seo/usePageSeo";
 import { ABOUT_HERO, VALUES, MISSION, VISION, LEADERSHIP, INVESTORS, JOIN_TEAM } from "@/data/about";
 
 /* ------------------------------------------------------------------ hero --- */
@@ -383,11 +383,7 @@ function Leadership() {
 /* ----------------------------------------------------------------- page --- */
 
 export default function About() {
-  usePageMeta({
-    title: "About — DocPharma",
-    description:
-      "Built for Health. Built for Bharat. The story, values, leadership and investors behind DocPharma's healthcare supply chain.",
-  });
+  usePageSeo("about");
 
   return (
     <>

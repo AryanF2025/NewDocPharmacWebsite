@@ -9,7 +9,7 @@
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { motion, useScroll, useSpring } from "motion/react";
-import { usePageMeta } from "@/hooks/usePageMeta";
+import { usePageSeo } from "@/seo/usePageSeo";
 import { HeroHeading, Enter } from "@/components/motion/Hero";
 import { LEGAL_CONTACT, PRIVACY_POLICY, TERMS_AND_CONDITIONS } from "@/data/legal";
 
@@ -64,12 +64,12 @@ function Body({ body }) {
   return <div className="space-y-4">{out}</div>;
 }
 
-function LegalDocument({ doc, description }) {
+function LegalDocument({ doc, seoKey }) {
   const [active, setActive] = useState(doc.sections[0]?.id);
   const sectionRefs = useRef({});
   const railRef = useRef(null);
 
-  usePageMeta({ title: `${doc.title} — DocPharma`, description });
+  usePageSeo(seoKey);
 
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30 });
@@ -210,7 +210,7 @@ export function PrivacyPolicy() {
   return (
     <LegalDocument
       doc={PRIVACY_POLICY}
-      description="How DocPharma collects, uses, shares and protects your personal information."
+      seoKey="privacy"
     />
   );
 }
@@ -219,7 +219,7 @@ export function TermsOfUse() {
   return (
     <LegalDocument
       doc={TERMS_AND_CONDITIONS}
-      description="The terms that govern your use of the DocPharma website and services."
+      seoKey="terms"
     />
   );
 }

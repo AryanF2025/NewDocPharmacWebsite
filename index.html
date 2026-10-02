@@ -1,27 +1,31 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-IN">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0992D3" />
-    <title>DocPharma — India's First Healthcare Quick-Commerce Supply Chain</title>
+    <meta name="theme-color" content="#0296d9" />
+    <meta name="application-name" content="DocPharma" />
+    <meta name="apple-mobile-web-app-title" content="DocPharma" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <!-- Page-specific SEO. The build (scripts/prerender-seo.mjs) writes each
+         route's own title, description, canonical, Open Graph and JSON-LD here;
+         the app keeps them in step while browsing (src/seo/usePageSeo.js). -->
+    <!--seo:page-->
+    <title>DocPharma | 30-Minute Medicine Delivery & Healthcare Supply Chain in India</title>
     <meta
       name="description"
-      content="DocPharma runs the licensed dark-store, fulfilment and last-mile infrastructure behind India's healthcare businesses. 30-minute delivery, AI-powered, compliance-first."
+      content="DocPharma runs licensed darkstores, pharmacist-led fulfilment and its own rider fleet, so pharmacies, health brands and insurers can deliver medicine in 30 minutes across 12+ Indian cities."
     />
-    <meta property="og:title" content="DocPharma — Elevating healthcare together" />
-    <meta
-      property="og:description"
-      content="Compliance × Technology × Speed. The supply chain infrastructure behind India's healthcare brands."
-    />
-    <meta property="og:type" content="website" />
+    <!--/seo:page-->
+    <!-- Site-wide Organization + WebSite JSON-LD, written by the build from src/seo/config.js. -->
+    <!--seo:site-->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Only the upright weights the site uses (400–800); italic text uses Georgia. -->
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400..800&display=swap" rel="stylesheet" />
     <!-- Boot loader: painted before any script arrives, then handed over to
          the app's own loader (RouteLoader), which removes it. -->
     <style>

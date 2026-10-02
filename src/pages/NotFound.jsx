@@ -1,10 +1,10 @@
 import { HeroBackdrop, HeroHeading, Enter, HIGHLIGHT } from "@/components/motion/Hero";
 import { CtaButton, GhostButton } from "@/components/motion/CtaButton";
-import { usePageMeta } from "@/hooks/usePageMeta";
+import { usePageSeo } from "@/seo/usePageSeo";
 
 /** A delivery that lost its address: the route draws, the pin drops, no one's home. */
 export default function NotFound() {
-  usePageMeta({ title: "Page not found — DocPharma", description: "This page could not be found." });
+  usePageSeo("notFound");
 
   return (
     <section className="relative flex min-h-[100svh] items-center overflow-hidden bg-white">
