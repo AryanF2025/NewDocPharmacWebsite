@@ -474,7 +474,7 @@ function Faq() {
   return (
     <section id="faq" aria-label="Frequently asked questions" className="relative overflow-hidden bg-floral">
       <div aria-hidden className="pointer-events-none absolute -right-40 top-20 h-[30rem] w-[30rem] rounded-full bg-brand-blue/[0.06] blur-[100px]" />
-      <div className="relative mx-auto grid max-w-[84rem] gap-10 px-5 py-24 md:px-10 md:py-32 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.3fr)] lg:gap-14">
+      <div className="relative mx-auto grid max-w-[84rem] gap-10 px-5 pb-24 pt-4 md:px-10 md:pb-32 md:pt-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.3fr)] lg:gap-14">
         {/* What this is, someone to ask, and where to go next */}
         <Reveal from="up" className="lg:sticky lg:top-28 lg:self-start">
           <div className="relative overflow-hidden rounded-[2rem] bg-jet p-7 text-white md:p-9">
